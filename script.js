@@ -13,8 +13,8 @@ localStorage.setItem('snowboard_categories', JSON.stringify(categories));
 
 let currentTab = categories[0].name;
 
-// === ТОВАРЫ (по 6 в каждой категории) ===
-let products = JSON.parse(localStorage.getItem('snowboard_products')) || [
+// === ВСЕ ТОВАРЫ (36 шт) ===
+const defaultProducts = [
     // === ДОСКИ (6 шт) ===
     {
         id: 1,
@@ -531,6 +531,33 @@ let products = JSON.parse(localStorage.getItem('snowboard_products')) || [
         category: 'Крепления'
     }
 ];
+
+// === ФУНКЦИЯ ДЛЯ ЗАГРУЗКИ ДАННЫХ ===
+function loadProducts() {
+    let storedProducts = JSON.parse(localStorage.getItem('snowboard_products'));
+    
+    // Если в localStorage нет данных или там меньше товаров, чем должно быть
+    if (!storedProducts || storedProducts.length < defaultProducts.length) {
+        // Сохраняем все дефолтные товары
+        localStorage.setItem('snowboard_products', JSON.stringify(defaultProducts));
+        return defaultProducts;
+    }
+    
+    // Проверяем, все ли товары есть
+    const storedIds = storedProducts.map(p => p.id);
+    const missingProducts = defaultProducts.filter(p => !storedIds.includes(p.id));
+    
+    if (missingProducts.length > 0) {
+        // Добавляем недостающие товары
+        storedProducts = [...storedProducts, ...missingProducts];
+        localStorage.setItem('snowboard_products', JSON.stringify(storedProducts));
+    }
+    
+    return storedProducts;
+}
+
+// Загружаем товары
+let products = loadProducts();
 
 // === РЕНДЕР КАТАЛОГА ===
 function renderCatalog(category) {
