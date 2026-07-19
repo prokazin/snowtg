@@ -133,39 +133,6 @@
             background: #ff3b30;
         }
         
-        .admin-container .category-item {
-            background: #f0f0f5;
-            padding: 12px 16px;
-            border-radius: 12px;
-            margin: 6px 0;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-        
-        .admin-container .category-item img {
-            width: 32px;
-            height: 32px;
-            object-fit: contain;
-            background: white;
-            border-radius: 8px;
-            padding: 4px;
-        }
-        
-        .admin-container .category-item .cat-name {
-            flex: 1;
-            font-weight: 600;
-            min-width: 80px;
-        }
-        
-        .admin-container .category-item button {
-            width: auto;
-            padding: 4px 12px;
-            margin: 0;
-            font-size: 13px;
-        }
-        
         .section-title {
             margin-top: 20px;
             font-size: clamp(18px, 3.5vw, 22px);
@@ -195,15 +162,39 @@
             font-size: 14px;
         }
         
-        .row-inputs {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
+        .specs-container {
+            background: #f8f9fc;
+            border-radius: 12px;
+            padding: 12px;
+            margin: 6px 0;
         }
         
-        .row-inputs input {
+        .spec-row {
+            display: flex;
+            gap: 8px;
+            margin: 4px 0;
+            align-items: center;
+        }
+        
+        .spec-row input {
             flex: 1;
-            min-width: 120px;
+            margin: 2px 0;
+        }
+        
+        .spec-row .remove-spec {
+            width: auto;
+            padding: 8px 12px;
+            margin: 0;
+            background: #ff3b30;
+            font-size: 14px;
+        }
+        
+        .add-spec-btn {
+            width: auto !important;
+            padding: 8px 16px !important;
+            margin: 4px 0 !important;
+            background: #34c759 !important;
+            font-size: 14px !important;
         }
         
         .hidden {
@@ -254,19 +245,16 @@
             .item .actions {
                 justify-content: flex-end;
             }
-            .category-item {
-                flex-wrap: wrap;
-            }
-            .row-inputs {
-                flex-direction: column;
-            }
-            .row-inputs input {
-                min-width: auto;
-            }
             .file-upload-row {
                 flex-direction: column;
             }
             .file-upload-row button {
+                width: 100%;
+            }
+            .spec-row {
+                flex-direction: column;
+            }
+            .spec-row .remove-spec {
                 width: 100%;
             }
         }
@@ -298,24 +286,6 @@
         <!-- Панель управления -->
         <div id="admin-panel" style="display: none;">
             
-            <!-- Управление категориями -->
-            <div class="section-title">📁 Категории</div>
-            <div id="category-list"></div>
-            
-            <div class="row-inputs">
-                <input type="text" id="category-name" placeholder="Название категории" />
-                <input type="text" id="category-icon-url" placeholder="URL иконки" />
-            </div>
-            
-            <div class="file-upload-row">
-                <input type="file" id="category-icon-file" accept="image/png,image/jpeg,image/webp" />
-                <button onclick="uploadCategoryIcon()">Загрузить иконку</button>
-            </div>
-            
-            <button onclick="addCategory()">➕ Добавить категорию</button>
-            
-            <hr />
-            
             <!-- Добавление товара -->
             <div class="section-title">📦 Добавить товар</div>
             <input type="text" id="product-name" placeholder="Название" />
@@ -328,9 +298,21 @@
             </div>
             
             <textarea id="product-desc" placeholder="Полное описание" rows="3"></textarea>
-            <input type="text" id="product-specs" placeholder="Характеристики (через запятую)" />
+            
             <select id="product-category"></select>
-            <button onclick="addProduct()">➕ Добавить товар</button>
+            
+            <!-- Характеристики -->
+            <div class="section-title" style="font-size:16px; margin-top:12px;">📊 Характеристики</div>
+            <div id="specs-container" class="specs-container">
+                <div class="spec-row">
+                    <input type="text" class="spec-name" placeholder="Название (например: Длина)" />
+                    <input type="text" class="spec-value" placeholder="Значение (например: 156 см)" />
+                    <button class="remove-spec" onclick="removeSpec(this)">✕</button>
+                </div>
+            </div>
+            <button class="add-spec-btn" onclick="addSpecRow()">➕ Добавить характеристику</button>
+            
+            <button onclick="addProduct()" style="margin-top:12px;">➕ Добавить товар</button>
             
             <hr />
             
