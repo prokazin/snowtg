@@ -2,11 +2,37 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, shrink-to-fit=no" />
     <title>Snowboard Shop</title>
     <link rel="stylesheet" href="style.css" />
+    <style>
+        /* Запрет зума и выделения */
+        * {
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        img, a, button {
+            -webkit-touch-callout: none;
+        }
+        /* Убираем скролл у body */
+        html, body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            width: 100%;
+            height: 100%;
+            position: fixed;
+            top: 0;
+            left: 0;
+        }
+    </style>
 </head>
 <body>
+    <!-- ФОН (всегда виден) -->
+    <div id="background-layer"></div>
+
     <!-- Загрузочный экран -->
     <div id="splash-screen">
         <div class="splash-content">
@@ -29,17 +55,17 @@
         </header>
 
         <main id="catalog">
-            <!-- Карточки товаров рендерятся через JS -->
+            <!-- Карточки товаров -->
         </main>
 
-        <!-- Нижняя навигация с иконками PNG -->
+        <!-- Нижняя навигация -->
         <nav id="bottom-nav">
-            <!-- Иконки загружаются из JS -->
+            <!-- Иконки из JS -->
         </nav>
     </div>
 
-    <!-- Модальное окно для полного описания -->
-    <div id="product-modal" class="modal">
+    <!-- Модальное окно -->
+    <div id="product-modal" class="modal" style="display: none;">
         <div class="modal-content">
             <span class="modal-close" id="modal-close">&times;</span>
             <div id="modal-body"></div>
