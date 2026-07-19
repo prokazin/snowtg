@@ -1,55 +1,43 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>Snowboard Shop</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-
-    <!-- ЗАГРУЗОЧНЫЙ ЭКРАН -->
+    <!-- Загрузочный экран -->
     <div id="splash-screen">
         <div class="splash-content">
-            <div class="snow-icon">🏂</div>
-            <h1>До зимы осталось</h1>
-            <div id="countdown-timer">
+            <h1>❄️ Сноуборд-сезон</h1>
+            <div id="countdown">
                 <span id="days">00</span>:
                 <span id="hours">00</span>:
                 <span id="minutes">00</span>:
                 <span id="seconds">00</span>
             </div>
-            <p class="splash-sub">Готовь сани летом ❄️</p>
+            <p id="splash-message">До первого снега осталось...</p>
             <button id="close-splash" class="splash-close-btn">Пропустить</button>
         </div>
     </div>
 
-    <!-- ОСНОВНОЙ ИНТЕРФЕЙС -->
+    <!-- Основной контент -->
     <div id="app" style="display: none;">
-        
-        <header class="app-header">
-            <div class="header-title">🏂 Snowboard Shop</div>
-            <div class="header-season">Зима близко</div>
+        <header>
+            <h1>🏔️ Snowboard Store</h1>
         </header>
 
-        <main id="content-area"></main>
+        <main id="catalog">
+            <!-- Карточки товаров рендерятся через JS -->
+        </main>
 
-        <nav class="bottom-nav" id="bottom-nav">
-            <button class="nav-btn active" data-category="boards">
-                <span class="nav-icon">🏂</span>
-            </button>
-            <button class="nav-btn" data-category="bindings">
-                <span class="nav-icon">⛓️</span>
-            </button>
-            <button class="nav-btn" data-category="boots">
-                <span class="nav-icon">🥾</span>
-            </button>
-            <button class="nav-btn" data-category="helmets">
-                <span class="nav-icon">⛑️</span>
-            </button>
-            <button class="nav-btn" data-category="goggles">
-                <span class="nav-icon">🥽</span>
-            </button>
+        <!-- Нижняя навигация (только иконки) -->
+        <nav id="bottom-nav">
+            <button class="nav-btn active" data-tab="boards">🏂</button>
+            <button class="nav-btn" data-tab="bindings">🔗</button>
+            <button class="nav-btn" data-tab="boots">👢</button>
+            <button class="nav-btn" data-tab="helmets">⛑️</button>
         </nav>
     </div>
 
