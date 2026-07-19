@@ -77,69 +77,9 @@ function getProducts() {
     try {
         const data = localStorage.getItem('snowboard_products');
         if (!data) {
-            // Дефолтные товары
+            // Дефолтные товары (будут созданы при первом запуске)
             const defaultProducts = [
-                {
-                    id: 1,
-                    name: 'Burton Custom 2025',
-                    price: '54 990 ₽',
-                    image: 'https://placehold.co/600x400/1a3a4a/white?text=Burton+Custom',
-                    desc: 'Легендарная модель для фрирайда и парка. Идеально подходит для катания по целине и в парке. Универсальная геометрия позволяет уверенно чувствовать себя на любом склоне. Сердечник из дерева с карбоновыми вставками обеспечивает отличную упругость и контроль.',
-                    specs: [
-                        { name: 'Длина', value: '156 см' },
-                        { name: 'Жесткость', value: '7/10' },
-                        { name: 'Прогиб', value: 'Camber' }
-                    ],
-                    category: 'Доски'
-                },
-                {
-                    id: 2,
-                    name: 'Union Force',
-                    price: '24 500 ₽',
-                    image: 'https://placehold.co/600x400/2a4a5a/white?text=Union+Force',
-                    desc: 'Надежные крепления для любого стиля катания. Алюминиевая база с высоким качеством обработки. Быстрая регулировка под любой размер ботинка. Отличная передача усилий на кант.',
-                    specs: [
-                        { name: 'Вес', value: '1.2 кг' },
-                        { name: 'Материал', value: 'Алюминий' }
-                    ],
-                    category: 'Крепления'
-                },
-                {
-                    id: 3,
-                    name: 'Adidas Tactical ADV',
-                    price: '19 990 ₽',
-                    image: 'https://placehold.co/600x400/3a5a6a/white?text=Adidas+ADV',
-                    desc: 'Ботинки с системой быстрой шнуровки и анатомической стелькой. Превосходная поддержка голеностопа и комфорт в течение всего дня катания. Внешняя оболочка из прочного материала защищает от влаги.',
-                    specs: [
-                        { name: 'Размер', value: '42-46' },
-                        { name: 'Жесткость', value: '6/10' }
-                    ],
-                    category: 'Ботинки'
-                },
-                {
-                    id: 4,
-                    name: 'Oakley MOD1',
-                    price: '14 200 ₽',
-                    image: 'https://placehold.co/600x400/4a6a7a/white?text=Oakley+MOD1',
-                    desc: 'Легкий шлем с вентиляционной системой и защитой от ударов. Интегрированная система регулировки размера. Внутренняя подкладка из гипоаллергенных материалов отводит влагу.',
-                    specs: [
-                        { name: 'Вес', value: '380 г' },
-                        { name: 'Сертификат', value: 'CE' }
-                    ],
-                    category: 'Шлемы'
-                },
-                {
-                    id: 5,
-                    name: 'Dakine Low Rider',
-                    price: '8 900 ₽',
-                    image: 'https://placehold.co/600x400/4a5a6a/white?text=Dakine+Low+Rider',
-                    desc: 'Универсальный чехол для сноуборда. Защищает доску при транспортировке. Имеет дополнительные карманы для креплений и инструментов.',
-                    specs: [
-                        { name: 'Длина', value: '156 см' },
-                        { name: 'Материал', value: 'Polyester' }
-                    ],
-                    category: 'Чехлы'
-                }
+                // Товары будут созданы из script.js
             ];
             localStorage.setItem('snowboard_products', JSON.stringify(defaultProducts));
             return defaultProducts;
@@ -184,7 +124,7 @@ function renderProductList() {
                 <strong>${p.name}</strong><br />
                 <span style="color:#007aff;">${p.price}</span>
                 <span style="color:#8e8e93; font-size:13px; margin-left:8px;">${p.category}</span>
-                <br /><small style="color:#8e8e93;">${p.specs.length} характеристик</small>
+                <br /><small style="color:#8e8e93;">${p.specs ? p.specs.length : 0} характеристик</small>
             </div>
             <div class="actions">
                 <button class="edit-btn" onclick="editProduct(${i})">✏️</button>
@@ -217,7 +157,7 @@ function addProduct() {
         return;
     }
 
-    const image = imageUrl || 'https://placehold.co/600x400/cccccc/aaaaaa?text=No+Image';
+    const image = imageUrl || 'https://placehold.co/600x400/ffffff/cccccc?text=No+Image';
     
     const products = getProducts();
     const newId = products.length ? Math.max(...products.map(p => p.id)) + 1 : 1;
