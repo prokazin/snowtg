@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Snowboard Shop</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- ЗАГРУЗОЧНЫЙ ЭКРАН -->
+    <div id="splash-screen">
+        <div class="splash-content">
+            <div class="snow-icon">🏂</div>
+            <h1>До зимы осталось</h1>
+            <div id="countdown-timer">
+                <span id="days">00</span>:
+                <span id="hours">00</span>:
+                <span id="minutes">00</span>:
+                <span id="seconds">00</span>
+            </div>
+            <p class="splash-sub">Готовь сани летом ❄️</p>
+            <button id="close-splash" class="splash-close-btn">Пропустить</button>
+        </div>
+    </div>
+
+    <!-- ОСНОВНОЙ ИНТЕРФЕЙС -->
+    <div id="app" style="display: none;">
+        
+        <header class="app-header">
+            <div class="header-title">🏂 Snowboard Shop</div>
+            <div class="header-season">Зима близко</div>
+        </header>
+
+        <main id="content-area"></main>
+
+        <nav class="bottom-nav" id="bottom-nav">
+            <button class="nav-btn active" data-category="boards">
+                <span class="nav-icon">🏂</span>
+            </button>
+            <button class="nav-btn" data-category="bindings">
+                <span class="nav-icon">⛓️</span>
+            </button>
+            <button class="nav-btn" data-category="boots">
+                <span class="nav-icon">🥾</span>
+            </button>
+            <button class="nav-btn" data-category="helmets">
+                <span class="nav-icon">⛑️</span>
+            </button>
+            <button class="nav-btn" data-category="goggles">
+                <span class="nav-icon">🥽</span>
+            </button>
+        </nav>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
