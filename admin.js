@@ -1,16 +1,18 @@
 const ADMIN_PASSWORD = 'admin123';
 
-// === РАБОТА С КАТЕГОРИЯМИ ===
+// === КАТЕГОРИИ (берутся из основной страницы) ===
 function getCategories() {
     try {
         const data = localStorage.getItem('snowboard_categories');
         if (!data) {
-            // Если нет данных, создаем дефолтные
+            // Дефолтные категории
             const defaultCategories = [
                 { name: 'Доски', icon: 'Доски.png' },
                 { name: 'Ботинки', icon: 'Ботинки.png' },
                 { name: 'Шлемы', icon: 'Шлем.png' },
-                { name: 'Маски', icon: 'Маски.png' }
+                { name: 'Маски', icon: 'Маски.png' },
+                { name: 'Чехлы', icon: 'Чехлы.png' },
+                { name: 'Крепления', icon: 'Крепления.png' }
             ];
             localStorage.setItem('snowboard_categories', JSON.stringify(defaultCategories));
             return defaultCategories;
@@ -20,45 +22,6 @@ function getCategories() {
         console.error('Ошибка загрузки категорий:', e);
         return [];
     }
-}
-
-function saveCategories(categories) {
-    try {
-        localStorage.setItem('snowboard_categories', JSON.stringify(categories));
-        // Обновляем список на странице
-        renderCategoryList();
-        updateCategorySelect();
-        // Обновляем навигацию в основном приложении
-        if (window.opener && !window.opener.closed) {
-            window.opener.categories = categories;
-            window.opener.renderNav();
-            if (window.opener.currentTab) {
-                window.opener.renderCatalog(window.opener.currentTab);
-            }
-        }
-    } catch (e) {
-        console.error('Ошибка сохранения категорий:', e);
-        alert('Ошибка сохранения категорий');
-    }
-}
-
-function renderCategoryList() {
-    const list = document.getElementById('category-list');
-    if (!list) return;
-    
-    const categories = getCategories();
-    if (!categories || categories.length === 0) {
-        list.innerHTML = '<p style="color:#8e8e93; padding:10px 0;">Нет категорий</p>';
-        return;
-    }
-    
-    list.innerHTML = categories.map((cat, i) => `
-        <div class="category-item">
-            <img src="${cat.icon}" alt="${cat.name}" onerror="this.src='https://placehold.co/32/cccccc/aaaaaa?text=?'" />
-            <span class="cat-name">${cat.name}</span>
-            <button onclick="deleteCategory(${i})" style="background:#ff3b30;">🗑️ Удалить</button>
-        </div>
-    `).join('');
 }
 
 function updateCategorySelect() {
@@ -74,73 +37,39 @@ function updateCategorySelect() {
     select.innerHTML = categories.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
 }
 
-function addCategory() {
-    const nameInput = document.getElementById('category-name');
-    const iconInput = document.getElementById('category-icon-url');
-    
-    const name = nameInput.value.trim();
-    let icon = iconInput.value.trim();
-    
-    if (!name) {
-        alert('Введите название категории');
-        return;
-    }
-    
-    // Если иконка не указана, используем placeholder
-    if (!icon) {
-        icon = 'https://placehold.co/32/cccccc/aaaaaa?text=?';
-    }
-    
-    const categories = getCategories();
-    // Проверяем, нет ли уже такой категории
-    if (categories.some(c => c.name.toLowerCase() === name.toLowerCase())) {
-        alert('Категория с таким названием уже существует');
-        return;
-    }
-    
-    categories.push({ name, icon });
-    saveCategories(categories);
-    
-    // Очищаем поля
-    nameInput.value = '';
-    iconInput.value = '';
-    document.getElementById('category-icon-file').value = '';
-    
-    // Показываем сообщение об успехе
-    alert('✅ Категория "' + name + '" добавлена!');
+// === РАБОТА С ХАРАКТЕРИСТИКАМИ ===
+function addSpecRow(nameValue, valueValue) {
+    const container = document.getElementById('specs-container');
+    const row = document.createElement('div');
+    row.className = 'spec-row';
+    row.innerHTML = `
+        <input type="text" class="spec-name" placeholder="Название (например: Длина)" value="${nameValue || ''}" />
+        <input type="text" class="spec-value" placeholder="Значение (например: 156 см)" value="${valueValue || ''}" />
+        <button class="remove-spec" onclick="removeSpec(this)">✕</button>
+    `;
+    container.appendChild(row);
 }
 
-function deleteCategory(index) {
-    if (!confirm('Удалить категорию?')) return;
-    const categories = getCategories();
-    categories.splice(index, 1);
-    saveCategories(categories);
+function removeSpec(button) {
+    const container = document.getElementById('specs-container');
+    if (container.children.length > 1) {
+        button.parentElement.remove();
+    } else {
+        alert('Должна быть хотя бы одна характеристика');
+    }
 }
 
-// Загрузка иконки категории через файл
-function uploadCategoryIcon() {
-    const fileInput = document.getElementById('category-icon-file');
-    const file = fileInput.files[0];
-    if (!file) {
-        alert('Выберите файл с иконкой');
-        return;
-    }
-    
-    // Проверяем размер файла (максимум 1MB)
-    if (file.size > 1024 * 1024) {
-        alert('Файл слишком большой. Максимум 1MB');
-        return;
-    }
-    
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        document.getElementById('category-icon-url').value = e.target.result;
-        alert('✅ Иконка загружена!');
-    };
-    reader.onerror = function() {
-        alert('Ошибка загрузки файла');
-    };
-    reader.readAsDataURL(file);
+function getSpecs() {
+    const rows = document.querySelectorAll('.spec-row');
+    const specs = [];
+    rows.forEach(row => {
+        const name = row.querySelector('.spec-name').value.trim();
+        const value = row.querySelector('.spec-value').value.trim();
+        if (name && value) {
+            specs.push({ name, value });
+        }
+    });
+    return specs;
 }
 
 // === РАБОТА С ТОВАРАМИ ===
@@ -156,7 +85,11 @@ function getProducts() {
                     price: '54 990 ₽',
                     image: 'https://placehold.co/600x400/1a3a4a/white?text=Burton+Custom',
                     desc: 'Легендарная модель для фрирайда и парка. Идеально подходит для катания по целине и в парке. Универсальная геометрия позволяет уверенно чувствовать себя на любом склоне. Сердечник из дерева с карбоновыми вставками обеспечивает отличную упругость и контроль.',
-                    specs: ['Длина: 156 см', 'Жесткость: 7/10', 'Camber'],
+                    specs: [
+                        { name: 'Длина', value: '156 см' },
+                        { name: 'Жесткость', value: '7/10' },
+                        { name: 'Прогиб', value: 'Camber' }
+                    ],
                     category: 'Доски'
                 },
                 {
@@ -165,7 +98,10 @@ function getProducts() {
                     price: '24 500 ₽',
                     image: 'https://placehold.co/600x400/2a4a5a/white?text=Union+Force',
                     desc: 'Надежные крепления для любого стиля катания. Алюминиевая база с высоким качеством обработки. Быстрая регулировка под любой размер ботинка. Отличная передача усилий на кант.',
-                    specs: ['Вес: 1.2 кг', 'Материал: Алюминий'],
+                    specs: [
+                        { name: 'Вес', value: '1.2 кг' },
+                        { name: 'Материал', value: 'Алюминий' }
+                    ],
                     category: 'Крепления'
                 },
                 {
@@ -174,7 +110,10 @@ function getProducts() {
                     price: '19 990 ₽',
                     image: 'https://placehold.co/600x400/3a5a6a/white?text=Adidas+ADV',
                     desc: 'Ботинки с системой быстрой шнуровки и анатомической стелькой. Превосходная поддержка голеностопа и комфорт в течение всего дня катания. Внешняя оболочка из прочного материала защищает от влаги.',
-                    specs: ['Размер: 42-46', 'Жесткость: 6/10'],
+                    specs: [
+                        { name: 'Размер', value: '42-46' },
+                        { name: 'Жесткость', value: '6/10' }
+                    ],
                     category: 'Ботинки'
                 },
                 {
@@ -183,8 +122,23 @@ function getProducts() {
                     price: '14 200 ₽',
                     image: 'https://placehold.co/600x400/4a6a7a/white?text=Oakley+MOD1',
                     desc: 'Легкий шлем с вентиляционной системой и защитой от ударов. Интегрированная система регулировки размера. Внутренняя подкладка из гипоаллергенных материалов отводит влагу.',
-                    specs: ['Вес: 380 г', 'Сертификат: CE'],
+                    specs: [
+                        { name: 'Вес', value: '380 г' },
+                        { name: 'Сертификат', value: 'CE' }
+                    ],
                     category: 'Шлемы'
+                },
+                {
+                    id: 5,
+                    name: 'Dakine Low Rider',
+                    price: '8 900 ₽',
+                    image: 'https://placehold.co/600x400/4a5a6a/white?text=Dakine+Low+Rider',
+                    desc: 'Универсальный чехол для сноуборда. Защищает доску при транспортировке. Имеет дополнительные карманы для креплений и инструментов.',
+                    specs: [
+                        { name: 'Длина', value: '156 см' },
+                        { name: 'Материал', value: 'Polyester' }
+                    ],
+                    category: 'Чехлы'
                 }
             ];
             localStorage.setItem('snowboard_products', JSON.stringify(defaultProducts));
@@ -230,6 +184,7 @@ function renderProductList() {
                 <strong>${p.name}</strong><br />
                 <span style="color:#007aff;">${p.price}</span>
                 <span style="color:#8e8e93; font-size:13px; margin-left:8px;">${p.category}</span>
+                <br /><small style="color:#8e8e93;">${p.specs.length} характеристик</small>
             </div>
             <div class="actions">
                 <button class="edit-btn" onclick="editProduct(${i})">✏️</button>
@@ -244,16 +199,25 @@ function addProduct() {
     const price = document.getElementById('product-price').value.trim();
     const imageUrl = document.getElementById('product-image-url').value.trim();
     const desc = document.getElementById('product-desc').value.trim();
-    const specsRaw = document.getElementById('product-specs').value.trim();
     const category = document.getElementById('product-category').value;
+    const specs = getSpecs();
 
     if (!name || !price || !desc) {
         alert('Заполните название, цену и описание');
         return;
     }
 
+    if (!category) {
+        alert('Выберите категорию');
+        return;
+    }
+
+    if (specs.length === 0) {
+        alert('Добавьте хотя бы одну характеристику');
+        return;
+    }
+
     const image = imageUrl || 'https://placehold.co/600x400/cccccc/aaaaaa?text=No+Image';
-    const specs = specsRaw ? specsRaw.split(',').map(s => s.trim()).filter(s => s) : [];
     
     const products = getProducts();
     const newId = products.length ? Math.max(...products.map(p => p.id)) + 1 : 1;
@@ -275,8 +239,12 @@ function addProduct() {
     document.getElementById('product-price').value = '';
     document.getElementById('product-image-url').value = '';
     document.getElementById('product-desc').value = '';
-    document.getElementById('product-specs').value = '';
     document.getElementById('product-image-file').value = '';
+    
+    // Очищаем характеристики, оставляем одну пустую
+    const container = document.getElementById('specs-container');
+    container.innerHTML = '';
+    addSpecRow('', '');
     
     alert('✅ Товар "' + name + '" добавлен!');
 }
@@ -320,8 +288,18 @@ function editProduct(index) {
     document.getElementById('product-price').value = p.price;
     document.getElementById('product-image-url').value = p.image;
     document.getElementById('product-desc').value = p.desc;
-    document.getElementById('product-specs').value = p.specs.join(', ');
     document.getElementById('product-category').value = p.category;
+    
+    // Загружаем характеристики
+    const container = document.getElementById('specs-container');
+    container.innerHTML = '';
+    if (p.specs && p.specs.length > 0) {
+        p.specs.forEach(spec => {
+            addSpecRow(spec.name, spec.value);
+        });
+    } else {
+        addSpecRow('', '');
+    }
     
     // Удаляем старый товар
     products.splice(index, 1);
@@ -339,12 +317,14 @@ function loginAdmin() {
         document.getElementById('admin-panel').style.display = 'block';
         
         // Загружаем все данные
-        renderCategoryList();
         updateCategorySelect();
         renderProductList();
         
-        // Приводим к одному стилю кнопку
-        document.querySelector('#admin-panel .section-title:first-of-type').scrollIntoView({ behavior: 'smooth' });
+        // Добавляем одну пустую характеристику
+        const container = document.getElementById('specs-container');
+        container.innerHTML = '';
+        addSpecRow('', '');
+        
     } else {
         alert('❌ Неверный пароль');
         document.getElementById('admin-password').value = '';
@@ -354,33 +334,20 @@ function loginAdmin() {
 
 // === ИНИЦИАЛИЗАЦИЯ ===
 document.addEventListener('DOMContentLoaded', function() {
-    // Если уже есть сохраненный пароль (для удобства)
-    // Просто загружаем данные в фоне
-    
-    // Проверяем, есть ли данные
-    if (localStorage.getItem('snowboard_categories')) {
-        // Данные есть, ничего не делаем
-    }
-    
-    // Для удобства: если админка открыта, подгружаем данные
-    renderCategoryList();
+    // Загружаем категории
     updateCategorySelect();
     renderProductList();
 });
 
 // === ОБНОВЛЕНИЕ ДАННЫХ ИЗ ДРУГИХ ВКЛАДОК ===
 window.addEventListener('storage', function(e) {
-    if (e.key === 'snowboard_categories') {
-        renderCategoryList();
-        updateCategorySelect();
-    }
     if (e.key === 'snowboard_products') {
         renderProductList();
     }
 });
 
-// Экспортируем функции для использования из консоли
-window.getCategories = getCategories;
-window.saveCategories = saveCategories;
+// Экспортируем функции
 window.getProducts = getProducts;
 window.saveProducts = saveProducts;
+window.addSpecRow = addSpecRow;
+window.removeSpec = removeSpec;
