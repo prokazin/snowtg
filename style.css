@@ -116,9 +116,10 @@ html, body {
     height: 100%;
     max-height: 100vh;
     padding: 8px 12px 72px 12px;
-    background: rgba(255, 255, 255, 0.88);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    /* Убираем белый фон - делаем прозрачным */
+    background: rgba(255, 255, 255, 0.0);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
     display: flex;
     flex-direction: column;
     z-index: 1;
@@ -138,6 +139,7 @@ header h1 {
     background: linear-gradient(135deg, #007aff, #00c6ff);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+    text-shadow: 0 2px 20px rgba(0,122,255,0.2);
 }
 
 /* === КАТАЛОГ (скроллится внутри) === */
@@ -167,21 +169,25 @@ header h1 {
 
 /* === КАРТОЧКА ТОВАРА === */
 .product-card {
-    background: rgba(255, 255, 255, 0.95);
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     border-radius: 18px;
     padding: 12px;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.08);
     display: flex;
     flex-direction: column;
     gap: 5px;
     cursor: pointer;
     touch-action: manipulation;
-    transition: transform 0.15s ease;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
     flex-shrink: 0;
+    border: 1px solid rgba(255,255,255,0.3);
 }
 
 .product-card:active {
     transform: scale(0.97);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.12);
 }
 
 .product-card img {
@@ -189,7 +195,7 @@ header h1 {
     height: clamp(140px, 30vw, 180px);
     object-fit: cover;
     border-radius: 12px;
-    background: #e9ecef;
+    background: rgba(233, 236, 239, 0.5);
     pointer-events: none;
 }
 
@@ -197,6 +203,7 @@ header h1 {
     font-size: clamp(16px, 3.5vw, 20px);
     font-weight: 600;
     line-height: 1.2;
+    color: #1c1c1e;
 }
 
 .product-card .price {
@@ -223,7 +230,7 @@ header h1 {
 }
 
 .product-card .specs span {
-    background: #f0f0f5;
+    background: rgba(240, 240, 245, 0.8);
     padding: 3px 12px;
     border-radius: 14px;
     font-size: clamp(11px, 2vw, 13px);
@@ -244,16 +251,16 @@ header h1 {
     transform: translateX(-50%);
     width: 100%;
     max-width: 430px;
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
     display: flex;
     justify-content: space-around;
     align-items: center;
     padding: 6px 4px 10px;
-    border-top: 1px solid rgba(0,0,0,0.06);
+    border-top: 1px solid rgba(255,255,255,0.3);
     border-radius: 20px 20px 0 0;
-    box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
+    box-shadow: 0 -4px 30px rgba(0,0,0,0.08);
     z-index: 100;
 }
 
@@ -262,7 +269,7 @@ header h1 {
     border: none;
     padding: 4px 6px;
     border-radius: 20px;
-    opacity: 0.4;
+    opacity: 0.5;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -277,13 +284,13 @@ header h1 {
     width: clamp(24px, 5vw, 32px);
     height: clamp(24px, 5vw, 32px);
     object-fit: contain;
-    filter: brightness(0);
+    filter: brightness(0) invert(1);
     pointer-events: none;
 }
 
 .nav-btn.active {
     opacity: 1;
-    background: rgba(0, 122, 255, 0.12);
+    background: rgba(0, 122, 255, 0.2);
     transform: scale(1.05);
 }
 
@@ -300,15 +307,17 @@ header h1 {
     top: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0,0,0,0.5);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     align-items: center;
     justify-content: center;
 }
 
 .modal-content {
-    background: white;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     padding: 20px;
     border-radius: 24px;
     max-width: 380px;
@@ -317,6 +326,7 @@ header h1 {
     overflow-y: auto;
     position: relative;
     animation: modalSlideUp 0.3s ease;
+    border: 1px solid rgba(255,255,255,0.2);
 }
 
 @keyframes modalSlideUp {
@@ -351,6 +361,7 @@ header h1 {
 #modal-body h2 {
     font-size: clamp(20px, 4vw, 24px);
     margin-bottom: 6px;
+    color: #1c1c1e;
 }
 
 #modal-body .modal-price {
@@ -374,7 +385,7 @@ header h1 {
 }
 
 #modal-body .modal-specs span {
-    background: #f0f0f5;
+    background: rgba(240, 240, 245, 0.8);
     padding: 4px 14px;
     border-radius: 16px;
     font-size: clamp(12px, 2.2vw, 14px);
@@ -442,7 +453,7 @@ header h1 {
         height: 90vh;
         top: 5vh;
         border-radius: 28px;
-        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        box-shadow: 0 20px 60px rgba(0,0,0,0.4);
     }
     #bottom-nav {
         max-width: 420px;
@@ -468,9 +479,18 @@ input, textarea, select, button {
 /* Плавное появление */
 #app {
     opacity: 0;
-    transition: opacity 0.4s ease;
+    transition: opacity 0.5s ease;
 }
 
 #app.visible {
     opacity: 1;
+}
+
+/* Пустой фон для сообщения "Нет товаров" */
+.empty-message {
+    text-align: center;
+    padding: 30px 10px;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: clamp(14px, 2.5vw, 16px);
+    text-shadow: 0 2px 12px rgba(0,0,0,0.3);
 }
