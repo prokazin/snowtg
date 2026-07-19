@@ -8,19 +8,54 @@ const categories = [
     { name: 'Крепления', icon: 'Крепления.png' }
 ];
 
-// Сохраняем категории в localStorage при загрузке
 localStorage.setItem('snowboard_categories', JSON.stringify(categories));
 
 let currentTab = categories[0].name;
+let currentImageIndex = 0;
 
-// === ВСЕ ТОВАРЫ (36 шт) С РЕАЛЬНЫМИ ФОТО ===
+// === ФОТО ДЛЯ КАЖДОЙ КАТЕГОРИИ (разные для каждого товара) ===
+const categoryImages = {
+    'Доски': [
+        'https://images.unsplash.com/photo-1604915124551-0313421f71da?w=600&h=400&fit=crop',
+        'https://images.unsplash.com/photo-1605087878415-00a4b0e7b5e2?w=600&h=400&fit=crop',
+        'https://images.unsplash.com/photo-1504544750208-dc0358e63f7f?w=600&h=400&fit=crop',
+        'https://images.unsplash.com/photo-1558604150-9989afc14a4c?w=600&h=400&fit=crop',
+        'https://images.unsplash.com/photo-1560490441-7910b4830b6a?w=600&h=400&fit=crop',
+        'https://images.unsplash.com/photo-1574357336335-5b94f9e8b3e4?w=600&h=400&fit=crop'
+    ],
+    'Ботинки': [
+        'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&h=400&fit=crop',
+        'https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?w=600&h=400&fit=crop',
+        'https://images.unsplash.com/photo-1605348532760-6753d2c43329?w=600&h=400&fit=crop',
+        'https://images.unsplash.com/photo-1556906781-9a4129616c1c?w=600&h=400&fit=crop'
+    ],
+    'Шлемы': [
+        'https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=600&h=400&fit=crop',
+        'https://images.unsplash.com/photo-1551522435-a13afa10f103?w=600&h=400&fit=crop'
+    ],
+    'Маски': [
+        'https://images.unsplash.com/photo-1517879484726-e0f835e2f559?w=600&h=400&fit=crop'
+    ],
+    'Чехлы': [
+        'https://images.unsplash.com/photo-1560490441-7910b4830b6a?w=600&h=400&fit=crop'
+    ],
+    'Крепления': [
+        'https://images.unsplash.com/photo-1560490441-7910b4830b6a?w=600&h=400&fit=crop'
+    ]
+};
+
+// === ВСЕ ТОВАРЫ (36 шт) С РАЗНЫМИ ФОТО ===
 const defaultProducts = [
     // === ДОСКИ (6 шт) ===
     {
         id: 1,
         name: 'Burton Custom 2025',
         price: '54 990 ₽',
-        image: 'https://images.unsplash.com/photo-1604915124551-0313421f71da?w=600&h=400&fit=crop',
+        images: [
+            'https://images.unsplash.com/photo-1604915124551-0313421f71da?w=600&h=400&fit=crop',
+            'https://images.unsplash.com/photo-1504544750208-dc0358e63f7f?w=600&h=400&fit=crop',
+            'https://images.unsplash.com/photo-1558604150-9989afc14a4c?w=600&h=400&fit=crop'
+        ],
         desc: 'Легендарная модель для фрирайда и парка. Идеально подходит для катания по целине и в парке. Универсальная геометрия позволяет уверенно чувствовать себя на любом склоне. Сердечник из дерева с карбоновыми вставками обеспечивает отличную упругость и контроль.',
         specs: [
             { name: 'Длина', value: '156 см' },
@@ -34,7 +69,11 @@ const defaultProducts = [
         id: 2,
         name: 'Jones Mountain Twin',
         price: '49 500 ₽',
-        image: 'https://images.unsplash.com/photo-1605087878415-00a4b0e7b5e2?w=600&h=400&fit=crop',
+        images: [
+            'https://images.unsplash.com/photo-1605087878415-00a4b0e7b5e2?w=600&h=400&fit=crop',
+            'https://images.unsplash.com/photo-1604915124551-0313421f71da?w=600&h=400&fit=crop',
+            'https://images.unsplash.com/photo-1504544750208-dc0358e63f7f?w=600&h=400&fit=crop'
+        ],
         desc: 'Универсальная доска для фрирайда. Отлично держит дугу на жестком склоне и легко плывет по пухляку. Симметричная геометрия для катания в обе стороны. Сердечник из бамбука и тополя.',
         specs: [
             { name: 'Длина', value: '158 см' },
@@ -48,7 +87,11 @@ const defaultProducts = [
         id: 3,
         name: 'Lib Tech T.Rice Pro',
         price: '59 900 ₽',
-        image: 'https://images.unsplash.com/photo-1504544750208-dc0358e63f7f?w=600&h=400&fit=crop',
+        images: [
+            'https://images.unsplash.com/photo-1504544750208-dc0358e63f7f?w=600&h=400&fit=crop',
+            'https://images.unsplash.com/photo-1605087878415-00a4b0e7b5e2?w=600&h=400&fit=crop',
+            'https://images.unsplash.com/photo-1604915124551-0313421f71da?w=600&h=400&fit=crop'
+        ],
         desc: 'Профессиональная доска для больших гор. Разработана совместно с Трэвисом Райсом. Магни-тракшн технология для лучшего сцепления на льду. Легкая и прочная конструкция.',
         specs: [
             { name: 'Длина', value: '157 см' },
@@ -62,7 +105,11 @@ const defaultProducts = [
         id: 4,
         name: 'Yes Standard',
         price: '44 900 ₽',
-        image: 'https://images.unsplash.com/photo-1558604150-9989afc14a4c?w=600&h=400&fit=crop',
+        images: [
+            'https://images.unsplash.com/photo-1558604150-9989afc14a4c?w=600&h=400&fit=crop',
+            'https://images.unsplash.com/photo-1504544750208-dc0358e63f7f?w=600&h=400&fit=crop',
+            'https://images.unsplash.com/photo-1604915124551-0313421f71da?w=600&h=400&fit=crop'
+        ],
         desc: 'Новая модель с уникальной геометрией. Подходит для любого стиля катания. Технология UnderBite позволяет легко кантовать и дает отличное сцепление. Сердечник из осины.',
         specs: [
             { name: 'Длина', value: '154 см' },
@@ -76,7 +123,11 @@ const defaultProducts = [
         id: 5,
         name: 'Salomon Assassin',
         price: '47 900 ₽',
-        image: 'https://images.unsplash.com/photo-1560490441-7910b4830b6a?w=600&h=400&fit=crop',
+        images: [
+            'https://images.unsplash.com/photo-1560490441-7910b4830b6a?w=600&h=400&fit=crop',
+            'https://images.unsplash.com/photo-1558604150-9989afc14a4c?w=600&h=400&fit=crop',
+            'https://images.unsplash.com/photo-1604915124551-0313421f71da?w=600&h=400&fit=crop'
+        ],
         desc: 'Универсальная доска для парка и трасс. Идеальный баланс между попом и стабильностью. Квадро-камель профиль дает уверенность на любом покрытии. Отличная доска для прогресса.',
         specs: [
             { name: 'Длина', value: '155 см' },
@@ -90,7 +141,11 @@ const defaultProducts = [
         id: 6,
         name: 'Ride Warpig',
         price: '52 500 ₽',
-        image: 'https://images.unsplash.com/photo-1574357336335-5b94f9e8b3e4?w=600&h=400&fit=crop',
+        images: [
+            'https://images.unsplash.com/photo-1574357336335-5b94f9e8b3e4?w=600&h=400&fit=crop',
+            'https://images.unsplash.com/photo-1560490441-7910b4830b6a?w=600&h=400&fit=crop',
+            'https://images.unsplash.com/photo-1558604150-9989afc14a4c?w=600&h=400&fit=crop'
+        ],
         desc: 'Короткая широкая доска для парка и фрирайда. Отличная плавучесть в пухляке и стабильность на жестком склоне. Необычная геометрия для максимального удовольствия от катания.',
         specs: [
             { name: 'Длина', value: '151 см' },
@@ -106,7 +161,11 @@ const defaultProducts = [
         id: 7,
         name: 'Adidas Tactical ADV',
         price: '19 990 ₽',
-        image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&h=400&fit=crop',
+        images: [
+            'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&h=400&fit=crop',
+            'https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?w=600&h=400&fit=crop',
+            'https://images.unsplash.com/photo-1556906781-9a4129616c1c?w=600&h=400&fit=crop'
+        ],
         desc: 'Ботинки с системой быстрой шнуровки и анатомической стелькой. Превосходная поддержка голеностопа и комфорт в течение всего дня катания. Внешняя оболочка из прочного материала защищает от влаги.',
         specs: [
             { name: 'Размер', value: '42-46' },
@@ -120,7 +179,11 @@ const defaultProducts = [
         id: 8,
         name: 'Burton Ion 2025',
         price: '24 900 ₽',
-        image: 'https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?w=600&h=400&fit=crop',
+        images: [
+            'https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?w=600&h=400&fit=crop',
+            'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&h=400&fit=crop',
+            'https://images.unsplash.com/photo-1605348532760-6753d2c43329?w=600&h=400&fit=crop'
+        ],
         desc: 'Профессиональные ботинки с технологией Speed Zone. Идеальная поддержка и комфорт. Система регулировки наклона позволяет настроить посадку под любой стиль катания.',
         specs: [
             { name: 'Размер', value: '40-47' },
@@ -134,7 +197,11 @@ const defaultProducts = [
         id: 9,
         name: 'DC Judge BOA',
         price: '21 500 ₽',
-        image: 'https://images.unsplash.com/photo-1605348532760-6753d2c43329?w=600&h=400&fit=crop',
+        images: [
+            'https://images.unsplash.com/photo-1605348532760-6753d2c43329?w=600&h=400&fit=crop',
+            'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&h=400&fit=crop',
+            'https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?w=600&h=400&fit=crop'
+        ],
         desc: 'Ботинки с двойной системой BOA для идеальной фиксации. Анатомическая подошва с амортизацией. Отличный выбор для агрессивного катания и фрирайда.',
         specs: [
             { name: 'Размер', value: '41-48' },
@@ -148,7 +215,11 @@ const defaultProducts = [
         id: 10,
         name: 'Nike SB Zoom Ja',
         price: '17 900 ₽',
-        image: 'https://images.unsplash.com/photo-1556906781-9a4129616c1c?w=600&h=400&fit=crop',
+        images: [
+            'https://images.unsplash.com/photo-1556906781-9a4129616c1c?w=600&h=400&fit=crop',
+            'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&h=400&fit=crop',
+            'https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?w=600&h=400&fit=crop'
+        ],
         desc: 'Легкие и удобные ботинки от Nike. Технология Zoom Air для амортизации. Дышащий материал и быстрая шнуровка. Идеальный вариант для парка.',
         specs: [
             { name: 'Размер', value: '40-45' },
@@ -162,7 +233,11 @@ const defaultProducts = [
         id: 11,
         name: 'Vans Hi-Standard Pro',
         price: '18 900 ₽',
-        image: 'https://images.unsplash.com/photo-1605348532760-6753d2c43329?w=600&h=400&fit=crop',
+        images: [
+            'https://images.unsplash.com/photo-1605348532760-6753d2c43329?w=600&h=400&fit=crop',
+            'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&h=400&fit=crop',
+            'https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?w=600&h=400&fit=crop'
+        ],
         desc: 'Классические ботинки от Vans. Отличная подошва с амортизацией и комфортная внутренняя стелька. Стильный дизайн и надежная конструкция для любого стиля катания.',
         specs: [
             { name: 'Размер', value: '40-47' },
@@ -176,7 +251,11 @@ const defaultProducts = [
         id: 12,
         name: 'Northwave Decade',
         price: '22 900 ₽',
-        image: 'https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?w=600&h=400&fit=crop',
+        images: [
+            'https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?w=600&h=400&fit=crop',
+            'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&h=400&fit=crop',
+            'https://images.unsplash.com/photo-1605348532760-6753d2c43329?w=600&h=400&fit=crop'
+        ],
         desc: 'Профессиональные ботинки для фрирайда. Технология Power Frame обеспечивает отличную передачу усилий. Удобная колодка и качественные материалы для долгой службы.',
         specs: [
             { name: 'Размер', value: '41-47' },
@@ -192,7 +271,10 @@ const defaultProducts = [
         id: 13,
         name: 'Oakley MOD1',
         price: '14 200 ₽',
-        image: 'https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=600&h=400&fit=crop',
+        images: [
+            'https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=600&h=400&fit=crop',
+            'https://images.unsplash.com/photo-1551522435-a13afa10f103?w=600&h=400&fit=crop'
+        ],
         desc: 'Легкий шлем с вентиляционной системой и защитой от ударов. Интегрированная система регулировки размера. Внутренняя подкладка из гипоаллергенных материалов отводит влагу.',
         specs: [
             { name: 'Вес', value: '380 г' },
@@ -206,7 +288,10 @@ const defaultProducts = [
         id: 14,
         name: 'Smith Holt',
         price: '11 900 ₽',
-        image: 'https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=600&h=400&fit=crop',
+        images: [
+            'https://images.unsplash.com/photo-1551522435-a13afa10f103?w=600&h=400&fit=crop',
+            'https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=600&h=400&fit=crop'
+        ],
         desc: 'Бюджетная модель шлема с отличной защитой. Система регулировки размера SnapFit. Внутренняя подкладка из мягкого материала для комфорта.',
         specs: [
             { name: 'Вес', value: '350 г' },
@@ -220,7 +305,10 @@ const defaultProducts = [
         id: 15,
         name: 'POC Obex BC',
         price: '19 900 ₽',
-        image: 'https://images.unsplash.com/photo-1551522435-a13afa10f103?w=600&h=400&fit=crop',
+        images: [
+            'https://images.unsplash.com/photo-1551522435-a13afa10f103?w=600&h=400&fit=crop',
+            'https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=600&h=400&fit=crop'
+        ],
         desc: 'Профессиональный шлем для бэккантри. Защита от боковых и задних ударов. Технология RECCO для поиска в лавинах. Легкая и прочная конструкция.',
         specs: [
             { name: 'Вес', value: '520 г' },
@@ -234,7 +322,10 @@ const defaultProducts = [
         id: 16,
         name: 'Giro Ledge',
         price: '12 900 ₽',
-        image: 'https://images.unsplash.com/photo-1551522435-a13afa10f103?w=600&h=400&fit=crop',
+        images: [
+            'https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=600&h=400&fit=crop',
+            'https://images.unsplash.com/photo-1551522435-a13afa10f103?w=600&h=400&fit=crop'
+        ],
         desc: 'Стильный и безопасный шлем для активного катания. Система регулировки In Form 2. Отличная вентиляция и комфортная посадка. Идеально подходит для фрирайда.',
         specs: [
             { name: 'Вес', value: '410 г' },
@@ -248,7 +339,10 @@ const defaultProducts = [
         id: 17,
         name: 'Bern Watts',
         price: '13 900 ₽',
-        image: 'https://images.unsplash.com/photo-1551522435-a13afa10f103?w=600&h=400&fit=crop',
+        images: [
+            'https://images.unsplash.com/photo-1551522435-a13afa10f103?w=600&h=400&fit=crop',
+            'https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=600&h=400&fit=crop'
+        ],
         desc: 'Универсальный шлем для парка и улицы. Защита от боковых ударов. Внутренняя подкладка с технологией Zip Mold для комфортной посадки.',
         specs: [
             { name: 'Вес', value: '430 г' },
@@ -262,7 +356,10 @@ const defaultProducts = [
         id: 18,
         name: 'Sweet Protection Trooper 2Vi',
         price: '22 900 ₽',
-        image: 'https://images.unsplash.com/photo-1551522435-a13afa10f103?w=600&h=400&fit=crop',
+        images: [
+            'https://images.unsplash.com/photo-1551522435-a13afa10f103?w=600&h=400&fit=crop',
+            'https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=600&h=400&fit=crop'
+        ],
         desc: 'Топовая модель шлема для агрессивного катания. Технология 2Vi для максимальной защиты. Высококачественные материалы и отличная вентиляция для комфорта.',
         specs: [
             { name: 'Вес', value: '550 г' },
@@ -278,7 +375,9 @@ const defaultProducts = [
         id: 19,
         name: 'Oakley Flight Deck L',
         price: '15 900 ₽',
-        image: 'https://images.unsplash.com/photo-1517879484726-e0f835e2f559?w=600&h=400&fit=crop',
+        images: [
+            'https://images.unsplash.com/photo-1517879484726-e0f835e2f559?w=600&h=400&fit=crop'
+        ],
         desc: 'Большая маска с широким обзором. Технология Prizm для четкости изображения. Тройной слой пены для комфорта и антизапотевающее покрытие.',
         specs: [
             { name: 'Линза', value: 'Prizm' },
@@ -292,7 +391,9 @@ const defaultProducts = [
         id: 20,
         name: 'Smith I/O MAG',
         price: '18 900 ₽',
-        image: 'https://images.unsplash.com/photo-1517879484726-e0f835e2f559?w=600&h=400&fit=crop',
+        images: [
+            'https://images.unsplash.com/photo-1517879484726-e0f835e2f559?w=600&h=400&fit=crop'
+        ],
         desc: 'Профессиональная маска с магнитной системой смены линз. Технология ChromaPop для ярких цветов. Двойная пена для максимального комфорта.',
         specs: [
             { name: 'Линза', value: 'ChromaPop' },
@@ -306,7 +407,9 @@ const defaultProducts = [
         id: 21,
         name: 'Dragon X2s',
         price: '14 900 ₽',
-        image: 'https://images.unsplash.com/photo-1517879484726-e0f835e2f559?w=600&h=400&fit=crop',
+        images: [
+            'https://images.unsplash.com/photo-1517879484726-e0f835e2f559?w=600&h=400&fit=crop'
+        ],
         desc: 'Маска с футуристическим дизайном. Технология Lumalens для четкости. Система быстрой смены линз Swiftlock. Отличная защита от UV-лучей.',
         specs: [
             { name: 'Линза', value: 'Lumalens' },
@@ -320,7 +423,9 @@ const defaultProducts = [
         id: 22,
         name: 'Anon M4',
         price: '16 900 ₽',
-        image: 'https://images.unsplash.com/photo-1517879484726-e0f835e2f559?w=600&h=400&fit=crop',
+        images: [
+            'https://images.unsplash.com/photo-1517879484726-e0f835e2f559?w=600&h=400&fit=crop'
+        ],
         desc: 'Инновационная маска с периферийным обзором. Технология Cylindrical для минимального искажения. Магнитная система смены линз MFI.',
         specs: [
             { name: 'Линза', value: 'Cylindrical' },
@@ -334,7 +439,9 @@ const defaultProducts = [
         id: 23,
         name: 'Giro Contact',
         price: '12 900 ₽',
-        image: 'https://images.unsplash.com/photo-1517879484726-e0f835e2f559?w=600&h=400&fit=crop',
+        images: [
+            'https://images.unsplash.com/photo-1517879484726-e0f835e2f559?w=600&h=400&fit=crop'
+        ],
         desc: 'Универсальная маска с увеличенным обзором. Технология VIVID для четкости в любую погоду. Отличная вентиляция и комфортная посадка.',
         specs: [
             { name: 'Линза', value: 'VIVID' },
@@ -348,7 +455,9 @@ const defaultProducts = [
         id: 24,
         name: 'Electric EGX',
         price: '13 900 ₽',
-        image: 'https://images.unsplash.com/photo-1517879484726-e0f835e2f559?w=600&h=400&fit=crop',
+        images: [
+            'https://images.unsplash.com/photo-1517879484726-e0f835e2f559?w=600&h=400&fit=crop'
+        ],
         desc: 'Стильная маска с отличной защитой от солнца. Технология Plano для четкости. Система Quick Change для быстрой смены линз.',
         specs: [
             { name: 'Линза', value: 'Plano' },
@@ -364,7 +473,9 @@ const defaultProducts = [
         id: 25,
         name: 'Dakine Low Rider',
         price: '8 900 ₽',
-        image: 'https://images.unsplash.com/photo-1560490441-7910b4830b6a?w=600&h=400&fit=crop',
+        images: [
+            'https://images.unsplash.com/photo-1560490441-7910b4830b6a?w=600&h=400&fit=crop'
+        ],
         desc: 'Универсальный чехол для сноуборда. Защищает доску при транспортировке. Имеет дополнительные карманы для креплений и инструментов.',
         specs: [
             { name: 'Длина', value: '156 см' },
@@ -378,7 +489,9 @@ const defaultProducts = [
         id: 26,
         name: 'Burton Wheelie Gig',
         price: '12 900 ₽',
-        image: 'https://images.unsplash.com/photo-1560490441-7910b4830b6a?w=600&h=400&fit=crop',
+        images: [
+            'https://images.unsplash.com/photo-1560490441-7910b4830b6a?w=600&h=400&fit=crop'
+        ],
         desc: 'Чехол с колесами для легкой транспортировки. Жесткая конструкция для защиты от ударов. Удобные ручки и дополнительные карманы для снаряжения.',
         specs: [
             { name: 'Длина', value: '160 см' },
@@ -392,7 +505,9 @@ const defaultProducts = [
         id: 27,
         name: 'Jones Snowboard Bag',
         price: '10 900 ₽',
-        image: 'https://images.unsplash.com/photo-1560490441-7910b4830b6a?w=600&h=400&fit=crop',
+        images: [
+            'https://images.unsplash.com/photo-1560490441-7910b4830b6a?w=600&h=400&fit=crop'
+        ],
         desc: 'Легкий чехол для сноуборда. Используется при транспортировке и хранении. Защищает от царапин и пыли. Водоотталкивающая пропитка.',
         specs: [
             { name: 'Длина', value: '165 см' },
@@ -406,7 +521,9 @@ const defaultProducts = [
         id: 28,
         name: 'Ride Protective Sleeve',
         price: '6 900 ₽',
-        image: 'https://images.unsplash.com/photo-1560490441-7910b4830b6a?w=600&h=400&fit=crop',
+        images: [
+            'https://images.unsplash.com/photo-1560490441-7910b4830b6a?w=600&h=400&fit=crop'
+        ],
         desc: 'Простой и удобный чехол-рукав для ежедневного использования. Защищает доску от царапин. Легко складывается и занимает минимум места.',
         specs: [
             { name: 'Длина', value: '158 см' },
@@ -420,7 +537,9 @@ const defaultProducts = [
         id: 29,
         name: 'Salomon Board Bag',
         price: '9 900 ₽',
-        image: 'https://images.unsplash.com/photo-1560490441-7910b4830b6a?w=600&h=400&fit=crop',
+        images: [
+            'https://images.unsplash.com/photo-1560490441-7910b4830b6a?w=600&h=400&fit=crop'
+        ],
         desc: 'Универсальный чехол для доски и креплений. Имеет отдельные отделения для снаряжения. Жесткая конструкция для защиты при транспортировке.',
         specs: [
             { name: 'Длина', value: '162 см' },
@@ -434,7 +553,9 @@ const defaultProducts = [
         id: 30,
         name: 'K2 Travel Cover',
         price: '7 900 ₽',
-        image: 'https://images.unsplash.com/photo-1560490441-7910b4830b6a?w=600&h=400&fit=crop',
+        images: [
+            'https://images.unsplash.com/photo-1560490441-7910b4830b6a?w=600&h=400&fit=crop'
+        ],
         desc: 'Компактный чехол для путешествий. Защищает доску от пыли и царапин. Легкий и прочный материал. Идеален для полетов и поездок.',
         specs: [
             { name: 'Длина', value: '155 см' },
@@ -450,7 +571,9 @@ const defaultProducts = [
         id: 31,
         name: 'Union Force',
         price: '24 500 ₽',
-        image: 'https://images.unsplash.com/photo-1560490441-7910b4830b6a?w=600&h=400&fit=crop',
+        images: [
+            'https://images.unsplash.com/photo-1560490441-7910b4830b6a?w=600&h=400&fit=crop'
+        ],
         desc: 'Надежные крепления для любого стиля катания. Алюминиевая база с высоким качеством обработки. Быстрая регулировка под любой размер ботинка. Отличная передача усилий на кант.',
         specs: [
             { name: 'Вес', value: '1.2 кг' },
@@ -464,7 +587,9 @@ const defaultProducts = [
         id: 32,
         name: 'Burton Genesis',
         price: '26 900 ₽',
-        image: 'https://images.unsplash.com/photo-1560490441-7910b4830b6a?w=600&h=400&fit=crop',
+        images: [
+            'https://images.unsplash.com/photo-1560490441-7910b4830b6a?w=600&h=400&fit=crop'
+        ],
         desc: 'Крепления с высокой поддержкой. Технология AutoCAN для быстрой настройки. Удобный дизайн и отличная амортизация. Идеальны для фрирайда.',
         specs: [
             { name: 'Вес', value: '1.4 кг' },
@@ -478,7 +603,9 @@ const defaultProducts = [
         id: 33,
         name: 'K2 Indy',
         price: '19 900 ₽',
-        image: 'https://images.unsplash.com/photo-1560490441-7910b4830b6a?w=600&h=400&fit=crop',
+        images: [
+            'https://images.unsplash.com/photo-1560490441-7910b4830b6a?w=600&h=400&fit=crop'
+        ],
         desc: 'Бюджетные крепления для парка и трасс. Прочная конструкция и быстрая регулировка. Отличное соотношение цены и качества.',
         specs: [
             { name: 'Вес', value: '1.0 кг' },
@@ -492,7 +619,9 @@ const defaultProducts = [
         id: 34,
         name: 'Ride A-10',
         price: '22 900 ₽',
-        image: 'https://images.unsplash.com/photo-1560490441-7910b4830b6a?w=600&h=400&fit=crop',
+        images: [
+            'https://images.unsplash.com/photo-1560490441-7910b4830b6a?w=600&h=400&fit=crop'
+        ],
         desc: 'Крепления с высокой жесткостью для агрессивного катания. Технология Series 4 для максимальной передачи усилий. Отличная поддержка ноги.',
         specs: [
             { name: 'Вес', value: '1.3 кг' },
@@ -506,7 +635,9 @@ const defaultProducts = [
         id: 35,
         name: 'Salomon Hologram',
         price: '21 900 ₽',
-        image: 'https://images.unsplash.com/photo-1560490441-7910b4830b6a?w=600&h=400&fit=crop',
+        images: [
+            'https://images.unsplash.com/photo-1560490441-7910b4830b6a?w=600&h=400&fit=crop'
+        ],
         desc: 'Инновационные крепления с технологией Shadow Fit. Автоматическая подстройка под стиль катания. Легкие и прочные.',
         specs: [
             { name: 'Вес', value: '1.1 кг' },
@@ -520,7 +651,9 @@ const defaultProducts = [
         id: 36,
         name: 'Drake Fifty',
         price: '18 900 ₽',
-        image: 'https://images.unsplash.com/photo-1560490441-7910b4830b6a?w=600&h=400&fit=crop',
+        images: [
+            'https://images.unsplash.com/photo-1560490441-7910b4830b6a?w=600&h=400&fit=crop'
+        ],
         desc: 'Надежные крепления для фрирайда и парка. Алюминиевая конструкция с быстрой регулировкой. Отличная передача усилий на кант.',
         specs: [
             { name: 'Вес', value: '1.0 кг' },
@@ -536,19 +669,15 @@ const defaultProducts = [
 function loadProducts() {
     let storedProducts = JSON.parse(localStorage.getItem('snowboard_products'));
     
-    // Если в localStorage нет данных или там меньше товаров, чем должно быть
     if (!storedProducts || storedProducts.length < defaultProducts.length) {
-        // Сохраняем все дефолтные товары
         localStorage.setItem('snowboard_products', JSON.stringify(defaultProducts));
         return defaultProducts;
     }
     
-    // Проверяем, все ли товары есть
     const storedIds = storedProducts.map(p => p.id);
     const missingProducts = defaultProducts.filter(p => !storedIds.includes(p.id));
     
     if (missingProducts.length > 0) {
-        // Добавляем недостающие товары
         storedProducts = [...storedProducts, ...missingProducts];
         localStorage.setItem('snowboard_products', JSON.stringify(storedProducts));
     }
@@ -556,7 +685,6 @@ function loadProducts() {
     return storedProducts;
 }
 
-// Загружаем товары
 let products = loadProducts();
 
 // === РЕНДЕР КАТАЛОГА ===
@@ -571,7 +699,7 @@ function renderCatalog(category) {
 
     container.innerHTML = filtered.map(p => `
         <div class="product-card" data-id="${p.id}" onclick="openModal(${p.id})">
-            <img src="${p.image}" alt="${p.name}" loading="lazy" onerror="this.src='https://placehold.co/600x400/ffffff/cccccc?text=No+Image'" />
+            <img src="${p.images && p.images.length > 0 ? p.images[0] : 'https://placehold.co/600x400/ffffff/cccccc?text=No+Image'}" alt="${p.name}" loading="lazy" onerror="this.src='https://placehold.co/600x400/ffffff/cccccc?text=No+Image'" />
             <h3>${p.name}</h3>
             <div class="price">${p.price}</div>
             <div class="desc-preview">${p.desc}</div>
@@ -608,16 +736,30 @@ function renderNav() {
     });
 }
 
-// === МОДАЛЬНОЕ ОКНО ===
+// === МОДАЛЬНОЕ ОКНО С КАРУСЕЛЬЮ ===
 function openModal(productId) {
     const product = products.find(p => p.id === productId);
     if (!product) return;
 
     const modal = document.getElementById('product-modal');
     const body = document.getElementById('modal-body');
+    
+    currentImageIndex = 0;
+    
+    const hasMultipleImages = product.images && product.images.length > 1;
+    const images = product.images || ['https://placehold.co/600x400/ffffff/cccccc?text=No+Image'];
 
     body.innerHTML = `
-        <img src="${product.image}" alt="${product.name}" onerror="this.src='https://placehold.co/600x400/ffffff/cccccc?text=No+Image'" />
+        <div class="modal-image-container">
+            <img id="modal-main-image" src="${images[0]}" alt="${product.name}" onerror="this.src='https://placehold.co/600x400/ffffff/cccccc?text=No+Image'" />
+            ${hasMultipleImages ? `
+                <button class="carousel-btn carousel-left" onclick="changeImage(${product.id}, -1)">‹</button>
+                <button class="carousel-btn carousel-right" onclick="changeImage(${product.id}, 1)">›</button>
+                <div class="carousel-dots">
+                    ${images.map((_, idx) => `<span class="carousel-dot ${idx === 0 ? 'active' : ''}" onclick="goToImage(${product.id}, ${idx})"></span>`).join('')}
+                </div>
+            ` : ''}
+        </div>
         <h2>${product.name}</h2>
         <div class="modal-price">${product.price}</div>
         <div class="modal-desc">${product.desc}</div>
@@ -628,11 +770,51 @@ function openModal(productId) {
 
     modal.style.display = 'flex';
     document.body.style.overflow = 'hidden';
+    
+    // Сохраняем ID товара для карусели
+    modal.dataset.productId = productId;
 }
 
 function closeModal() {
     document.getElementById('product-modal').style.display = 'none';
     document.body.style.overflow = 'hidden';
+}
+
+function changeImage(productId, direction) {
+    const product = products.find(p => p.id === productId);
+    if (!product || !product.images || product.images.length <= 1) return;
+    
+    const images = product.images;
+    currentImageIndex = (currentImageIndex + direction + images.length) % images.length;
+    
+    const mainImg = document.getElementById('modal-main-image');
+    if (mainImg) {
+        mainImg.src = images[currentImageIndex];
+        mainImg.alt = product.name;
+    }
+    
+    // Обновляем точки
+    const dots = document.querySelectorAll('.carousel-dot');
+    dots.forEach((dot, idx) => {
+        dot.classList.toggle('active', idx === currentImageIndex);
+    });
+}
+
+function goToImage(productId, index) {
+    const product = products.find(p => p.id === productId);
+    if (!product || !product.images || index >= product.images.length) return;
+    
+    currentImageIndex = index;
+    const mainImg = document.getElementById('modal-main-image');
+    if (mainImg) {
+        mainImg.src = product.images[index];
+        mainImg.alt = product.name;
+    }
+    
+    const dots = document.querySelectorAll('.carousel-dot');
+    dots.forEach((dot, idx) => {
+        dot.classList.toggle('active', idx === index);
+    });
 }
 
 // === ЗАКРЫТИЕ МОДАЛКИ ===
@@ -692,7 +874,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const app = document.getElementById('app');
     const closeBtn = document.getElementById('close-splash');
 
-    // Проверяем, нужно ли скрыть сплеш (1 декабря)
     if (shouldHideSplash()) {
         if (splash) splash.style.display = 'none';
         if (app) {
@@ -706,11 +887,9 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
     }
 
-    // Запускаем таймер обратного отсчета
     updateCountdown();
     const countdownInterval = setInterval(updateCountdown, 1000);
 
-    // Автоматическое закрытие через 5 секунд
     let splashTimer = setTimeout(() => {
         if (splash) {
             splash.style.opacity = '0';
@@ -729,7 +908,6 @@ document.addEventListener('DOMContentLoaded', function() {
         clearInterval(countdownInterval);
     }, 5000);
 
-    // Закрытие по кнопке
     if (closeBtn) {
         closeBtn.addEventListener('click', function() {
             clearTimeout(splashTimer);
