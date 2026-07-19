@@ -1,134 +1,90 @@
-// === УНИКАЛЬНЫЙ КЛЮЧ (СОВПАДАЕТ С ОСНОВНЫМ) ===
-const STORAGE_KEY = 'snowboard_shop_products_v1';
+const ADMIN_PASSWORD = 'admin123'; // Смените на свой пароль
 
-document.addEventListener('DOMContentLoaded', () => {
-    const form = document.getElementById('product-form');
+function loginAdmin() {
+    const pass = document.getElementById('admin-password').value;
+    if (pass === ADMIN_PASSWORD) {
+        document.getElementById('admin-login').style.display = 'none';
+        document.getElementById('admin-panel').style.display = 'block';
+        renderAdminList();
+    } else {
+        alert('Неверный пароль');
+    }
+}
+
+function getProducts() {
+    return JSON.parse(localStorage.getItem('snowboard_products')) || [];
+}
+
+function saveProducts(data) {
+    localStorage.setItem('snowboard_products', JSON.stringify(data));
+    // Обновляем глобальную переменную в родительском окне (если открыто)
+    if (window.opener) {
+        window.opener.products = data;
+    }
+    renderAdminList();
+}
+
+function renderAdminList() {
     const list = document.getElementById('product-list');
-    let editIndex = null;
-
-    function getProducts() {
-        try {
-            const stored = localStorage.getItem(STORAGE_KEY);
-            if (stored) {
-                const parsed = JSON.parse(stored);
-                return Array.isArray(parsed) ? parsed : [];
-            }
-        } catch (e) {}
-        return [];
+    const products = getProducts();
+    if (products.length === 0) {
+        list.innerHTML = '<p style="color:#8e8e93;">Нет товаров</p>';
+        return;
     }
-
-    function saveProducts(products) {
-        try {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
-        } catch (e) {
-            console.warn('Не удалось сохранить');
-        }
-    }
-
-    function loadProductsList() {
-        const products = getProducts();
-        if (!products.length) {
-            list.innerHTML = `<div style="text-align:center; opacity:0.5; padding:30px 0;">Нет товаров. Добавьте первый!</div>`;
-            return;
-        }
-
-        list.innerHTML = products.map((p, index) => `
-            <div class="admin-item">
-                <div class="item-info">
-                    <strong>${escapeHtml(p.image || '🏂')} ${escapeHtml(p.name || 'Без названия')}</strong><br>
-                    <span style="opacity:0.6; font-size:14px;">${escapeHtml(p.price || '0 ₽')} • ${escapeHtml(p.category || '')}</span>
-                </div>
-                <div class="item-actions">
-                    <button class="edit-btn" data-index="${index}">✎ Редакт</button>
-                    <button class="delete-btn" data-index="${index}">✕ Удалить</button>
-                </div>
+    list.innerHTML = products.map((p, i) => `
+        <div class="item">
+            <strong>${p.name}</strong> — ${p.price}
+            <br><small>${p.category}</small>
+            <div>
+                <button class="edit-btn" onclick="editProduct(${i})">✏️</button>
+                <button onclick="deleteProduct(${i})">🗑️</button>
             </div>
-        `).join('');
+        </div>
+    `).join('');
+}
 
-        // Удаление
-        document.querySelectorAll('.delete-btn').forEach(btn => {
-            btn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                const index = parseInt(this.dataset.index);
-                if (confirm('Удалить товар?')) {
-                    const prods = getProducts();
-                    prods.splice(index, 1);
-                    saveProducts(prods);
-                    loadProductsList();
-                    form.reset();
-                    document.getElementById('product-id').value = '';
-                    editIndex = null;
-                }
-            });
-        });
+function addProduct() {
+    const name = document.getElementById('product-name').value.trim();
+    const price = document.getElementById('product-price').value.trim();
+    const image = document.getElementById('product-image').value.trim();
+    const desc = document.getElementById('product-desc').value.trim();
+    const specsRaw = document.getElementById('product-specs').value.trim();
+    const category = document.getElementById('product-category').value;
 
-        // Редактирование
-        document.querySelectorAll('.edit-btn').forEach(btn => {
-            btn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                const index = parseInt(this.dataset.index);
-                const prods = getProducts();
-                const p = prods[index];
-                if (!p) return;
-                
-                document.getElementById('product-id').value = index;
-                document.getElementById('product-name').value = p.name || '';
-                document.getElementById('product-price').value = p.price || '';
-                document.getElementById('product-image').value = p.image || '';
-                document.getElementById('product-category').value = p.category || 'boards';
-                document.getElementById('product-desc').value = p.desc || '';
-                document.getElementById('product-specs').value = p.specs || '';
-                editIndex = index;
-                
-                // Скролл к форме
-                form.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            });
-        });
+    if (!name || !price || !image || !desc) {
+        alert('Заполните все поля');
+        return;
     }
 
-    function escapeHtml(text) {
-        if (!text) return '';
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-    }
+    const specs = specsRaw ? specsRaw.split(',').map(s => s.trim()) : [];
+    const products = getProducts();
+    const newId = products.length ? Math.max(...products.map(p => p.id)) + 1 : 1;
+    products.push({ id: newId, name, price, image, desc, specs, category });
+    saveProducts(products);
+    document.getElementById('product-name').value = '';
+    document.getElementById('product-price').value = '';
+    document.getElementById('product-image').value = '';
+    document.getElementById('product-desc').value = '';
+    document.getElementById('product-specs').value = '';
+    renderAdminList();
+}
 
-    // === ОБРАБОТКА ФОРМЫ ===
-    form.addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        const name = document.getElementById('product-name').value.trim();
-        const price = document.getElementById('product-price').value.trim();
-        const image = document.getElementById('product-image').value.trim() || '🏂';
-        const category = document.getElementById('product-category').value;
-        const desc = document.getElementById('product-desc').value.trim();
-        const specs = document.getElementById('product-specs').value.trim();
-        const id = document.getElementById('product-id').value;
+function deleteProduct(index) {
+    if (!confirm('Удалить товар?')) return;
+    const products = getProducts();
+    products.splice(index, 1);
+    saveProducts(products);
+}
 
-        if (!name || !price) {
-            alert('Заполните название и цену!');
-            return;
-        }
-
-        let prods = getProducts();
-        const newProduct = { name, price, image, category, desc, specs };
-
-        if (id !== '' && id !== null) {
-            const index = parseInt(id);
-            if (index >= 0 && index < prods.length) {
-                prods[index] = newProduct;
-            }
-        } else {
-            prods.push(newProduct);
-        }
-
-        saveProducts(prods);
-        loadProductsList();
-        form.reset();
-        document.getElementById('product-id').value = '';
-        editIndex = null;
-    });
-
-    // === ИНИЦИАЛИЗАЦИЯ ===
-    loadProductsList();
-});
+function editProduct(index) {
+    const products = getProducts();
+    const p = products[index];
+    document.getElementById('product-name').value = p.name;
+    document.getElementById('product-price').value = p.price;
+    document.getElementById('product-image').value = p.image;
+    document.getElementById('product-desc').value = p.desc;
+    document.getElementById('product-specs').value = p.specs.join(', ');
+    document.getElementById('product-category').value = p.category;
+    // Удаляем старый и добавляем заново (упрощенно)
+    deleteProduct(index);
+}
