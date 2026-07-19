@@ -320,7 +320,7 @@ header h1 {
 }
 
 .modal-content {
-    background: rgba(255, 255, 255, 0.92);
+    background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     padding: 20px;
@@ -384,18 +384,31 @@ header h1 {
     margin-bottom: 10px;
 }
 
-#modal-body .modal-specs {
+/* === ХАРАКТЕРИСТИКИ В МОДАЛКЕ === */
+.modal-specs {
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
     gap: 6px;
+    margin-top: 8px;
 }
 
-#modal-body .modal-specs span {
-    background: rgba(240, 240, 245, 0.8);
-    padding: 4px 14px;
-    border-radius: 16px;
-    font-size: clamp(12px, 2.2vw, 14px);
+.spec-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 12px;
+    background: rgba(240, 240, 245, 0.6);
+    border-radius: 10px;
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+.spec-name {
+    font-weight: 500;
     color: #1c1c1e;
+}
+
+.spec-value {
+    color: #007aff;
+    font-weight: 500;
 }
 
 /* === АДАПТИВ === */
