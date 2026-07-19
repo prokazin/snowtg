@@ -32,13 +32,18 @@
             <!-- Карточки товаров рендерятся через JS -->
         </main>
 
-        <!-- Нижняя навигация (только иконки) -->
+        <!-- Нижняя навигация с иконками PNG -->
         <nav id="bottom-nav">
-            <button class="nav-btn active" data-tab="boards">🏂</button>
-            <button class="nav-btn" data-tab="bindings">🔗</button>
-            <button class="nav-btn" data-tab="boots">👢</button>
-            <button class="nav-btn" data-tab="helmets">⛑️</button>
+            <!-- Иконки загружаются из JS -->
         </nav>
+    </div>
+
+    <!-- Модальное окно для полного описания -->
+    <div id="product-modal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" id="modal-close">&times;</span>
+            <div id="modal-body"></div>
+        </div>
     </div>
 
     <script src="script.js"></script>
