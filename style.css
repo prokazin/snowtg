@@ -12,8 +12,8 @@ body {
     justify-content: center;
     align-items: flex-start;
     padding: 0 0 80px 0;
-    /* Фоновое изображение */
-    background-image: url('bk.jpeg');
+    /* Фоновое изображение - bk.jpg */
+    background-image: url('bk.jpg');
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
