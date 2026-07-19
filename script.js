@@ -48,13 +48,13 @@ let categories = JSON.parse(localStorage.getItem('snowboard_categories')) || [
 
 let currentTab = categories.length > 0 ? categories[0].name : '';
 
-// === Рендер каталога ===
+// === РЕНДЕР КАТАЛОГА ===
 function renderCatalog(category) {
     const container = document.getElementById('catalog');
     const filtered = products.filter(p => p.category === category);
 
     if (filtered.length === 0) {
-        container.innerHTML = `<div style="text-align:center; padding:40px; color:#8e8e93;">Нет товаров в этой категории</div>`;
+        container.innerHTML = `<div style="text-align:center; padding:30px 10px; color:#8e8e93; font-size:clamp(14px,2.5vw,16px);">Нет товаров в этой категории</div>`;
         return;
     }
 
@@ -70,11 +70,11 @@ function renderCatalog(category) {
     `).join('');
 }
 
-// === Навигация ===
+// === РЕНДЕР НАВИГАЦИИ ===
 function renderNav() {
     const nav = document.getElementById('bottom-nav');
     if (!categories || categories.length === 0) {
-        nav.innerHTML = '<span style="color:#8e8e93; padding:8px;">Нет категорий</span>';
+        nav.innerHTML = '<span style="color:#8e8e93; padding:8px; font-size:14px;">Нет категорий</span>';
         return;
     }
 
@@ -85,7 +85,8 @@ function renderNav() {
     `).join('');
 
     document.querySelectorAll('.nav-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
             this.classList.add('active');
             currentTab = this.dataset.tab;
@@ -94,7 +95,7 @@ function renderNav() {
     });
 }
 
-// === Модальное окно ===
+// === МОДАЛЬНОЕ ОКНО ===
 function openModal(productId) {
     const product = products.find(p => p.id === productId);
     if (!product) return;
@@ -110,42 +111,59 @@ function openModal(productId) {
         <div class="modal-specs">${product.specs.map(s => `<span>${s}</span>`).join('')}</div>
     `;
 
-    modal.style.display = 'block';
+    modal.style.display = 'flex';
     document.body.style.overflow = 'hidden';
 }
 
 function closeModal() {
     document.getElementById('product-modal').style.display = 'none';
-    document.body.style.overflow = 'auto';
+    document.body.style.overflow = 'hidden';
 }
 
-// === Закрытие модалки ===
-document.getElementById('modal-close').addEventListener('click', closeModal);
-document.getElementById('product-modal').addEventListener('click', function(e) {
-    if (e.target === this) closeModal();
+// === ЗАКРЫТИЕ МОДАЛКИ ПО КЛИКУ ВНЕ ===
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('product-modal');
+    const closeBtn = document.getElementById('modal-close');
+    
+    if (closeBtn) {
+        closeBtn.addEventListener('click', closeModal);
+    }
+    
+    if (modal) {
+        modal.addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+    }
 });
 
-// === Загрузочный экран ===
+// === ЗАГРУЗОЧНЫЙ ЭКРАН ===
 function updateCountdown() {
     const now = new Date();
     const target = new Date(now.getFullYear(), 11, 1);
     if (now > target) target.setFullYear(target.getFullYear() + 1);
     const diff = Math.max(0, target - now);
 
-    const days = Math.floor(diff / (1000*60*60*24));
-    const hours = Math.floor((diff / (1000*60*60)) % 24);
-    const minutes = Math.floor((diff / (1000*60)) % 60);
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+    const minutes = Math.floor((diff / (1000 * 60)) % 60);
     const seconds = Math.floor((diff / 1000) % 60);
 
-    document.getElementById('days').textContent = String(days).padStart(2, '0');
-    document.getElementById('hours').textContent = String(hours).padStart(2, '0');
-    document.getElementById('minutes').textContent = String(minutes).padStart(2, '0');
-    document.getElementById('seconds').textContent = String(seconds).padStart(2, '0');
+    const daysEl = document.getElementById('days');
+    const hoursEl = document.getElementById('hours');
+    const minutesEl = document.getElementById('minutes');
+    const secondsEl = document.getElementById('seconds');
+    
+    if (daysEl) daysEl.textContent = String(days).padStart(2, '0');
+    if (hoursEl) hoursEl.textContent = String(hours).padStart(2, '0');
+    if (minutesEl) minutesEl.textContent = String(minutes).padStart(2, '0');
+    if (secondsEl) secondsEl.textContent = String(seconds).padStart(2, '0');
 
     const msg = document.getElementById('splash-message');
-    if (days < 30) msg.textContent = '❄️ Сезон уже близко!';
-    else if (days < 60) msg.textContent = '⛷️ Готовь снаряжение!';
-    else msg.textContent = '🏔️ До первого снега осталось...';
+    if (msg) {
+        if (days < 30) msg.textContent = '❄️ Сезон уже близко!';
+        else if (days < 60) msg.textContent = '⛷️ Готовь снаряжение!';
+        else msg.textContent = '🏔️ До первого снега осталось...';
+    }
 }
 
 function shouldHideSplash() {
@@ -153,41 +171,99 @@ function shouldHideSplash() {
     return now.getMonth() === 11 && now.getDate() === 1;
 }
 
-// === Инициализация ===
-window.addEventListener('DOMContentLoaded', function() {
+// === ИНИЦИАЛИЗАЦИЯ ===
+document.addEventListener('DOMContentLoaded', function() {
     const splash = document.getElementById('splash-screen');
     const app = document.getElementById('app');
+    const closeBtn = document.getElementById('close-splash');
 
+    // Проверяем, нужно ли скрыть сплеш (1 декабря)
     if (shouldHideSplash()) {
-        splash.style.display = 'none';
-        app.style.display = 'block';
-        renderNav();
-        if (currentTab) renderCatalog(currentTab);
+        if (splash) splash.style.display = 'none';
+        if (app) {
+            app.style.display = 'flex';
+            setTimeout(() => {
+                app.classList.add('visible');
+            }, 50);
+            renderNav();
+            if (currentTab) renderCatalog(currentTab);
+        }
         return;
     }
 
+    // Запускаем таймер обратного отсчета
     updateCountdown();
-    setInterval(updateCountdown, 1000);
+    const countdownInterval = setInterval(updateCountdown, 1000);
 
-    const closeBtn = document.getElementById('close-splash');
+    // Автоматическое закрытие через 5 секунд
     let splashTimer = setTimeout(() => {
-        splash.style.opacity = '0';
-        setTimeout(() => {
-            splash.style.display = 'none';
-            app.style.display = 'block';
-            renderNav();
-            if (currentTab) renderCatalog(currentTab);
-        }, 400);
+        if (splash) {
+            splash.style.opacity = '0';
+            setTimeout(() => {
+                splash.style.display = 'none';
+                if (app) {
+                    app.style.display = 'flex';
+                    setTimeout(() => {
+                        app.classList.add('visible');
+                    }, 50);
+                    renderNav();
+                    if (currentTab) renderCatalog(currentTab);
+                }
+            }, 400);
+        }
+        clearInterval(countdownInterval);
     }, 5000);
 
-    closeBtn.addEventListener('click', function() {
-        clearTimeout(splashTimer);
-        splash.style.opacity = '0';
-        setTimeout(() => {
-            splash.style.display = 'none';
-            app.style.display = 'block';
-            renderNav();
-            if (currentTab) renderCatalog(currentTab);
-        }, 400);
+    // Закрытие по кнопке
+    if (closeBtn) {
+        closeBtn.addEventListener('click', function() {
+            clearTimeout(splashTimer);
+            clearInterval(countdownInterval);
+            if (splash) {
+                splash.style.opacity = '0';
+                setTimeout(() => {
+                    splash.style.display = 'none';
+                    if (app) {
+                        app.style.display = 'flex';
+                        setTimeout(() => {
+                            app.classList.add('visible');
+                        }, 50);
+                        renderNav();
+                        if (currentTab) renderCatalog(currentTab);
+                    }
+                }, 400);
+            }
+        });
+    }
+
+    // Обработка ошибок загрузки иконок
+    document.querySelectorAll('.nav-btn img').forEach(img => {
+        img.addEventListener('error', function() {
+            this.src = 'https://placehold.co/32/cccccc/aaaaaa?text=?';
+        });
     });
 });
+
+// === ОБНОВЛЕНИЕ ДАННЫХ ИЗ LOCALSTORAGE ===
+// Функция для обновления каталога после изменений в админке
+window.refreshCatalog = function() {
+    products = JSON.parse(localStorage.getItem('snowboard_products')) || products;
+    categories = JSON.parse(localStorage.getItem('snowboard_categories')) || categories;
+    renderNav();
+    if (currentTab) renderCatalog(currentTab);
+};
+
+// === ЗАЩИТА ОТ СЛУЧАЙНОГО ЗУМА НА iOS ===
+document.addEventListener('gesturestart', function(e) {
+    e.preventDefault();
+});
+
+// === ПРЕДОТВРАЩЕНИЕ ДВОЙНОГО КЛИКА ДЛЯ ЗУМА ===
+let lastTouchEnd = 0;
+document.addEventListener('touchend', function(e) {
+    const now = Date.now();
+    if (now - lastTouchEnd <= 300) {
+        e.preventDefault();
+    }
+    lastTouchEnd = now;
+}, { passive: false });
