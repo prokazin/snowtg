@@ -1,164 +1,139 @@
-// === УНИКАЛЬНЫЙ КЛЮЧ ДЛЯ LOCALSTORAGE ===
-const STORAGE_KEY = 'snowboard_shop_products_v1';
-
-// === УПРАВЛЕНИЕ ТОВАРАМИ ===
-let products = [];
-let currentCategory = 'boards';
-
-// === ЗАГРУЗКА ДАННЫХ ===
-function loadProducts() {
-    try {
-        const stored = localStorage.getItem(STORAGE_KEY);
-        if (stored) {
-            products = JSON.parse(stored);
-            if (!Array.isArray(products)) products = [];
-        } else {
-            seedDemoProducts();
-        }
-    } catch (e) {
-        products = [];
-        seedDemoProducts();
+// === ДАННЫЕ (можно загружать из LocalStorage или API) ===
+let products = JSON.parse(localStorage.getItem('snowboard_products')) || [
+    {
+        id: 1,
+        name: 'Burton Custom 2025',
+        price: '54 990 ₽',
+        image: 'https://placehold.co/600x400/1a3a4a/white?text=Burton+Custom',
+        desc: 'Легендарная модель для фрирайда и парка.',
+        specs: ['Длина: 156 см', 'Жесткость: 7/10', 'Camber'],
+        category: 'boards'
+    },
+    {
+        id: 2,
+        name: 'Union Force',
+        price: '24 500 ₽',
+        image: 'https://placehold.co/600x400/2a4a5a/white?text=Union+Force',
+        desc: 'Надежные крепления для любого стиля катания.',
+        specs: ['Вес: 1.2 кг', 'Материал: Алюминий'],
+        category: 'bindings'
+    },
+    {
+        id: 3,
+        name: 'Adidas Tactical ADV',
+        price: '19 990 ₽',
+        image: 'https://placehold.co/600x400/3a5a6a/white?text=Adidas+ADV',
+        desc: 'Ботинки с системой быстрой шнуровки.',
+        specs: ['Размер: 42-46', 'Жесткость: 6/10'],
+        category: 'boots'
+    },
+    {
+        id: 4,
+        name: 'Oakley MOD1',
+        price: '14 200 ₽',
+        image: 'https://placehold.co/600x400/4a6a7a/white?text=Oakley+MOD1',
+        desc: 'Легкий шлем с вентиляцией.',
+        specs: ['Вес: 380 г', 'Сертификат: CE'],
+        category: 'helmets'
     }
-}
+];
 
-function saveProducts() {
-    try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
-    } catch (e) {
-        console.warn('Не удалось сохранить данные');
-    }
-}
+let currentTab = 'boards';
 
-// === ДЕМО-ТОВАРЫ ===
-function seedDemoProducts() {
-    products = [
-        { name: 'Burton Custom', price: '59 990 ₽', image: '🏂', category: 'boards', desc: 'Классический кембер для фрирайда', specs: 'Длина: 156см, Жесткость: 7/10' },
-        { name: 'Union Force', price: '24 990 ₽', image: '⛓️', category: 'bindings', desc: 'Надежные крепления для парка', specs: 'Вес: 1.2кг, Материал: алюминий' },
-        { name: 'Vans Hi-Standard', price: '18 490 ₽', image: '🥾', category: 'boots', desc: 'Комфортные ботинки с шнуровкой', specs: 'Размер: 43, Жесткость: 5/10' },
-        { name: 'Oakley Mod 1', price: '14 990 ₽', image: '⛑️', category: 'helmets', desc: 'Легкий шлем с вентиляцией', specs: 'Вес: 400г, Сертификат: CE' },
-        { name: 'Smith Squad', price: '12 490 ₽', image: '🥽', category: 'goggles', desc: 'Панорамные очки с защитой UV', specs: 'Линза: хром, Совместимость: да' }
-    ];
-    saveProducts();
-}
+// === Рендер каталога ===
+function renderCatalog(category) {
+    const container = document.getElementById('catalog');
+    const filtered = products.filter(p => p.category === category);
 
-// === ТАЙМЕР ДО ЗИМЫ ===
-function updateCountdown() {
-    const now = new Date();
-    let winter = new Date(now.getFullYear(), 11, 1);
-    if (now > winter) winter.setFullYear(winter.getFullYear() + 1);
-    
-    const diff = winter - now;
-    if (diff <= 0) {
-        document.getElementById('days').textContent = '00';
-        document.getElementById('hours').textContent = '00';
-        document.getElementById('minutes').textContent = '00';
-        document.getElementById('seconds').textContent = '00';
+    if (filtered.length === 0) {
+        container.innerHTML = `<div style="text-align:center; padding:40px; color:#8e8e93;">Нет товаров в этой категории</div>`;
         return;
     }
 
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
-    const minutes = Math.floor((diff / (1000 * 60)) % 60);
+    container.innerHTML = filtered.map(p => `
+        <div class="product-card">
+            <img src="${p.image}" alt="${p.name}" loading="lazy" />
+            <h3>${p.name}</h3>
+            <div class="price">${p.price}</div>
+            <div class="desc">${p.desc}</div>
+            <div class="specs">${p.specs.map(s => `<span>${s}</span>`).join('')}</div>
+        </div>
+    `).join('');
+}
+
+// === Навигация ===
+document.querySelectorAll('.nav-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        currentTab = this.dataset.tab;
+        renderCatalog(currentTab);
+    });
+});
+
+// === Загрузочный экран ===
+function updateCountdown() {
+    const now = new Date();
+    const target = new Date(now.getFullYear(), 11, 1); // 1 декабря
+    if (now > target) target.setFullYear(target.getFullYear() + 1);
+    const diff = Math.max(0, target - now);
+
+    const days = Math.floor(diff / (1000*60*60*24));
+    const hours = Math.floor((diff / (1000*60*60)) % 24);
+    const minutes = Math.floor((diff / (1000*60)) % 60);
     const seconds = Math.floor((diff / 1000) % 60);
 
     document.getElementById('days').textContent = String(days).padStart(2, '0');
     document.getElementById('hours').textContent = String(hours).padStart(2, '0');
     document.getElementById('minutes').textContent = String(minutes).padStart(2, '0');
     document.getElementById('seconds').textContent = String(seconds).padStart(2, '0');
+
+    // Меняем подпись
+    const msg = document.getElementById('splash-message');
+    if (days < 30) msg.textContent = '❄️ Сезон уже близко!';
+    else if (days < 60) msg.textContent = '⛷️ Готовь снаряжение!';
+    else msg.textContent = '🏔️ До первого снега осталось...';
 }
 
-// === ОТРИСОВКА ТОВАРОВ ===
-function renderProducts(category) {
-    const area = document.getElementById('content-area');
-    const filtered = products.filter(p => p && p.category === category);
-    
-    if (!filtered.length) {
-        area.innerHTML = `<div style="grid-column:1/-1; text-align:center; opacity:0.5; padding:40px 0; font-size:clamp(14px, 4vw, 16px);">Нет товаров в этой категории</div>`;
-        return;
-    }
-
-    area.innerHTML = filtered.map(p => `
-        <div class="product-card">
-            <div class="product-image">${p.image || '🏂'}</div>
-            <div class="product-name">${escapeHtml(p.name || 'Без названия')}</div>
-            <div class="product-price">${escapeHtml(p.price || '0 ₽')}</div>
-            <div class="product-desc">${escapeHtml(p.desc || '')}</div>
-            <div class="product-specs">${escapeHtml(p.specs || '')}</div>
-        </div>
-    `).join('');
+// === Проверка: 1 декабря — скрываем сплеш ===
+function shouldHideSplash() {
+    const now = new Date();
+    return now.getMonth() === 11 && now.getDate() === 1;
 }
 
-// === БЕЗОПАСНОСТЬ (защита от XSS) ===
-function escapeHtml(text) {
-    if (!text) return '';
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
-
-// === НАВИГАЦИЯ ===
-function setupNavigation() {
-    const buttons = document.querySelectorAll('.nav-btn');
-    buttons.forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            buttons.forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            currentCategory = this.dataset.category;
-            renderProducts(currentCategory);
-        });
-    });
-}
-
-// === ЗАГРУЗОЧНЫЙ ЭКРАН ===
-function initSplash() {
+// === Инициализация ===
+window.addEventListener('DOMContentLoaded', function() {
     const splash = document.getElementById('splash-screen');
     const app = document.getElementById('app');
-    const closeBtn = document.getElementById('close-splash');
 
-    const now = new Date();
-    const dec1 = new Date(now.getFullYear(), 11, 1);
-    
-    if (now >= dec1) {
+    if (shouldHideSplash()) {
         splash.style.display = 'none';
-        app.style.display = 'flex';
+        app.style.display = 'block';
+        renderCatalog(currentTab);
         return;
     }
 
-    let splashHidden = false;
-    
-    function hideSplash() {
-        if (splashHidden) return;
-        splashHidden = true;
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
+
+    // Закрытие через 5 сек или по кнопке
+    const closeBtn = document.getElementById('close-splash');
+    let splashTimer = setTimeout(() => {
         splash.style.opacity = '0';
         setTimeout(() => {
             splash.style.display = 'none';
-            app.style.display = 'flex';
-        }, 800);
-    }
+            app.style.display = 'block';
+            renderCatalog(currentTab);
+        }, 400);
+    }, 5000);
 
-    // Автоматическое скрытие через 5 секунд
-    setTimeout(hideSplash, 5000);
-
-    // Ручное закрытие
-    closeBtn.addEventListener('click', hideSplash);
-    
-    // Закрытие по свайпу вверх (для мобильных)
-    let touchStartY = 0;
-    splash.addEventListener('touchstart', (e) => {
-        touchStartY = e.touches[0].clientY;
+    closeBtn.addEventListener('click', function() {
+        clearTimeout(splashTimer);
+        splash.style.opacity = '0';
+        setTimeout(() => {
+            splash.style.display = 'none';
+            app.style.display = 'block';
+            renderCatalog(currentTab);
+        }, 400);
     });
-    splash.addEventListener('touchmove', (e) => {
-        const deltaY = e.touches[0].clientY - touchStartY;
-        if (deltaY < -50) hideSplash();
-    });
-}
-
-// === ИНИЦИАЛИЗАЦИЯ ===
-document.addEventListener('DOMContentLoaded', () => {
-    loadProducts();
-    initSplash();
-    renderProducts(currentCategory);
-    setupNavigation();
-    updateCountdown();
-    setInterval(updateCountdown, 1000);
 });
