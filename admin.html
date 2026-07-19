@@ -6,40 +6,71 @@
     <title>Админ-панель</title>
     <link rel="stylesheet" href="style.css" />
     <style>
-        .admin-container { max-width: 600px; margin: 20px auto; padding: 20px; background: #f8f9fc; border-radius: 24px; }
+        .admin-container { max-width: 600px; margin: 20px auto; padding: 20px; background: rgba(255,255,255,0.95); border-radius: 24px; backdrop-filter: blur(10px); }
         .admin-container h2 { color: #1c1c1e; }
         .admin-container input, .admin-container textarea, .admin-container select {
             width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #d1d1d6; border-radius: 12px;
             font-size: 16px; background: white;
         }
-        .admin-container button { background: #007aff; color: white; border: none; padding: 14px; border-radius: 16px; font-size: 18px; width: 100%; margin-top: 12px; }
+        .admin-container input[type="file"] { padding: 8px; border: 1px dashed #d1d1d6; }
+        .admin-container button { background: #007aff; color: white; border: none; padding: 14px; border-radius: 16px; font-size: 18px; width: 100%; margin-top: 12px; cursor: pointer; }
+        .admin-container button:active { opacity: 0.7; }
         .admin-container .item { background: white; padding: 14px; border-radius: 16px; margin: 10px 0; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
         .admin-container .item button { width: auto; padding: 6px 16px; background: #ff3b30; margin: 4px; display: inline-block; }
         .admin-container .item .edit-btn { background: #ff9500; }
+        .admin-container .category-item { background: #f0f0f5; padding: 12px 16px; border-radius: 12px; margin: 6px 0; display: flex; align-items: center; gap: 12px; }
+        .admin-container .category-item img { width: 32px; height: 32px; object-fit: contain; background: white; border-radius: 8px; padding: 4px; }
+        .section-title { margin-top: 24px; font-size: 18px; font-weight: 600; color: #1c1c1e; }
+        .file-upload-row { display: flex; gap: 8px; align-items: center; }
+        .file-upload-row input[type="file"] { flex: 1; }
+        .file-upload-row button { width: auto; padding: 12px 20px; margin: 0; }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
     <div class="admin-container">
         <h2>🛠️ Админ-панель</h2>
-        <div id="admin-login" style="display: block;">
+        
+        <div id="admin-login">
             <input type="password" id="admin-password" placeholder="Введите пароль" />
             <button onclick="loginAdmin()">Войти</button>
         </div>
+        
         <div id="admin-panel" style="display: none;">
-            <h3>Добавить товар</h3>
+            
+            <!-- Управление категориями -->
+            <div class="section-title">📁 Категории</div>
+            <div id="category-list"></div>
+            <div style="display: flex; gap: 8px; margin: 8px 0;">
+                <input type="text" id="category-name" placeholder="Название категории" style="flex: 1;" />
+                <input type="text" id="category-icon-url" placeholder="URL иконки" style="flex: 1;" />
+            </div>
+            <div class="file-upload-row">
+                <input type="file" id="category-icon-file" accept="image/png,image/jpeg,image/webp" />
+                <button onclick="uploadCategoryIcon()">Загрузить</button>
+            </div>
+            <button onclick="addCategory()">➕ Добавить категорию</button>
+            
+            <hr style="margin: 20px 0; border: none; border-top: 1px solid #e5e5ea;" />
+            
+            <!-- Добавление товара -->
+            <div class="section-title">📦 Добавить товар</div>
             <input type="text" id="product-name" placeholder="Название" />
             <input type="text" id="product-price" placeholder="Цена (например, 45000 ₽)" />
-            <input type="text" id="product-image" placeholder="URL картинки" />
-            <textarea id="product-desc" placeholder="Описание"></textarea>
+            <div class="file-upload-row">
+                <input type="text" id="product-image-url" placeholder="URL картинки" style="flex: 1;" />
+                <input type="file" id="product-image-file" accept="image/*" style="flex: 1;" />
+                <button onclick="uploadProductImage()">Загрузить</button>
+            </div>
+            <textarea id="product-desc" placeholder="Полное описание" rows="3"></textarea>
             <input type="text" id="product-specs" placeholder="Характеристики (через запятую)" />
-            <select id="product-category">
-                <option value="boards">Сноуборды</option>
-                <option value="bindings">Крепления</option>
-                <option value="boots">Ботинки</option>
-                <option value="helmets">Шлемы</option>
-            </select>
-            <button onclick="addProduct()">Добавить</button>
-            <h3>Список товаров</h3>
+            <select id="product-category"></select>
+            <button onclick="addProduct()">Добавить товар</button>
+            
+            <hr style="margin: 20px 0; border: none; border-top: 1px solid #e5e5ea;" />
+            
+            <!-- Список товаров -->
+            <div class="section-title">📋 Список товаров</div>
             <div id="product-list"></div>
         </div>
     </div>
