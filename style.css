@@ -335,6 +335,14 @@ header h1 {
     box-shadow: 0 20px 60px rgba(0,0,0,0.3);
 }
 
+.modal-content::-webkit-scrollbar {
+    width: 3px;
+}
+.modal-content::-webkit-scrollbar-thumb {
+    background: rgba(0,122,255,0.3);
+    border-radius: 10px;
+}
+
 @keyframes modalSlideUp {
     from { transform: translateY(30px) scale(0.95); opacity: 0; }
     to { transform: translateY(0) scale(1); opacity: 1; }
@@ -351,6 +359,7 @@ header h1 {
     line-height: 1;
     transition: 0.2s;
     touch-action: manipulation;
+    z-index: 20;
 }
 
 .modal-close:active {
@@ -411,6 +420,85 @@ header h1 {
     font-weight: 500;
 }
 
+/* === КАРУСЕЛЬ В МОДАЛКЕ === */
+.modal-image-container {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    border-radius: 14px;
+    margin-bottom: 12px;
+    background: #f8f9fc;
+    aspect-ratio: 16/10;
+}
+
+#modal-main-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.carousel-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    font-size: 20px;
+    cursor: pointer;
+    transition: 0.2s;
+    touch-action: manipulation;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.carousel-btn:active {
+    transform: translateY(-50%) scale(0.9);
+    background: rgba(0, 0, 0, 0.7);
+}
+
+.carousel-left {
+    left: 8px;
+}
+
+.carousel-right {
+    right: 8px;
+}
+
+.carousel-dots {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 6px;
+    z-index: 10;
+}
+
+.carousel-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.4);
+    cursor: pointer;
+    transition: 0.2s;
+    touch-action: manipulation;
+}
+
+.carousel-dot.active {
+    background: #ffffff;
+    width: 20px;
+    border-radius: 4px;
+}
+
 /* === АДАПТИВ === */
 
 /* iPhone SE и маленькие телефоны */
@@ -439,6 +527,18 @@ header h1 {
     #bottom-nav {
         padding: 4px 4px 8px;
     }
+    .carousel-btn {
+        width: 30px;
+        height: 30px;
+        font-size: 16px;
+    }
+    .carousel-dot {
+        width: 6px;
+        height: 6px;
+    }
+    .carousel-dot.active {
+        width: 16px;
+    }
 }
 
 /* iPhone 12/13/14 и средние */
@@ -448,6 +548,11 @@ header h1 {
     }
     .product-card img {
         height: 150px;
+    }
+    .carousel-btn {
+        width: 32px;
+        height: 32px;
+        font-size: 18px;
     }
 }
 
@@ -462,6 +567,9 @@ header h1 {
     #bottom-nav {
         max-width: 500px;
         border-radius: 20px;
+    }
+    .modal-content {
+        max-width: 450px;
     }
 }
 
@@ -487,6 +595,10 @@ header h1 {
     #background-layer {
         background-size: cover;
         background-position: center;
+    }
+    .modal-content {
+        max-width: 420px;
+        padding: 24px;
     }
 }
 
