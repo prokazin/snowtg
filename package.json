@@ -1,16 +1,8 @@
 {
-  "name": "snowshop-bot",
+  "name": "snowshop",
   "version": "1.0.0",
-  "description": "Telegram бот для SnowShop мини-приложения",
-  "main": "bot.js",
+  "description": "SnowShop Telegram Mini App",
   "scripts": {
-    "start": "node bot.js",
-    "dev": "nodemon bot.js"
-  },
-  "dependencies": {
-    "telegraf": "^4.15.3"
-  },
-  "devDependencies": {
-    "nodemon": "^3.0.1"
+    "build": "echo 'No build needed'"
   }
 }
