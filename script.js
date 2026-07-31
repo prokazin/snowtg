@@ -1,346 +1,88 @@
-// ===== ГЛОБАЛЬНЫЕ ДАННЫЕ =====
-let products = [];
-let services = [];
-let currentTab = 'catalog';
-let currentCategory = 'boards';
+const { Telegraf } = require('telegraf');
 
-// ===== ЗАГРУЗКА ДАННЫХ =====
-function loadData() {
-    // Загрузка товаров
-    const storedProducts = localStorage.getItem('snowshop_products');
-    if (storedProducts) {
-        products = JSON.parse(storedProducts);
-    } else {
-        products = [
-            { id: 1, name: 'Burton Custom', price: '49 900 ₽', image: 'https://images.unsplash.com/photo-1551698613-55f2bf2cb3f1?w=400&h=400&fit=crop', category: 'boards', desc: 'Классический фрирайд, универсал' },
-            { id: 2, name: 'Union Force', price: '24 500 ₽', image: 'https://images.unsplash.com/photo-1634067473700-8f2e5c6aa2b8?w=400&h=400&fit=crop', category: 'bindings', desc: 'Надёжные крепления для всего' },
-            { id: 3, name: 'Nitro Team', price: '32 200 ₽', image: 'https://images.unsplash.com/photo-1600442717570-325f2c6af79c?w=400&h=400&fit=crop', category: 'boots', desc: 'Жёсткие ботинки для карвинга' },
-            { id: 4, name: 'Smith Vantage', price: '18 700 ₽', image: 'https://images.unsplash.com/photo-1618498082410-b4aa22193b38?w=400&h=400&fit=crop', category: 'helmets', desc: 'Лёгкий шлем с MIPS' },
-            { id: 5, name: 'Jones Flagship', price: '58 300 ₽', image: 'https://images.unsplash.com/photo-1551698613-55f2bf2cb3f1?w=400&h=400&fit=crop', category: 'boards', desc: 'Фрирайд для глубокого снега' },
-            { id: 6, name: 'Burton Step On', price: '28 900 ₽', image: 'https://images.unsplash.com/photo-1634067473700-8f2e5c6aa2b8?w=400&h=400&fit=crop', category: 'bindings', desc: 'Система быстрого входа' },
-        ];
-        saveProducts();
-    }
+const BOT_TOKEN = '8803506830:AAFtJO4nJt4l5Cfzl_LHlQhAXIVsMorrN18';
+
+// Ваш URL на Cloudflare Workers
+const WEBAPP_URL = 'https://snowtg.nazar-bronnikov22.workers.dev/';
+
+const bot = new Telegraf(BOT_TOKEN);
+
+// Команда /start
+bot.start((ctx) => {
+    const welcomeMessage = `🏔️ Добро пожаловать в SnowShop!
     
-    // Загрузка услуг
-    const storedServices = localStorage.getItem('snowshop_services');
-    if (storedServices) {
-        services = JSON.parse(storedServices);
-    } else {
-        services = [
-            { id: 1, name: 'Заточка кантов', price: '1 500 ₽', desc: 'Профессиональная заточка кантов на станке. Восстанавливаем геометрию.' },
-            { id: 2, name: 'Смазка скользяка', price: '2 200 ₽', desc: 'Горячая смазка с чисткой. Используем только качественные парафины.' },
-            { id: 3, name: 'Ремонт скользящей поверхности', price: '3 500 ₽', desc: 'Устранение царапин, сколов и пробоин. Полное восстановление.' },
-            { id: 4, name: 'Установка креплений', price: '1 000 ₽', desc: 'Профессиональная установка и настройка креплений под ваш стиль катания.' },
-        ];
-        saveServices();
-    }
+❄️ Здесь вы найдете:
+• Сноуборды, крепления, ботинки, шлемы
+• Профессиональные услуги сервиса
+• Актуальные цены и описания
+
+Нажмите кнопку ниже, чтобы открыть витрину!`;
+
+    ctx.reply(welcomeMessage, {
+        reply_markup: {
+            inline_keyboard: [
+                [{ 
+                    text: '🏂 Открыть витрину', 
+                    web_app: { url: WEBAPP_URL } 
+                }],
+                [{ 
+                    text: '🔧 Наш сервис', 
+                    web_app: { url: WEBAPP_URL } 
+                }],
+                [{ 
+                    text: '⚙️ Админ-панель', 
+                    web_app: { url: `${WEBAPP_URL}admin.html` } 
+                }]
+            ]
+        }
+    });
+});
+
+// Команда /help
+bot.help((ctx) => {
+    ctx.reply('❄️ SnowShop Bot\n\nДоступные команды:\n/start - Главное меню\n/help - Помощь\n/shop - Открыть витрину\n/admin - Открыть админ-панель');
+});
+
+// Команда /shop
+bot.command('shop', (ctx) => {
+    ctx.reply('Открываю витрину...', {
+        reply_markup: {
+            inline_keyboard: [
+                [{ text: '🛒 Перейти в магазин', web_app: { url: WEBAPP_URL } }]
+            ]
+        }
+    });
+});
+
+// Команда /admin (скрытая, только для вас)
+bot.command('admin', (ctx) => {
+    // Добавьте сюда ваш Telegram ID для защиты
+    const adminIds = [123456789]; // Замените на ваш ID
     
-    renderCatalog(currentCategory);
-    renderServices();
-}
-
-// ===== СОХРАНЕНИЕ ДАННЫХ =====
-function saveProducts() {
-    localStorage.setItem('snowshop_products', JSON.stringify(products));
-}
-
-function saveServices() {
-    localStorage.setItem('snowshop_services', JSON.stringify(services));
-}
-
-// ===== РЕНДЕРИНГ КАТАЛОГА =====
-function renderCatalog(category) {
-    const catalog = document.getElementById('catalog');
-    const filtered = products.filter(p => p.category === category);
-    
-    if (filtered.length === 0) {
-        catalog.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:40px 0; color:var(--text-secondary);">❄️ Товаров пока нет</div>`;
-        return;
-    }
-
-    catalog.innerHTML = filtered.map((p, index) => `
-        <div class="product-card" style="animation-delay: ${index * 0.05}s;">
-            <img src="${p.image}" alt="${p.name}" loading="lazy" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Crect fill=%22%2314181c%22 width=%22100%22 height=%22100%22/%3E%3Ctext x=%2250%22 y=%2255%22 text-anchor=%22middle%22 fill=%22%23555%22 font-size=%2240%22 font-family=%22Arial%22%3E🏂%3C/text%3E%3C/svg%3E'">
-            <div class="name">${p.name}</div>
-            <div class="price">${p.price}</div>
-            <div class="desc">${p.desc || ''}</div>
-        </div>
-    `).join('');
-}
-
-// ===== РЕНДЕРИНГ УСЛУГ =====
-function renderServices() {
-    const servicesContainer = document.getElementById('services');
-    
-    if (services.length === 0) {
-        servicesContainer.innerHTML = `
-            <div style="text-align:center; padding:40px 0; color:var(--text-secondary);">
-                🔧 Услуг пока нет
-            </div>
-        `;
-        return;
-    }
-
-    servicesContainer.innerHTML = services.map((s, index) => `
-        <div class="service-card" style="animation-delay: ${index * 0.05}s;">
-            <div class="service-header">
-                <div class="service-name">${s.name}</div>
-                <div class="service-price">${s.price}</div>
-            </div>
-            <div class="service-desc">${s.desc || 'Без описания'}</div>
-        </div>
-    `).join('');
-}
-
-// ===== НАВИГАЦИЯ =====
-function setupNavigation() {
-    document.querySelectorAll('.nav-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const tab = this.dataset.tab;
-            const category = this.dataset.category;
-            
-            // Обновляем активную кнопку
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            
-            // Переключаем вкладки
-            currentTab = tab;
-            
-            if (tab === 'catalog') {
-                document.getElementById('catalog').style.display = 'grid';
-                document.getElementById('services').style.display = 'none';
-                currentCategory = category;
-                renderCatalog(currentCategory);
-            } else if (tab === 'services') {
-                document.getElementById('catalog').style.display = 'none';
-                document.getElementById('services').style.display = 'flex';
-                renderServices();
+    if (adminIds.includes(ctx.from.id)) {
+        ctx.reply('🔐 Открываю админ-панель...', {
+            reply_markup: {
+                inline_keyboard: [
+                    [{ text: '⚙️ Перейти в админку', web_app: { url: `${WEBAPP_URL}admin.html` } }]
+                ]
             }
         });
-    });
-}
-
-// ===== ЗАГРУЗОЧНЫЙ ЭКРАН =====
-function initSplash() {
-    const splash = document.getElementById('splash-screen');
-    const mainApp = document.getElementById('main-app');
-    const skipBtn = document.getElementById('skip-splash');
-    
-    const today = new Date();
-    const decFirst = new Date(today.getFullYear(), 11, 1);
-    if (today >= decFirst) {
-        splash.style.display = 'none';
-        mainApp.style.display = 'flex';
-        return;
-    }
-
-    function updateCountdown() {
-        const now = new Date();
-        const winter = new Date(now.getFullYear(), 11, 1);
-        if (now > winter) winter.setFullYear(winter.getFullYear() + 1);
-        
-        const diff = winter - now;
-        if (diff <= 0) {
-            document.getElementById('days').textContent = '00';
-            document.getElementById('hours').textContent = '00';
-            document.getElementById('minutes').textContent = '00';
-            document.getElementById('seconds').textContent = '00';
-            return;
-        }
-        
-        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-        
-        document.getElementById('days').textContent = String(days).padStart(2, '0');
-        document.getElementById('hours').textContent = String(hours).padStart(2, '0');
-        document.getElementById('minutes').textContent = String(minutes).padStart(2, '0');
-        document.getElementById('seconds').textContent = String(seconds).padStart(2, '0');
-    }
-    
-    updateCountdown();
-    setInterval(updateCountdown, 1000);
-    
-    const timeout = setTimeout(closeSplash, 5000);
-    skipBtn.addEventListener('click', closeSplash);
-    
-    function closeSplash() {
-        clearTimeout(timeout);
-        splash.style.opacity = '0';
-        setTimeout(() => {
-            splash.style.display = 'none';
-            mainApp.style.display = 'flex';
-        }, 400);
-    }
-}
-
-// ===== АДМИНКА: ТОВАРЫ =====
-function addProduct() {
-    const name = document.getElementById('product-name').value.trim();
-    const price = document.getElementById('product-price').value.trim();
-    const image = document.getElementById('product-image').value.trim();
-    const category = document.getElementById('product-category').value;
-    const desc = document.getElementById('product-desc').value.trim();
-    
-    if (!name || !price || !image) {
-        alert('Заполните название, цену и URL изображения');
-        return;
-    }
-    
-    products.push({
-        id: Date.now(),
-        name,
-        price,
-        image,
-        category,
-        desc: desc || 'Без описания'
-    });
-    
-    saveProducts();
-    renderAdminProductList();
-    document.getElementById('product-name').value = '';
-    document.getElementById('product-price').value = '';
-    document.getElementById('product-image').value = '';
-    document.getElementById('product-desc').value = '';
-    alert('✅ Товар добавлен!');
-}
-
-function renderAdminProductList() {
-    const container = document.getElementById('product-list-admin');
-    if (!container) return;
-    
-    if (products.length === 0) {
-        container.innerHTML = '<p style="color:var(--text-secondary);">Товаров нет</p>';
-        return;
-    }
-    
-    container.innerHTML = products.map(p => `
-        <div class="product-item">
-            <div>
-                <strong>${p.name}</strong> — ${p.price}
-                <div style="font-size:12px; color:var(--text-secondary);">${p.category} | ${p.desc ? p.desc.slice(0,30)+'...' : ''}</div>
-            </div>
-            <button class="delete-btn" onclick="deleteProduct(${p.id})">✕</button>
-        </div>
-    `).join('');
-}
-
-function deleteProduct(id) {
-    if (!confirm('Удалить товар?')) return;
-    products = products.filter(p => p.id !== id);
-    saveProducts();
-    renderAdminProductList();
-    if (document.getElementById('catalog')) {
-        renderCatalog(currentCategory);
-    }
-}
-
-// ===== АДМИНКА: УСЛУГИ =====
-function addService() {
-    const name = document.getElementById('service-name').value.trim();
-    const price = document.getElementById('service-price').value.trim();
-    const desc = document.getElementById('service-desc').value.trim();
-    
-    if (!name || !price) {
-        alert('Заполните название и цену услуги');
-        return;
-    }
-    
-    services.push({
-        id: Date.now(),
-        name,
-        price,
-        desc: desc || 'Без описания'
-    });
-    
-    saveServices();
-    renderAdminServiceList();
-    document.getElementById('service-name').value = '';
-    document.getElementById('service-price').value = '';
-    document.getElementById('service-desc').value = '';
-    alert('✅ Услуга добавлена!');
-}
-
-function renderAdminServiceList() {
-    const container = document.getElementById('service-list-admin');
-    if (!container) return;
-    
-    if (services.length === 0) {
-        container.innerHTML = '<p style="color:var(--text-secondary);">Услуг нет</p>';
-        return;
-    }
-    
-    container.innerHTML = services.map(s => `
-        <div class="service-item">
-            <div class="service-info">
-                <strong>${s.name}</strong>
-                <span class="service-meta">${s.price}</span>
-                <div style="font-size:13px; color:var(--text-secondary); margin-top:4px;">${s.desc || ''}</div>
-            </div>
-            <div class="service-actions">
-                <button class="edit-btn" onclick="editService(${s.id})">✎</button>
-                <button class="delete-btn" onclick="deleteService(${s.id})">✕</button>
-            </div>
-        </div>
-    `).join('');
-}
-
-function deleteService(id) {
-    if (!confirm('Удалить услугу?')) return;
-    services = services.filter(s => s.id !== id);
-    saveServices();
-    renderAdminServiceList();
-    if (document.getElementById('services')) {
-        renderServices();
-    }
-}
-
-function editService(id) {
-    const service = services.find(s => s.id === id);
-    if (!service) return;
-    
-    const newName = prompt('Название услуги:', service.name);
-    if (newName !== null) service.name = newName.trim() || service.name;
-    
-    const newPrice = prompt('Цена:', service.price);
-    if (newPrice !== null) service.price = newPrice.trim() || service.price;
-    
-    const newDesc = prompt('Описание:', service.desc);
-    if (newDesc !== null) service.desc = newDesc.trim() || service.desc;
-    
-    saveServices();
-    renderAdminServiceList();
-    if (document.getElementById('services')) {
-        renderServices();
-    }
-}
-
-// ===== АДМИНКА: ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК =====
-function setupAdminTabs() {
-    const tabs = document.querySelectorAll('.admin-tab');
-    tabs.forEach(tab => {
-        tab.addEventListener('click', function() {
-            tabs.forEach(t => t.classList.remove('active'));
-            this.classList.add('active');
-            
-            const panel = this.dataset.tab;
-            document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
-            document.getElementById(`${panel}-panel`).classList.add('active');
-        });
-    });
-}
-
-// ===== ИНИЦИАЛИЗАЦИЯ =====
-document.addEventListener('DOMContentLoaded', function() {
-    loadData();
-    setupNavigation();
-    initSplash();
-    
-    if (document.getElementById('product-list-admin')) {
-        renderAdminProductList();
-        renderAdminServiceList();
-        setupAdminTabs();
+    } else {
+        ctx.reply('⛔ Доступ запрещен');
     }
 });
+
+// Запуск бота
+bot.launch()
+    .then(() => {
+        console.log('✅ Бот SnowShop успешно запущен!');
+        console.log(`📱 Откройте бота: https://t.me/${bot.botInfo.username}`);
+        console.log(`🌐 WebApp доступен по ссылке: ${WEBAPP_URL}`);
+    })
+    .catch((err) => {
+        console.error('❌ Ошибка запуска бота:', err);
+    });
+
+// Graceful stop
+process.once('SIGINT', () => bot.stop('SIGINT'));
+process.once('SIGTERM', () => bot.stop('SIGTERM'));
