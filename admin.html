@@ -232,6 +232,27 @@
             display: block;
         }
         
+        .announcement-box {
+            background: #fff8e1;
+            border-radius: 12px;
+            padding: 16px;
+            margin: 12px 0;
+            border: 1px solid #ffd54f;
+        }
+        
+        .announcement-box textarea {
+            background: white;
+        }
+        
+        .announcement-box .current-announcement {
+            background: rgba(255,215,0,0.1);
+            padding: 10px 14px;
+            border-radius: 8px;
+            margin: 8px 0;
+            font-size: 14px;
+            color: #5d4037;
+        }
+        
         .hidden {
             display: none;
         }
@@ -325,8 +346,10 @@
             <div class="tabs">
                 <button class="active" onclick="switchTab('products')">🛒 Товары</button>
                 <button onclick="switchTab('services')">🔧 Услуги</button>
+                <button onclick="switchTab('announcements')">📢 Оповещения</button>
             </div>
             
+            <!-- Вкладка Товары -->
             <div id="tab-products" class="tab-content active">
                 <div class="section-title">📦 Добавить товар</div>
                 <input type="text" id="product-name" placeholder="Название" />
@@ -367,6 +390,7 @@
                 <div id="product-list"></div>
             </div>
             
+            <!-- Вкладка Услуги -->
             <div id="tab-services" class="tab-content">
                 <div class="section-title">🔧 Добавить услугу</div>
                 <input type="text" id="service-name" placeholder="Название услуги" />
@@ -396,6 +420,34 @@
                 
                 <div class="section-title">📋 Список услуг</div>
                 <div id="service-list"></div>
+            </div>
+            
+            <!-- Вкладка Оповещения -->
+            <div id="tab-announcements" class="tab-content">
+                <div class="section-title">📢 Оповещение для клиентов</div>
+                
+                <div class="announcement-box">
+                    <p style="color: #5d4037; margin-bottom: 12px; font-weight: 500;">
+                        Текст оповещения будет показан в приложении всем пользователям.
+                    </p>
+                    
+                    <div id="current-announcement" class="current-announcement" style="display: none;">
+                        <strong>Текущее оповещение:</strong><br />
+                        <span id="current-announcement-text"></span>
+                        <br /><small style="color: #8e8e93;">Действует 24 часа</small>
+                    </div>
+                    
+                    <textarea id="announcement-input" placeholder="Введите текст оповещения для клиентов&#10;Например: Магазин сегодня работает до 18:00" rows="3"></textarea>
+                    
+                    <div style="display: flex; gap: 8px; margin-top: 8px;">
+                        <button onclick="sendAnnouncement()" style="flex: 1; background: #ff9500;">📢 Отправить оповещение</button>
+                        <button onclick="clearAnnouncement()" style="flex: 0.5; background: #ff3b30;">🗑️ Удалить</button>
+                    </div>
+                    
+                    <p style="color: #8e8e93; font-size: 13px; margin-top: 12px;">
+                        ⚡ Оповещение будет отображаться в приложении 24 часа.
+                    </p>
+                </div>
             </div>
         </div>
     </div>
