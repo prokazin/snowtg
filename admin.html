@@ -1,230 +1,405 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Admin Panel</title>
-    <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>Админ-панель</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        html, body {
+            width: 100%;
+            min-height: 100vh;
+            font-family: -apple-system, 'Helvetica Neue', sans-serif;
+            background: #f2f2f7;
+            padding: 16px;
+        }
+        
         .admin-container {
             max-width: 600px;
             margin: 0 auto;
+            background: rgba(255,255,255,0.95);
+            border-radius: 24px;
             padding: 20px;
-            padding-top: 50px;
-            background: var(--bg-primary);
-            min-height: 100vh;
+            box-shadow: 0 4px 30px rgba(0,0,0,0.08);
+            min-height: 90vh;
+            max-height: 90vh;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
         }
-        .admin-container h1 {
-            color: var(--accent);
-            font-size: 28px;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+        
+        .admin-container::-webkit-scrollbar {
+            width: 4px;
         }
-        .admin-tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 25px;
-            background: var(--card-bg);
-            padding: 6px;
-            border-radius: 16px;
-            border: 1px solid var(--border-light);
+        .admin-container::-webkit-scrollbar-thumb {
+            background: rgba(0,122,255,0.3);
+            border-radius: 10px;
         }
-        .admin-tab {
-            flex: 1;
+        
+        .admin-container h2 {
+            color: #1c1c1e;
+            font-size: clamp(24px, 5vw, 32px);
+            margin-bottom: 16px;
+        }
+        
+        .admin-container input,
+        .admin-container textarea,
+        .admin-container select {
+            width: 100%;
             padding: 12px;
-            border: none;
-            background: transparent;
-            color: var(--text-secondary);
+            margin: 6px 0;
+            border: 1px solid #d1d1d6;
             border-radius: 12px;
-            font-weight: 600;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        .admin-tab.active {
-            background: var(--accent);
-            color: #fff;
-            box-shadow: 0 4px 15px rgba(0, 122, 255, 0.3);
-        }
-        .admin-panel {
-            display: none;
-        }
-        .admin-panel.active {
-            display: block;
-        }
-        .admin-card {
-            background: var(--card-bg);
-            border-radius: 20px;
-            padding: 20px;
-            margin-bottom: 20px;
-            backdrop-filter: blur(10px);
-            border: 1px solid var(--border-light);
-        }
-        .admin-card input, .admin-card textarea, .admin-card select {
-            width: 100%;
-            padding: 14px 16px;
-            margin: 10px 0;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 14px;
-            color: #fff;
             font-size: 16px;
+            background: white;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+        
+        .admin-container input:focus,
+        .admin-container textarea:focus,
+        .admin-container select:focus {
             outline: none;
-            transition: all 0.3s;
-            box-sizing: border-box;
+            border-color: #007aff;
+            box-shadow: 0 0 0 3px rgba(0,122,255,0.1);
         }
-        .admin-card input:focus, .admin-card textarea:focus {
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.2);
+        
+        .admin-container input[type="file"] {
+            padding: 8px;
+            border: 1px dashed #d1d1d6;
+            background: #f8f9fc;
         }
-        .admin-card textarea {
-            min-height: 80px;
-            resize: vertical;
-        }
-        .admin-btn {
-            background: var(--accent);
-            color: #fff;
+        
+        .admin-container button {
+            background: #007aff;
+            color: white;
             border: none;
-            padding: 14px 24px;
+            padding: 14px;
             border-radius: 16px;
-            font-weight: 600;
-            font-size: 16px;
-            cursor: pointer;
-            transition: all 0.2s;
+            font-size: clamp(16px, 3vw, 18px);
             width: 100%;
-            margin-top: 10px;
+            margin-top: 8px;
+            cursor: pointer;
+            transition: 0.2s;
+            font-weight: 600;
+            touch-action: manipulation;
         }
-        .admin-btn:hover {
-            opacity: 0.8;
+        
+        .admin-container button:active {
+            opacity: 0.7;
             transform: scale(0.98);
         }
-        .admin-btn.danger {
-            background: #ff3b30;
-        }
-        .admin-btn.secondary {
-            background: rgba(255,255,255,0.1);
-        }
-        .product-item, .service-item {
-            background: rgba(255,255,255,0.03);
-            padding: 15px;
-            border-radius: 14px;
-            margin: 10px 0;
+        
+        .admin-container .item {
+            background: white;
+            padding: 14px;
+            border-radius: 16px;
+            margin: 8px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-left: 4px solid var(--accent);
+            flex-wrap: wrap;
         }
-        .delete-btn {
-            background: #ff3b30;
-            color: #fff;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 10px;
-            cursor: pointer;
-        }
-        .admin-back {
-            color: var(--accent);
-            text-decoration: none;
-            display: inline-block;
-            margin-bottom: 20px;
-        }
-        .service-item .service-info {
+        
+        .admin-container .item .info {
             flex: 1;
+            min-width: 150px;
         }
-        .service-item .service-info strong {
-            display: block;
-            font-size: 16px;
+        
+        .admin-container .item .actions {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
         }
-        .service-item .service-info .service-meta {
-            font-size: 13px;
-            color: var(--text-secondary);
+        
+        .admin-container .item button {
+            width: auto;
+            padding: 6px 16px;
+            margin: 2px;
+            font-size: 14px;
         }
-        .service-item .service-actions {
+        
+        .admin-container .item .edit-btn {
+            background: #ff9500;
+        }
+        
+        .admin-container .item .delete-btn {
+            background: #ff3b30;
+        }
+        
+        .section-title {
+            margin-top: 20px;
+            font-size: clamp(18px, 3.5vw, 22px);
+            font-weight: 600;
+            color: #1c1c1e;
+            border-bottom: 2px solid #e5e5ea;
+            padding-bottom: 8px;
+        }
+        
+        .file-upload-row {
             display: flex;
             gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin: 6px 0;
         }
-        .edit-btn {
-            background: var(--accent);
-            color: #fff;
+        
+        .file-upload-row input[type="file"] {
+            flex: 1;
+            min-width: 120px;
+        }
+        
+        .file-upload-row button {
+            width: auto;
+            padding: 10px 20px;
+            margin: 0;
+            font-size: 14px;
+        }
+        
+        .specs-container {
+            background: #f8f9fc;
+            border-radius: 12px;
+            padding: 12px;
+            margin: 6px 0;
+        }
+        
+        .spec-row {
+            display: flex;
+            gap: 8px;
+            margin: 4px 0;
+            align-items: center;
+        }
+        
+        .spec-row input {
+            flex: 1;
+            margin: 2px 0;
+        }
+        
+        .spec-row .remove-spec {
+            width: auto;
+            padding: 8px 12px;
+            margin: 0;
+            background: #ff3b30;
+            font-size: 14px;
+        }
+        
+        .add-spec-btn {
+            width: auto !important;
+            padding: 8px 16px !important;
+            margin: 4px 0 !important;
+            background: #34c759 !important;
+            font-size: 14px !important;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin: 16px 0;
+            flex-wrap: wrap;
+        }
+        
+        .tabs button {
+            flex: 1;
+            min-width: 80px;
+            padding: 12px;
+            background: #e5e5ea;
+            color: #1c1c1e;
             border: none;
-            padding: 6px 12px;
-            border-radius: 8px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
             cursor: pointer;
-            font-size: 12px;
+            transition: 0.2s;
+            margin: 0;
         }
-        @media (max-width: 480px) {
+        
+        .tabs button.active {
+            background: #007aff;
+            color: white;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        hr {
+            margin: 20px 0;
+            border: none;
+            border-top: 1px solid #e5e5ea;
+        }
+        
+        .login-box {
+            text-align: center;
+            padding: 40px 20px;
+        }
+        
+        .login-box input {
+            max-width: 300px;
+            margin: 10px auto;
+        }
+        
+        .login-box button {
+            max-width: 300px;
+            margin: 10px auto;
+        }
+        
+        input, textarea, select, button {
+            font-size: 16px !important;
+        }
+        
+        @media (max-width: 430px) {
+            body {
+                padding: 8px;
+            }
             .admin-container {
-                padding: 15px;
-                padding-top: 30px;
+                padding: 16px;
+                min-height: 95vh;
+                max-height: 95vh;
             }
-            .admin-tabs {
-                flex-direction: row;
-            }
-            .admin-tab {
-                font-size: 12px;
-                padding: 10px;
-            }
-            .product-item, .service-item {
+            .item {
                 flex-direction: column;
                 align-items: stretch;
-                gap: 10px;
+                gap: 8px;
             }
-            .service-item .service-actions {
+            .item .actions {
                 justify-content: flex-end;
+            }
+            .file-upload-row {
+                flex-direction: column;
+            }
+            .file-upload-row button {
+                width: 100%;
+            }
+            .spec-row {
+                flex-direction: column;
+            }
+            .spec-row .remove-spec {
+                width: 100%;
+            }
+            .tabs button {
+                min-width: 60px;
+                font-size: 14px;
+                padding: 10px;
+            }
+        }
+        
+        @media (min-width: 431px) and (max-width: 768px) {
+            .admin-container {
+                max-width: 500px;
+            }
+        }
+        
+        @media (min-width: 769px) {
+            .admin-container {
+                max-width: 600px;
+                padding: 30px;
             }
         }
     </style>
 </head>
 <body>
-    <div class="admin-container">
-        <a href="index.html" class="admin-back">← Назад в витрину</a>
-        <h1>⚙️ Админ-панель</h1>
+    <div class="admin-container" id="admin-container">
+        <h2>🛠️ Админ-панель</h2>
         
-        <div class="admin-tabs">
-            <button class="admin-tab active" data-tab="products">Товары</button>
-            <button class="admin-tab" data-tab="services-tab">Услуги</button>
+        <div id="admin-login" class="login-box">
+            <input type="password" id="admin-password" placeholder="Введите пароль" />
+            <button onclick="loginAdmin()">Войти</button>
         </div>
-
-        <div id="products-panel" class="admin-panel active">
-            <div class="admin-card">
-                <h3>➕ Добавить товар</h3>
-                <input type="text" id="product-name" placeholder="Название">
-                <input type="text" id="product-price" placeholder="Цена (например: 45 000 ₽)">
-                <input type="text" id="product-image" placeholder="URL изображения">
+        
+        <div id="admin-panel" style="display: none;">
+            
+            <div class="tabs">
+                <button class="active" onclick="switchTab('products')">🛒 Товары</button>
+                <button onclick="switchTab('services')">🔧 Услуги</button>
+            </div>
+            
+            <div id="tab-products" class="tab-content active">
+                <div class="section-title">📦 Добавить товар</div>
+                <input type="text" id="product-name" placeholder="Название" />
+                <input type="text" id="product-price" placeholder="Цена (например, 45000 ₽)" />
+                
+                <div class="file-upload-row">
+                    <input type="text" id="product-image-url" placeholder="URL картинки" />
+                    <input type="file" id="product-image-file" accept="image/*" />
+                    <button onclick="uploadProductImage()">Загрузить</button>
+                </div>
+                
+                <textarea id="product-desc" placeholder="Полное описание" rows="3"></textarea>
+                
                 <select id="product-category">
-                    <option value="boards">Сноуборды</option>
-                    <option value="bindings">Крепления</option>
-                    <option value="boots">Ботинки</option>
-                    <option value="helmets">Шлемы</option>
+                    <option value="Доски">Доски</option>
+                    <option value="Ботинки">Ботинки</option>
+                    <option value="Шлемы">Шлемы</option>
+                    <option value="Маски">Маски</option>
+                    <option value="Чехлы">Чехлы</option>
+                    <option value="Крепления">Крепления</option>
                 </select>
-                <textarea id="product-desc" placeholder="Описание и характеристики"></textarea>
-                <button class="admin-btn" onclick="addProduct()">Добавить товар</button>
+                
+                <div class="section-title" style="font-size:16px; margin-top:12px;">📊 Характеристики</div>
+                <div id="specs-container" class="specs-container">
+                    <div class="spec-row">
+                        <input type="text" class="spec-name" placeholder="Название (например: Длина)" />
+                        <input type="text" class="spec-value" placeholder="Значение (например: 156 см)" />
+                        <button class="remove-spec" onclick="removeSpec(this)">✕</button>
+                    </div>
+                </div>
+                <button class="add-spec-btn" onclick="addSpecRow()">➕ Добавить характеристику</button>
+                
+                <button onclick="addProduct()" style="margin-top:12px;">➕ Добавить товар</button>
+                
+                <hr />
+                
+                <div class="section-title">📋 Список товаров</div>
+                <div id="product-list"></div>
             </div>
-
-            <div class="admin-card">
-                <h3>📦 Управление товарами</h3>
-                <div id="product-list-admin"></div>
-            </div>
-        </div>
-
-        <div id="services-panel" class="admin-panel">
-            <div class="admin-card">
-                <h3>🔧 Добавить услугу</h3>
-                <input type="text" id="service-name" placeholder="Название услуги">
-                <input type="text" id="service-price" placeholder="Цена (например: 3 500 ₽)">
-                <textarea id="service-desc" placeholder="Описание услуги"></textarea>
-                <button class="admin-btn" onclick="addService()">Добавить услугу</button>
-            </div>
-
-            <div class="admin-card">
-                <h3>📋 Управление услугами</h3>
-                <div id="service-list-admin"></div>
+            
+            <div id="tab-services" class="tab-content">
+                <div class="section-title">🔧 Добавить услугу</div>
+                <input type="text" id="service-name" placeholder="Название услуги" />
+                <input type="text" id="service-price" placeholder="Цена (например, 2500 ₽)" />
+                
+                <div class="file-upload-row">
+                    <input type="text" id="service-image-url" placeholder="URL картинки" />
+                    <input type="file" id="service-image-file" accept="image/*" />
+                    <button onclick="uploadServiceImage()">Загрузить</button>
+                </div>
+                
+                <textarea id="service-desc" placeholder="Описание услуги" rows="3"></textarea>
+                
+                <div class="section-title" style="font-size:16px; margin-top:12px;">📊 Характеристики услуги</div>
+                <div id="service-specs-container" class="specs-container">
+                    <div class="spec-row">
+                        <input type="text" class="spec-name" placeholder="Название (например: Время)" />
+                        <input type="text" class="spec-value" placeholder="Значение (например: 30 мин)" />
+                        <button class="remove-spec" onclick="removeServiceSpec(this)">✕</button>
+                    </div>
+                </div>
+                <button class="add-spec-btn" onclick="addServiceSpecRow()">➕ Добавить характеристику</button>
+                
+                <button onclick="addService()" style="margin-top:12px;">➕ Добавить услугу</button>
+                
+                <hr />
+                
+                <div class="section-title">📋 Список услуг</div>
+                <div id="service-list"></div>
             </div>
         </div>
     </div>
-
-    <script src="script.js"></script>
+    
+    <script src="admin.js"></script>
 </body>
 </html>
