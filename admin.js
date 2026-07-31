@@ -1,6 +1,100 @@
 const ADMIN_PASSWORD = 'admin123';
 let currentTab = 'products';
+const API_URL = 'https://snowtg.nazar-bronnikov22.workers.dev/';
 
+// === ЗАГРУЗКА ТОВАРОВ ИЗ API ===
+async function loadProductsFromAPI() {
+    try {
+        const response = await fetch(API_URL + 'api/products');
+        if (!response.ok) throw new Error('Ошибка загрузки');
+        return await response.json();
+    } catch (e) {
+        console.error('Ошибка загрузки из API:', e);
+        return [];
+    }
+}
+
+// === СОХРАНЕНИЕ ТОВАРОВ В API ===
+async function saveProductsToAPI(products) {
+    try {
+        const response = await fetch(API_URL + 'api/products', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(products)
+        });
+        if (!response.ok) throw new Error('Ошибка сохранения');
+        return true;
+    } catch (e) {
+        console.error('Ошибка сохранения в API:', e);
+        alert('Ошибка сохранения на сервере');
+        return false;
+    }
+}
+
+// === ЗАГРУЗКА ОПОВЕЩЕНИЯ ===
+async function loadCurrentAnnouncement() {
+    try {
+        const response = await fetch(API_URL + 'api/announcement');
+        const data = await response.json();
+        const container = document.getElementById('current-announcement');
+        const textEl = document.getElementById('current-announcement-text');
+        
+        if (container && textEl && data.text) {
+            container.style.display = 'block';
+            textEl.textContent = data.text;
+        } else if (container) {
+            container.style.display = 'none';
+        }
+    } catch (e) {
+        console.error('Ошибка загрузки оповещения:', e);
+    }
+}
+
+// === ОТПРАВКА ОПОВЕЩЕНИЯ ===
+async function sendAnnouncement() {
+    const input = document.getElementById('announcement-input');
+    if (!input) return;
+    const text = input.value.trim();
+    
+    if (!text) {
+        alert('Введите текст оповещения');
+        return;
+    }
+    
+    try {
+        await fetch(API_URL + 'api/announcement', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: text })
+        });
+        
+        await loadCurrentAnnouncement();
+        input.value = '';
+        alert('✅ Оповещение отправлено!\nОно будет отображаться 24 часа.');
+    } catch (e) {
+        alert('❌ Ошибка отправки оповещения');
+    }
+}
+
+async function clearAnnouncement() {
+    if (!confirm('Удалить оповещение?')) return;
+    
+    try {
+        await fetch(API_URL + 'api/announcement', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: '' })
+        });
+        
+        const container = document.getElementById('current-announcement');
+        if (container) container.style.display = 'none';
+        alert('✅ Оповещение удалено!');
+    } catch (e) {
+        alert('❌ Ошибка удаления оповещения');
+    }
+}
+
+// === ВКЛАДКИ ===
 function switchTab(tab) {
     currentTab = tab;
     document.querySelectorAll('.tabs button').forEach(btn => {
@@ -25,74 +119,7 @@ function switchTab(tab) {
     }
 }
 
-function loadCurrentAnnouncement() {
-    try {
-        const announcement = localStorage.getItem('announcement');
-        const container = document.getElementById('current-announcement');
-        const textEl = document.getElementById('current-announcement-text');
-        
-        if (!container || !textEl) return;
-        
-        if (announcement) {
-            const data = JSON.parse(announcement);
-            const now = new Date().getTime();
-            if (data.expires && now < data.expires && data.text) {
-                container.style.display = 'block';
-                textEl.textContent = data.text;
-                return;
-            }
-        }
-        container.style.display = 'none';
-    } catch (e) {
-        console.error('Ошибка загрузки оповещения:', e);
-        localStorage.removeItem('announcement');
-        const container = document.getElementById('current-announcement');
-        if (container) container.style.display = 'none';
-    }
-}
-
-function sendAnnouncement() {
-    const input = document.getElementById('announcement-input');
-    if (!input) return;
-    const text = input.value.trim();
-    
-    if (!text) {
-        alert('Введите текст оповещения');
-        return;
-    }
-    
-    const expires = new Date().getTime() + (24 * 60 * 60 * 1000);
-    localStorage.setItem('announcement', JSON.stringify({ text, expires }));
-    
-    loadCurrentAnnouncement();
-    input.value = '';
-    
-    // Обновляем баннер в основном приложении (если открыто)
-    if (window.opener && !window.opener.closed) {
-        try {
-            window.opener.saveAnnouncement(text, 24);
-        } catch (e) {}
-    }
-    
-    alert('✅ Оповещение отправлено!\nОно будет отображаться 24 часа.');
-}
-
-function clearAnnouncement() {
-    if (!confirm('Удалить оповещение?')) return;
-    localStorage.removeItem('announcement');
-    const container = document.getElementById('current-announcement');
-    if (container) container.style.display = 'none';
-    
-    // Обновляем баннер в основном приложении
-    if (window.opener && !window.opener.closed) {
-        try {
-            window.opener.saveAnnouncement('', 0);
-        } catch (e) {}
-    }
-    
-    alert('✅ Оповещение удалено!');
-}
-
+// === ПОЛУЧЕНИЕ КАТЕГОРИЙ ===
 function getCategories() {
     try {
         const data = localStorage.getItem('snowboard_categories');
@@ -117,6 +144,7 @@ function getCategories() {
     }
 }
 
+// === ХАРАКТЕРИСТИКИ ===
 function addSpecRow(nameValue, valueValue) {
     const container = document.getElementById('specs-container');
     if (!container) return;
@@ -189,41 +217,30 @@ function getServiceSpecs() {
     return specs;
 }
 
-function getProducts() {
-    try {
-        const data = localStorage.getItem('snowboard_products');
-        if (!data) {
-            return [];
-        }
-        return JSON.parse(data);
-    } catch (e) {
-        console.error('Ошибка загрузки товаров:', e);
-        return [];
-    }
+// === ТОВАРЫ ===
+async function getProducts() {
+    return await loadProductsFromAPI();
 }
 
-function saveProducts(products) {
-    try {
-        localStorage.setItem('snowboard_products', JSON.stringify(products));
-        renderProductList();
-        renderServiceList();
+async function saveProducts(products) {
+    const success = await saveProductsToAPI(products);
+    if (success) {
+        await renderProductList();
+        await renderServiceList();
         if (window.opener && !window.opener.closed) {
             window.opener.products = products;
             if (window.opener.currentTab) {
                 window.opener.renderCatalog(window.opener.currentTab);
             }
         }
-    } catch (e) {
-        console.error('Ошибка сохранения товаров:', e);
-        alert('Ошибка сохранения товаров');
     }
 }
 
-function renderProductList() {
+async function renderProductList() {
     const list = document.getElementById('product-list');
     if (!list) return;
     
-    const products = getProducts();
+    const products = await getProducts();
     const filtered = products.filter(p => p.category !== 'Сервис' && !p.isContact);
     
     if (!filtered || filtered.length === 0) {
@@ -250,7 +267,7 @@ function renderProductList() {
     }).join('');
 }
 
-function addProduct() {
+async function addProduct() {
     const name = document.getElementById('product-name').value.trim();
     const price = document.getElementById('product-price').value.trim();
     const imageUrl = document.getElementById('product-image-url').value.trim();
@@ -270,7 +287,7 @@ function addProduct() {
 
     const image = imageUrl || 'https://placehold.co/600x400/ffffff/cccccc?text=No+Image';
     
-    const products = getProducts();
+    const products = await getProducts();
     const newId = products.length ? Math.max(...products.map(p => p.id)) + 1 : 1;
     
     products.push({ 
@@ -284,7 +301,7 @@ function addProduct() {
         isContact: false
     });
     
-    saveProducts(products);
+    await saveProducts(products);
     
     document.getElementById('product-name').value = '';
     document.getElementById('product-price').value = '';
@@ -326,15 +343,15 @@ function uploadProductImage() {
     reader.readAsDataURL(file);
 }
 
-function deleteProduct(index) {
+async function deleteProduct(index) {
     if (!confirm('Удалить товар?')) return;
-    const products = getProducts();
+    const products = await getProducts();
     products.splice(index, 1);
-    saveProducts(products);
+    await saveProducts(products);
 }
 
-function editProduct(index) {
-    const products = getProducts();
+async function editProduct(index) {
+    const products = await getProducts();
     const p = products[index];
     
     document.getElementById('product-name').value = p.name;
@@ -356,30 +373,22 @@ function editProduct(index) {
     }
     
     products.splice(index, 1);
-    saveProducts(products);
+    await saveProducts(products);
     
     document.getElementById('product-name').scrollIntoView({ behavior: 'smooth' });
 }
 
-function getServices() {
-    try {
-        const data = localStorage.getItem('snowboard_products');
-        if (!data) {
-            return [];
-        }
-        const products = JSON.parse(data);
-        return products.filter(p => p.category === 'Сервис');
-    } catch (e) {
-        console.error('Ошибка загрузки услуг:', e);
-        return [];
-    }
+// === УСЛУГИ ===
+async function getServices() {
+    const products = await getProducts();
+    return products.filter(p => p.category === 'Сервис');
 }
 
-function renderServiceList() {
+async function renderServiceList() {
     const list = document.getElementById('service-list');
     if (!list) return;
     
-    const products = getProducts();
+    const products = await getProducts();
     const services = products.filter(p => p.category === 'Сервис');
     
     if (!services || services.length === 0) {
@@ -406,7 +415,7 @@ function renderServiceList() {
     }).join('');
 }
 
-function addService() {
+async function addService() {
     const name = document.getElementById('service-name').value.trim();
     const price = document.getElementById('service-price').value.trim();
     const imageUrl = document.getElementById('service-image-url').value.trim();
@@ -425,7 +434,7 @@ function addService() {
 
     const image = imageUrl || 'https://placehold.co/600x400/ffffff/cccccc?text=No+Image';
     
-    const products = getProducts();
+    const products = await getProducts();
     const newId = products.length ? Math.max(...products.map(p => p.id)) + 1 : 1;
     
     products.push({ 
@@ -439,7 +448,7 @@ function addService() {
         isContact: false
     });
     
-    saveProducts(products);
+    await saveProducts(products);
     
     document.getElementById('service-name').value = '';
     document.getElementById('service-price').value = '';
@@ -481,15 +490,15 @@ function uploadServiceImage() {
     reader.readAsDataURL(file);
 }
 
-function deleteService(index) {
+async function deleteService(index) {
     if (!confirm('Удалить услугу?')) return;
-    const products = getProducts();
+    const products = await getProducts();
     products.splice(index, 1);
-    saveProducts(products);
+    await saveProducts(products);
 }
 
-function editService(index) {
-    const products = getProducts();
+async function editService(index) {
+    const products = await getProducts();
     const p = products[index];
     
     document.getElementById('service-name').value = p.name;
@@ -510,11 +519,12 @@ function editService(index) {
     }
     
     products.splice(index, 1);
-    saveProducts(products);
+    await saveProducts(products);
     
     document.getElementById('service-name').scrollIntoView({ behavior: 'smooth' });
 }
 
+// === ВХОД ===
 function loginAdmin() {
     const pass = document.getElementById('admin-password').value;
     if (pass === ADMIN_PASSWORD) {
@@ -544,17 +554,11 @@ function loginAdmin() {
     }
 }
 
+// === ИНИЦИАЛИЗАЦИЯ ===
 document.addEventListener('DOMContentLoaded', function() {
     renderProductList();
     renderServiceList();
     loadCurrentAnnouncement();
-});
-
-window.addEventListener('storage', function(e) {
-    if (e.key === 'snowboard_products') {
-        renderProductList();
-        renderServiceList();
-    }
 });
 
 window.getProducts = getProducts;
@@ -567,3 +571,5 @@ window.switchTab = switchTab;
 window.sendAnnouncement = sendAnnouncement;
 window.clearAnnouncement = clearAnnouncement;
 window.loadCurrentAnnouncement = loadCurrentAnnouncement;
+window.uploadProductImage = uploadProductImage;
+window.uploadServiceImage = uploadServiceImage;
