@@ -1,5 +1,4 @@
 const ADMIN_PASSWORD = 'admin123';
-
 let currentTab = 'products';
 
 function switchTab(tab) {
@@ -12,14 +11,66 @@ function switchTab(tab) {
     });
     
     if (tab === 'products') {
-        document.querySelector('.tabs button:first-child').classList.add('active');
+        document.querySelector('.tabs button:nth-child(1)').classList.add('active');
         document.getElementById('tab-products').classList.add('active');
         renderProductList();
-    } else {
-        document.querySelector('.tabs button:last-child').classList.add('active');
+    } else if (tab === 'services') {
+        document.querySelector('.tabs button:nth-child(2)').classList.add('active');
         document.getElementById('tab-services').classList.add('active');
         renderServiceList();
+    } else if (tab === 'announcements') {
+        document.querySelector('.tabs button:nth-child(3)').classList.add('active');
+        document.getElementById('tab-announcements').classList.add('active');
+        loadCurrentAnnouncement();
     }
+}
+
+function loadCurrentAnnouncement() {
+    const announcement = localStorage.getItem('announcement');
+    const container = document.getElementById('current-announcement');
+    const textEl = document.getElementById('current-announcement-text');
+    
+    if (announcement) {
+        try {
+            const data = JSON.parse(announcement);
+            const now = new Date().getTime();
+            if (data.expires && now < data.expires) {
+                container.style.display = 'block';
+                textEl.textContent = data.text;
+                return;
+            }
+        } catch (e) {}
+    }
+    container.style.display = 'none';
+}
+
+function sendAnnouncement() {
+    const input = document.getElementById('announcement-input');
+    const text = input.value.trim();
+    
+    if (!text) {
+        alert('Введите текст оповещения');
+        return;
+    }
+    
+    // Сохраняем в localStorage
+    const expires = new Date().getTime() + (24 * 60 * 60 * 1000);
+    localStorage.setItem('announcement', JSON.stringify({ text, expires }));
+    
+    // Обновляем отображение
+    loadCurrentAnnouncement();
+    
+    // Очищаем поле
+    input.value = '';
+    
+    alert('✅ Оповещение отправлено!\nОно будет отображаться 24 часа.');
+}
+
+function clearAnnouncement() {
+    if (!confirm('Удалить оповещение?')) return;
+    localStorage.removeItem('announcement');
+    document.getElementById('current-announcement').style.display = 'none';
+    alert('✅ Оповещение удалено!');
 }
 
 function getCategories() {
@@ -33,7 +84,8 @@ function getCategories() {
                 { name: 'Маски', icon: 'Маски.png' },
                 { name: 'Чехлы', icon: 'Чехлы.png' },
                 { name: 'Крепления', icon: 'Крепления.png' },
-                { name: 'Сервис', icon: 'Сервис.png' }
+                { name: 'Сервис', icon: 'Сервис.png' },
+                { name: 'Контакты', icon: 'Контакт.png' }
             ];
             localStorage.setItem('snowboard_categories', JSON.stringify(defaultCategories));
             return defaultCategories;
@@ -148,7 +200,7 @@ function renderProductList() {
     if (!list) return;
     
     const products = getProducts();
-    const filtered = products.filter(p => p.category !== 'Сервис');
+    const filtered = products.filter(p => p.category !== 'Сервис' && !p.isContact);
     
     if (!filtered || filtered.length === 0) {
         list.innerHTML = '<p style="color:#8e8e93; padding:10px 0;">Нет товаров</p>';
@@ -204,7 +256,8 @@ function addProduct() {
         images: [image],
         desc, 
         specs, 
-        category 
+        category,
+        isContact: false
     });
     
     saveProducts(products);
@@ -353,7 +406,8 @@ function addService() {
         images: [image],
         desc, 
         specs, 
-        category: 'Сервис' 
+        category: 'Сервис',
+        isContact: false
     });
     
     saveProducts(products);
@@ -435,6 +489,7 @@ function loginAdmin() {
         
         renderProductList();
         renderServiceList();
+        loadCurrentAnnouncement();
         
         const container = document.getElementById('specs-container');
         container.innerHTML = '';
@@ -454,6 +509,7 @@ function loginAdmin() {
 document.addEventListener('DOMContentLoaded', function() {
     renderProductList();
     renderServiceList();
+    loadCurrentAnnouncement();
 });
 
 window.addEventListener('storage', function(e) {
@@ -470,3 +526,6 @@ window.removeSpec = removeSpec;
 window.addServiceSpecRow = addServiceSpecRow;
 window.removeServiceSpec = removeServiceSpec;
 window.switchTab = switchTab;
+window.sendAnnouncement = sendAnnouncement;
+window.clearAnnouncement = clearAnnouncement;
+window.loadCurrentAnnouncement = loadCurrentAnnouncement;
