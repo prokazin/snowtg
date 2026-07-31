@@ -1,18 +1,39 @@
 const ADMIN_PASSWORD = 'admin123';
 
-// === КАТЕГОРИИ (берутся из основной страницы) ===
+let currentTab = 'products';
+
+function switchTab(tab) {
+    currentTab = tab;
+    document.querySelectorAll('.tabs button').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.remove('active');
+    });
+    
+    if (tab === 'products') {
+        document.querySelector('.tabs button:first-child').classList.add('active');
+        document.getElementById('tab-products').classList.add('active');
+        renderProductList();
+    } else {
+        document.querySelector('.tabs button:last-child').classList.add('active');
+        document.getElementById('tab-services').classList.add('active');
+        renderServiceList();
+    }
+}
+
 function getCategories() {
     try {
         const data = localStorage.getItem('snowboard_categories');
         if (!data) {
-            // Дефолтные категории
             const defaultCategories = [
                 { name: 'Доски', icon: 'Доски.png' },
                 { name: 'Ботинки', icon: 'Ботинки.png' },
                 { name: 'Шлемы', icon: 'Шлем.png' },
                 { name: 'Маски', icon: 'Маски.png' },
                 { name: 'Чехлы', icon: 'Чехлы.png' },
-                { name: 'Крепления', icon: 'Крепления.png' }
+                { name: 'Крепления', icon: 'Крепления.png' },
+                { name: 'Сервис', icon: 'Сервис.png' }
             ];
             localStorage.setItem('snowboard_categories', JSON.stringify(defaultCategories));
             return defaultCategories;
@@ -24,20 +45,6 @@ function getCategories() {
     }
 }
 
-function updateCategorySelect() {
-    const select = document.getElementById('product-category');
-    if (!select) return;
-    
-    const categories = getCategories();
-    if (!categories || categories.length === 0) {
-        select.innerHTML = '<option value="">Нет категорий</option>';
-        return;
-    }
-    
-    select.innerHTML = categories.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
-}
-
-// === РАБОТА С ХАРАКТЕРИСТИКАМИ ===
 function addSpecRow(nameValue, valueValue) {
     const container = document.getElementById('specs-container');
     const row = document.createElement('div');
@@ -60,7 +67,7 @@ function removeSpec(button) {
 }
 
 function getSpecs() {
-    const rows = document.querySelectorAll('.spec-row');
+    const rows = document.querySelectorAll('#specs-container .spec-row');
     const specs = [];
     rows.forEach(row => {
         const name = row.querySelector('.spec-name').value.trim();
@@ -72,17 +79,45 @@ function getSpecs() {
     return specs;
 }
 
-// === РАБОТА С ТОВАРАМИ ===
+function addServiceSpecRow(nameValue, valueValue) {
+    const container = document.getElementById('service-specs-container');
+    const row = document.createElement('div');
+    row.className = 'spec-row';
+    row.innerHTML = `
+        <input type="text" class="spec-name" placeholder="Название (например: Время)" value="${nameValue || ''}" />
+        <input type="text" class="spec-value" placeholder="Значение (например: 30 мин)" value="${valueValue || ''}" />
+        <button class="remove-spec" onclick="removeServiceSpec(this)">✕</button>
+    `;
+    container.appendChild(row);
+}
+
+function removeServiceSpec(button) {
+    const container = document.getElementById('service-specs-container');
+    if (container.children.length > 1) {
+        button.parentElement.remove();
+    } else {
+        alert('Должна быть хотя бы одна характеристика');
+    }
+}
+
+function getServiceSpecs() {
+    const rows = document.querySelectorAll('#service-specs-container .spec-row');
+    const specs = [];
+    rows.forEach(row => {
+        const name = row.querySelector('.spec-name').value.trim();
+        const value = row.querySelector('.spec-value').value.trim();
+        if (name && value) {
+            specs.push({ name, value });
+        }
+    });
+    return specs;
+}
+
 function getProducts() {
     try {
         const data = localStorage.getItem('snowboard_products');
         if (!data) {
-            // Дефолтные товары (будут созданы при первом запуске)
-            const defaultProducts = [
-                // Товары будут созданы из script.js
-            ];
-            localStorage.setItem('snowboard_products', JSON.stringify(defaultProducts));
-            return defaultProducts;
+            return [];
         }
         return JSON.parse(data);
     } catch (e) {
@@ -95,7 +130,7 @@ function saveProducts(products) {
     try {
         localStorage.setItem('snowboard_products', JSON.stringify(products));
         renderProductList();
-        // Обновляем в основном приложении
+        renderServiceList();
         if (window.opener && !window.opener.closed) {
             window.opener.products = products;
             if (window.opener.currentTab) {
@@ -113,25 +148,30 @@ function renderProductList() {
     if (!list) return;
     
     const products = getProducts();
-    if (!products || products.length === 0) {
+    const filtered = products.filter(p => p.category !== 'Сервис');
+    
+    if (!filtered || filtered.length === 0) {
         list.innerHTML = '<p style="color:#8e8e93; padding:10px 0;">Нет товаров</p>';
         return;
     }
     
-    list.innerHTML = products.map((p, i) => `
-        <div class="item">
-            <div class="info">
-                <strong>${p.name}</strong><br />
-                <span style="color:#007aff;">${p.price}</span>
-                <span style="color:#8e8e93; font-size:13px; margin-left:8px;">${p.category}</span>
-                <br /><small style="color:#8e8e93;">${p.specs ? p.specs.length : 0} характеристик</small>
+    list.innerHTML = filtered.map((p, i) => {
+        const originalIndex = products.indexOf(p);
+        return `
+            <div class="item">
+                <div class="info">
+                    <strong>${p.name}</strong><br />
+                    <span style="color:#007aff;">${p.price}</span>
+                    <span style="color:#8e8e93; font-size:13px; margin-left:8px;">${p.category}</span>
+                    <br /><small style="color:#8e8e93;">${p.specs ? p.specs.length : 0} характеристик</small>
+                </div>
+                <div class="actions">
+                    <button class="edit-btn" onclick="editProduct(${originalIndex})">✏️</button>
+                    <button class="delete-btn" onclick="deleteProduct(${originalIndex})">🗑️</button>
+                </div>
             </div>
-            <div class="actions">
-                <button class="edit-btn" onclick="editProduct(${i})">✏️</button>
-                <button class="delete-btn" onclick="deleteProduct(${i})">🗑️</button>
-            </div>
-        </div>
-    `).join('');
+        `;
+    }).join('');
 }
 
 function addProduct() {
@@ -144,11 +184,6 @@ function addProduct() {
 
     if (!name || !price || !desc) {
         alert('Заполните название, цену и описание');
-        return;
-    }
-
-    if (!category) {
-        alert('Выберите категорию');
         return;
     }
 
@@ -166,7 +201,7 @@ function addProduct() {
         id: newId, 
         name, 
         price, 
-        image, 
+        images: [image],
         desc, 
         specs, 
         category 
@@ -174,14 +209,12 @@ function addProduct() {
     
     saveProducts(products);
     
-    // Очистка
     document.getElementById('product-name').value = '';
     document.getElementById('product-price').value = '';
     document.getElementById('product-image-url').value = '';
     document.getElementById('product-desc').value = '';
     document.getElementById('product-image-file').value = '';
     
-    // Очищаем характеристики, оставляем одну пустую
     const container = document.getElementById('specs-container');
     container.innerHTML = '';
     addSpecRow('', '');
@@ -226,11 +259,10 @@ function editProduct(index) {
     
     document.getElementById('product-name').value = p.name;
     document.getElementById('product-price').value = p.price;
-    document.getElementById('product-image-url').value = p.image;
+    document.getElementById('product-image-url').value = p.images ? p.images[0] : '';
     document.getElementById('product-desc').value = p.desc;
     document.getElementById('product-category').value = p.category;
     
-    // Загружаем характеристики
     const container = document.getElementById('specs-container');
     container.innerHTML = '';
     if (p.specs && p.specs.length > 0) {
@@ -241,29 +273,176 @@ function editProduct(index) {
         addSpecRow('', '');
     }
     
-    // Удаляем старый товар
     products.splice(index, 1);
     saveProducts(products);
     
-    // Скроллим к форме добавления
     document.getElementById('product-name').scrollIntoView({ behavior: 'smooth' });
 }
 
-// === ВХОД В АДМИНКУ ===
+function getServices() {
+    try {
+        const data = localStorage.getItem('snowboard_products');
+        if (!data) {
+            return [];
+        }
+        const products = JSON.parse(data);
+        return products.filter(p => p.category === 'Сервис');
+    } catch (e) {
+        console.error('Ошибка загрузки услуг:', e);
+        return [];
+    }
+}
+
+function renderServiceList() {
+    const list = document.getElementById('service-list');
+    if (!list) return;
+    
+    const products = getProducts();
+    const services = products.filter(p => p.category === 'Сервис');
+    
+    if (!services || services.length === 0) {
+        list.innerHTML = '<p style="color:#8e8e93; padding:10px 0;">Нет услуг</p>';
+        return;
+    }
+    
+    list.innerHTML = services.map((p, i) => {
+        const originalIndex = products.indexOf(p);
+        return `
+            <div class="item">
+                <div class="info">
+                    <strong>${p.name}</strong><br />
+                    <span style="color:#007aff;">${p.price}</span>
+                    <span style="color:#8e8e93; font-size:13px; margin-left:8px;">${p.category}</span>
+                    <br /><small style="color:#8e8e93;">${p.specs ? p.specs.length : 0} характеристик</small>
+                </div>
+                <div class="actions">
+                    <button class="edit-btn" onclick="editService(${originalIndex})">✏️</button>
+                    <button class="delete-btn" onclick="deleteService(${originalIndex})">🗑️</button>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function addService() {
+    const name = document.getElementById('service-name').value.trim();
+    const price = document.getElementById('service-price').value.trim();
+    const imageUrl = document.getElementById('service-image-url').value.trim();
+    const desc = document.getElementById('service-desc').value.trim();
+    const specs = getServiceSpecs();
+
+    if (!name || !price || !desc) {
+        alert('Заполните название, цену и описание');
+        return;
+    }
+
+    if (specs.length === 0) {
+        alert('Добавьте хотя бы одну характеристику');
+        return;
+    }
+
+    const image = imageUrl || 'https://placehold.co/600x400/ffffff/cccccc?text=No+Image';
+    
+    const products = getProducts();
+    const newId = products.length ? Math.max(...products.map(p => p.id)) + 1 : 1;
+    
+    products.push({ 
+        id: newId, 
+        name, 
+        price, 
+        images: [image],
+        desc, 
+        specs, 
+        category: 'Сервис' 
+    });
+    
+    saveProducts(products);
+    
+    document.getElementById('service-name').value = '';
+    document.getElementById('service-price').value = '';
+    document.getElementById('service-image-url').value = '';
+    document.getElementById('service-desc').value = '';
+    document.getElementById('service-image-file').value = '';
+    
+    const container = document.getElementById('service-specs-container');
+    container.innerHTML = '';
+    addServiceSpecRow('', '');
+    
+    alert('✅ Услуга "' + name + '" добавлена!');
+}
+
+function uploadServiceImage() {
+    const fileInput = document.getElementById('service-image-file');
+    const file = fileInput.files[0];
+    if (!file) {
+        alert('Выберите файл с изображением');
+        return;
+    }
+    
+    if (file.size > 5 * 1024 * 1024) {
+        alert('Файл слишком большой. Максимум 5MB');
+        return;
+    }
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        document.getElementById('service-image-url').value = e.target.result;
+        alert('✅ Изображение загружено!');
+    };
+    reader.onerror = function() {
+        alert('Ошибка загрузки файла');
+    };
+    reader.readAsDataURL(file);
+}
+
+function deleteService(index) {
+    if (!confirm('Удалить услугу?')) return;
+    const products = getProducts();
+    products.splice(index, 1);
+    saveProducts(products);
+}
+
+function editService(index) {
+    const products = getProducts();
+    const p = products[index];
+    
+    document.getElementById('service-name').value = p.name;
+    document.getElementById('service-price').value = p.price;
+    document.getElementById('service-image-url').value = p.images ? p.images[0] : '';
+    document.getElementById('service-desc').value = p.desc;
+    
+    const container = document.getElementById('service-specs-container');
+    container.innerHTML = '';
+    if (p.specs && p.specs.length > 0) {
+        p.specs.forEach(spec => {
+            addServiceSpecRow(spec.name, spec.value);
+        });
+    } else {
+        addServiceSpecRow('', '');
+    }
+    
+    products.splice(index, 1);
+    saveProducts(products);
+    
+    document.getElementById('service-name').scrollIntoView({ behavior: 'smooth' });
+}
+
 function loginAdmin() {
     const pass = document.getElementById('admin-password').value;
     if (pass === ADMIN_PASSWORD) {
         document.getElementById('admin-login').style.display = 'none';
         document.getElementById('admin-panel').style.display = 'block';
         
-        // Загружаем все данные
-        updateCategorySelect();
         renderProductList();
+        renderServiceList();
         
-        // Добавляем одну пустую характеристику
         const container = document.getElementById('specs-container');
         container.innerHTML = '';
         addSpecRow('', '');
+        
+        const serviceContainer = document.getElementById('service-specs-container');
+        serviceContainer.innerHTML = '';
+        addServiceSpecRow('', '');
         
     } else {
         alert('❌ Неверный пароль');
@@ -272,22 +451,22 @@ function loginAdmin() {
     }
 }
 
-// === ИНИЦИАЛИЗАЦИЯ ===
 document.addEventListener('DOMContentLoaded', function() {
-    // Загружаем категории
-    updateCategorySelect();
     renderProductList();
+    renderServiceList();
 });
 
-// === ОБНОВЛЕНИЕ ДАННЫХ ИЗ ДРУГИХ ВКЛАДОК ===
 window.addEventListener('storage', function(e) {
     if (e.key === 'snowboard_products') {
         renderProductList();
+        renderServiceList();
     }
 });
 
-// Экспортируем функции
 window.getProducts = getProducts;
 window.saveProducts = saveProducts;
 window.addSpecRow = addSpecRow;
 window.removeSpec = removeSpec;
+window.addServiceSpecRow = addServiceSpecRow;
+window.removeServiceSpec = removeServiceSpec;
+window.switchTab = switchTab;
