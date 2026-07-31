@@ -28,38 +28,56 @@ const contactsData = {
 
 // === ОПОВЕЩЕНИЯ ===
 function loadAnnouncement() {
-    const announcement = localStorage.getItem('announcement');
-    if (announcement) {
+    try {
+        const announcement = localStorage.getItem('announcement');
+        if (!announcement) return null;
+        
         const data = JSON.parse(announcement);
         const now = new Date().getTime();
-        if (data.expires && now < data.expires) {
+        
+        if (!data.expires || now < data.expires) {
             const banner = document.getElementById('announcement-banner');
             const text = document.getElementById('announcement-text');
-            if (banner && text) {
+            if (banner && text && data.text) {
                 text.textContent = data.text;
                 banner.style.display = 'block';
+                return data.text;
             }
-            return data.text;
+        } else {
+            // Если истекло - удаляем
+            localStorage.removeItem('announcement');
+            const banner = document.getElementById('announcement-banner');
+            if (banner) banner.style.display = 'none';
         }
+    } catch (e) {
+        console.error('Ошибка загрузки оповещения:', e);
+        localStorage.removeItem('announcement');
     }
     return null;
 }
 
 function saveAnnouncement(text, hours = 24) {
+    if (!text || text.trim() === '') {
+        localStorage.removeItem('announcement');
+        const banner = document.getElementById('announcement-banner');
+        if (banner) banner.style.display = 'none';
+        return;
+    }
+    
     const expires = new Date().getTime() + (hours * 60 * 60 * 1000);
-    localStorage.setItem('announcement', JSON.stringify({ text, expires }));
-    // Обновляем баннер
+    localStorage.setItem('announcement', JSON.stringify({ text: text.trim(), expires }));
+    
     const banner = document.getElementById('announcement-banner');
     const textEl = document.getElementById('announcement-text');
     if (banner && textEl) {
-        textEl.textContent = text;
+        textEl.textContent = text.trim();
         banner.style.display = 'block';
     }
 }
 
 // === ТОВАРЫ ===
 const defaultProducts = [
-    // ... (все товары из предыдущих версий, добавляем контакты как отдельный раздел)
+    // ... (все товары из предыдущих версий)
     {
         id: 43,
         name: '📞 Контакты',
@@ -67,10 +85,10 @@ const defaultProducts = [
         images: [],
         desc: 'Свяжитесь с нами любым удобным способом!',
         specs: [
-            { name: '📱 Телефон', value: contactsData.phone },
-            { name: '📍 Адрес', value: contactsData.address },
-            { name: '🕐 Режим работы', value: contactsData.workHours },
-            { name: '📧 Email', value: contactsData.email }
+            { name: 'Телефон', value: contactsData.phone },
+            { name: 'Адрес', value: contactsData.address },
+            { name: 'Режим работы', value: contactsData.workHours },
+            { name: 'Email', value: contactsData.email }
         ],
         category: 'Контакты',
         isContact: true
@@ -101,6 +119,7 @@ let products = loadProducts();
 
 function renderCatalog(category) {
     const container = document.getElementById('catalog');
+    if (!container) return;
     
     if (category === 'Контакты') {
         renderContacts(container);
@@ -134,12 +153,15 @@ function renderContacts(container) {
         return;
     }
     
+    // Иконки для контактов (по одной на каждый)
+    const icons = ['📱', '📍', '🕐', '📧'];
+    
     container.innerHTML = `
         <div style="background: rgba(255,255,255,0.15); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-radius: 18px; padding: 24px; border: 1px solid rgba(255,255,255,0.15);">
             <h2 style="color: #ffffff; font-size: 24px; margin-bottom: 20px; text-shadow: 0 2px 8px rgba(0,0,0,0.4);">📞 Контакты</h2>
-            ${contact.specs.map(s => `
-                <div style="display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
-                    <span style="font-size: 22px;">${s.name.split(' ')[0]}</span>
+            ${contact.specs.map((s, index) => `
+                <div style="display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: ${index < contact.specs.length - 1 ? '1px solid rgba(255,255,255,0.1)' : 'none'};">
+                    <span style="font-size: 22px; min-width: 36px;">${icons[index] || '📌'}</span>
                     <div style="flex: 1;">
                         <div style="color: rgba(255,255,255,0.7); font-size: 13px;">${s.name}</div>
                         <div style="color: #ffffff; font-size: 16px; font-weight: 500; text-shadow: 0 1px 4px rgba(0,0,0,0.3);">${s.value}</div>
@@ -152,6 +174,7 @@ function renderContacts(container) {
 
 function renderNav() {
     const nav = document.getElementById('bottom-nav');
+    if (!nav) return;
     if (!categories || categories.length === 0) {
         nav.innerHTML = '<span style="color:#8e8e93; padding:8px; font-size:14px;">Нет категорий</span>';
         return;
@@ -180,6 +203,7 @@ function openModal(productId) {
 
     const modal = document.getElementById('product-modal');
     const body = document.getElementById('modal-body');
+    if (!modal || !body) return;
     
     currentImageIndex = 0;
     
@@ -207,12 +231,12 @@ function openModal(productId) {
 
     modal.style.display = 'flex';
     document.body.style.overflow = 'hidden';
-    
     modal.dataset.productId = productId;
 }
 
 function closeModal() {
-    document.getElementById('product-modal').style.display = 'none';
+    const modal = document.getElementById('product-modal');
+    if (modal) modal.style.display = 'none';
     document.body.style.overflow = 'hidden';
 }
 
