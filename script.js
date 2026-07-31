@@ -1,952 +1,346 @@
-// === КАТЕГОРИИ (ТОЛЬКО ЧЕРЕЗ КОД) ===
-const categories = [
-    { name: 'Доски', icon: 'Доски.png' },
-    { name: 'Ботинки', icon: 'Ботинки.png' },
-    { name: 'Шлемы', icon: 'Шлем.png' },
-    { name: 'Маски', icon: 'Маски.png' },
-    { name: 'Чехлы', icon: 'Чехлы.png' },
-    { name: 'Крепления', icon: 'Крепления.png' }
-];
+// ===== ГЛОБАЛЬНЫЕ ДАННЫЕ =====
+let products = [];
+let services = [];
+let currentTab = 'catalog';
+let currentCategory = 'boards';
 
-localStorage.setItem('snowboard_categories', JSON.stringify(categories));
-
-let currentTab = categories[0].name;
-let currentImageIndex = 0;
-
-// === ФОТО ДЛЯ КАЖДОЙ КАТЕГОРИИ (разные для каждого товара) ===
-const categoryImages = {
-    'Доски': [
-        'https://images.unsplash.com/photo-1604915124551-0313421f71da?w=600&h=400&fit=crop',
-        'https://images.unsplash.com/photo-1605087878415-00a4b0e7b5e2?w=600&h=400&fit=crop',
-        'https://images.unsplash.com/photo-1504544750208-dc0358e63f7f?w=600&h=400&fit=crop',
-        'https://images.unsplash.com/photo-1558604150-9989afc14a4c?w=600&h=400&fit=crop',
-        'https://images.unsplash.com/photo-1560490441-7910b4830b6a?w=600&h=400&fit=crop',
-        'https://images.unsplash.com/photo-1574357336335-5b94f9e8b3e4?w=600&h=400&fit=crop'
-    ],
-    'Ботинки': [
-        'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&h=400&fit=crop',
-        'https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?w=600&h=400&fit=crop',
-        'https://images.unsplash.com/photo-1605348532760-6753d2c43329?w=600&h=400&fit=crop',
-        'https://images.unsplash.com/photo-1556906781-9a4129616c1c?w=600&h=400&fit=crop'
-    ],
-    'Шлемы': [
-        'https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=600&h=400&fit=crop',
-        'https://images.unsplash.com/photo-1551522435-a13afa10f103?w=600&h=400&fit=crop'
-    ],
-    'Маски': [
-        'https://images.unsplash.com/photo-1517879484726-e0f835e2f559?w=600&h=400&fit=crop'
-    ],
-    'Чехлы': [
-        'https://images.unsplash.com/photo-1560490441-7910b4830b6a?w=600&h=400&fit=crop'
-    ],
-    'Крепления': [
-        'https://images.unsplash.com/photo-1560490441-7910b4830b6a?w=600&h=400&fit=crop'
-    ]
-};
-
-// === ВСЕ ТОВАРЫ (36 шт) С РАЗНЫМИ ФОТО ===
-const defaultProducts = [
-    // === ДОСКИ (6 шт) ===
-    {
-        id: 1,
-        name: 'Burton Custom 2025',
-        price: '54 990 ₽',
-        images: [
-            'https://images.unsplash.com/photo-1604915124551-0313421f71da?w=600&h=400&fit=crop',
-            'https://images.unsplash.com/photo-1504544750208-dc0358e63f7f?w=600&h=400&fit=crop',
-            'https://images.unsplash.com/photo-1558604150-9989afc14a4c?w=600&h=400&fit=crop'
-        ],
-        desc: 'Легендарная модель для фрирайда и парка. Идеально подходит для катания по целине и в парке. Универсальная геометрия позволяет уверенно чувствовать себя на любом склоне. Сердечник из дерева с карбоновыми вставками обеспечивает отличную упругость и контроль.',
-        specs: [
-            { name: 'Длина', value: '156 см' },
-            { name: 'Жесткость', value: '7/10' },
-            { name: 'Прогиб', value: 'Camber' },
-            { name: 'Вес райдера', value: '60-85 кг' }
-        ],
-        category: 'Доски'
-    },
-    {
-        id: 2,
-        name: 'Jones Mountain Twin',
-        price: '49 500 ₽',
-        images: [
-            'https://images.unsplash.com/photo-1605087878415-00a4b0e7b5e2?w=600&h=400&fit=crop',
-            'https://images.unsplash.com/photo-1604915124551-0313421f71da?w=600&h=400&fit=crop',
-            'https://images.unsplash.com/photo-1504544750208-dc0358e63f7f?w=600&h=400&fit=crop'
-        ],
-        desc: 'Универсальная доска для фрирайда. Отлично держит дугу на жестком склоне и легко плывет по пухляку. Симметричная геометрия для катания в обе стороны. Сердечник из бамбука и тополя.',
-        specs: [
-            { name: 'Длина', value: '158 см' },
-            { name: 'Жесткость', value: '8/10' },
-            { name: 'Прогиб', value: 'Camber/Flat' },
-            { name: 'Вес райдера', value: '65-90 кг' }
-        ],
-        category: 'Доски'
-    },
-    {
-        id: 3,
-        name: 'Lib Tech T.Rice Pro',
-        price: '59 900 ₽',
-        images: [
-            'https://images.unsplash.com/photo-1504544750208-dc0358e63f7f?w=600&h=400&fit=crop',
-            'https://images.unsplash.com/photo-1605087878415-00a4b0e7b5e2?w=600&h=400&fit=crop',
-            'https://images.unsplash.com/photo-1604915124551-0313421f71da?w=600&h=400&fit=crop'
-        ],
-        desc: 'Профессиональная доска для больших гор. Разработана совместно с Трэвисом Райсом. Магни-тракшн технология для лучшего сцепления на льду. Легкая и прочная конструкция.',
-        specs: [
-            { name: 'Длина', value: '157 см' },
-            { name: 'Жесткость', value: '9/10' },
-            { name: 'Прогиб', value: 'C2' },
-            { name: 'Вес райдера', value: '70-95 кг' }
-        ],
-        category: 'Доски'
-    },
-    {
-        id: 4,
-        name: 'Yes Standard',
-        price: '44 900 ₽',
-        images: [
-            'https://images.unsplash.com/photo-1558604150-9989afc14a4c?w=600&h=400&fit=crop',
-            'https://images.unsplash.com/photo-1504544750208-dc0358e63f7f?w=600&h=400&fit=crop',
-            'https://images.unsplash.com/photo-1604915124551-0313421f71da?w=600&h=400&fit=crop'
-        ],
-        desc: 'Новая модель с уникальной геометрией. Подходит для любого стиля катания. Технология UnderBite позволяет легко кантовать и дает отличное сцепление. Сердечник из осины.',
-        specs: [
-            { name: 'Длина', value: '154 см' },
-            { name: 'Жесткость', value: '6/10' },
-            { name: 'Прогиб', value: 'Camber' },
-            { name: 'Вес райдера', value: '55-80 кг' }
-        ],
-        category: 'Доски'
-    },
-    {
-        id: 5,
-        name: 'Salomon Assassin',
-        price: '47 900 ₽',
-        images: [
-            'https://images.unsplash.com/photo-1560490441-7910b4830b6a?w=600&h=400&fit=crop',
-            'https://images.unsplash.com/photo-1558604150-9989afc14a4c?w=600&h=400&fit=crop',
-            'https://images.unsplash.com/photo-1604915124551-0313421f71da?w=600&h=400&fit=crop'
-        ],
-        desc: 'Универсальная доска для парка и трасс. Идеальный баланс между попом и стабильностью. Квадро-камель профиль дает уверенность на любом покрытии. Отличная доска для прогресса.',
-        specs: [
-            { name: 'Длина', value: '155 см' },
-            { name: 'Жесткость', value: '7/10' },
-            { name: 'Прогиб', value: 'Quad Camber' },
-            { name: 'Вес райдера', value: '60-85 кг' }
-        ],
-        category: 'Доски'
-    },
-    {
-        id: 6,
-        name: 'Ride Warpig',
-        price: '52 500 ₽',
-        images: [
-            'https://images.unsplash.com/photo-1574357336335-5b94f9e8b3e4?w=600&h=400&fit=crop',
-            'https://images.unsplash.com/photo-1560490441-7910b4830b6a?w=600&h=400&fit=crop',
-            'https://images.unsplash.com/photo-1558604150-9989afc14a4c?w=600&h=400&fit=crop'
-        ],
-        desc: 'Короткая широкая доска для парка и фрирайда. Отличная плавучесть в пухляке и стабильность на жестком склоне. Необычная геометрия для максимального удовольствия от катания.',
-        specs: [
-            { name: 'Длина', value: '151 см' },
-            { name: 'Жесткость', value: '8/10' },
-            { name: 'Прогиб', value: 'Flat' },
-            { name: 'Вес райдера', value: '65-90 кг' }
-        ],
-        category: 'Доски'
-    },
-    
-    // === БОТИНКИ (6 шт) ===
-    {
-        id: 7,
-        name: 'Adidas Tactical ADV',
-        price: '19 990 ₽',
-        images: [
-            'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&h=400&fit=crop',
-            'https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?w=600&h=400&fit=crop',
-            'https://images.unsplash.com/photo-1556906781-9a4129616c1c?w=600&h=400&fit=crop'
-        ],
-        desc: 'Ботинки с системой быстрой шнуровки и анатомической стелькой. Превосходная поддержка голеностопа и комфорт в течение всего дня катания. Внешняя оболочка из прочного материала защищает от влаги.',
-        specs: [
-            { name: 'Размер', value: '42-46' },
-            { name: 'Жесткость', value: '6/10' },
-            { name: 'Вес', value: '1.8 кг' },
-            { name: 'Шнуровка', value: 'Быстрая' }
-        ],
-        category: 'Ботинки'
-    },
-    {
-        id: 8,
-        name: 'Burton Ion 2025',
-        price: '24 900 ₽',
-        images: [
-            'https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?w=600&h=400&fit=crop',
-            'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&h=400&fit=crop',
-            'https://images.unsplash.com/photo-1605348532760-6753d2c43329?w=600&h=400&fit=crop'
-        ],
-        desc: 'Профессиональные ботинки с технологией Speed Zone. Идеальная поддержка и комфорт. Система регулировки наклона позволяет настроить посадку под любой стиль катания.',
-        specs: [
-            { name: 'Размер', value: '40-47' },
-            { name: 'Жесткость', value: '8/10' },
-            { name: 'Вес', value: '2.0 кг' },
-            { name: 'Шнуровка', value: 'Speed Zone' }
-        ],
-        category: 'Ботинки'
-    },
-    {
-        id: 9,
-        name: 'DC Judge BOA',
-        price: '21 500 ₽',
-        images: [
-            'https://images.unsplash.com/photo-1605348532760-6753d2c43329?w=600&h=400&fit=crop',
-            'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&h=400&fit=crop',
-            'https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?w=600&h=400&fit=crop'
-        ],
-        desc: 'Ботинки с двойной системой BOA для идеальной фиксации. Анатомическая подошва с амортизацией. Отличный выбор для агрессивного катания и фрирайда.',
-        specs: [
-            { name: 'Размер', value: '41-48' },
-            { name: 'Жесткость', value: '9/10' },
-            { name: 'Вес', value: '2.2 кг' },
-            { name: 'Шнуровка', value: 'Dual BOA' }
-        ],
-        category: 'Ботинки'
-    },
-    {
-        id: 10,
-        name: 'Nike SB Zoom Ja',
-        price: '17 900 ₽',
-        images: [
-            'https://images.unsplash.com/photo-1556906781-9a4129616c1c?w=600&h=400&fit=crop',
-            'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&h=400&fit=crop',
-            'https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?w=600&h=400&fit=crop'
-        ],
-        desc: 'Легкие и удобные ботинки от Nike. Технология Zoom Air для амортизации. Дышащий материал и быстрая шнуровка. Идеальный вариант для парка.',
-        specs: [
-            { name: 'Размер', value: '40-45' },
-            { name: 'Жесткость', value: '5/10' },
-            { name: 'Вес', value: '1.6 кг' },
-            { name: 'Шнуровка', value: 'Классическая' }
-        ],
-        category: 'Ботинки'
-    },
-    {
-        id: 11,
-        name: 'Vans Hi-Standard Pro',
-        price: '18 900 ₽',
-        images: [
-            'https://images.unsplash.com/photo-1605348532760-6753d2c43329?w=600&h=400&fit=crop',
-            'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&h=400&fit=crop',
-            'https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?w=600&h=400&fit=crop'
-        ],
-        desc: 'Классические ботинки от Vans. Отличная подошва с амортизацией и комфортная внутренняя стелька. Стильный дизайн и надежная конструкция для любого стиля катания.',
-        specs: [
-            { name: 'Размер', value: '40-47' },
-            { name: 'Жесткость', value: '6/10' },
-            { name: 'Вес', value: '1.7 кг' },
-            { name: 'Шнуровка', value: 'Классическая' }
-        ],
-        category: 'Ботинки'
-    },
-    {
-        id: 12,
-        name: 'Northwave Decade',
-        price: '22 900 ₽',
-        images: [
-            'https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?w=600&h=400&fit=crop',
-            'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&h=400&fit=crop',
-            'https://images.unsplash.com/photo-1605348532760-6753d2c43329?w=600&h=400&fit=crop'
-        ],
-        desc: 'Профессиональные ботинки для фрирайда. Технология Power Frame обеспечивает отличную передачу усилий. Удобная колодка и качественные материалы для долгой службы.',
-        specs: [
-            { name: 'Размер', value: '41-47' },
-            { name: 'Жесткость', value: '8/10' },
-            { name: 'Вес', value: '2.1 кг' },
-            { name: 'Шнуровка', value: 'Система SL' }
-        ],
-        category: 'Ботинки'
-    },
-    
-    // === ШЛЕМЫ (6 шт) ===
-    {
-        id: 13,
-        name: 'Oakley MOD1',
-        price: '14 200 ₽',
-        images: [
-            'https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=600&h=400&fit=crop',
-            'https://images.unsplash.com/photo-1551522435-a13afa10f103?w=600&h=400&fit=crop'
-        ],
-        desc: 'Легкий шлем с вентиляционной системой и защитой от ударов. Интегрированная система регулировки размера. Внутренняя подкладка из гипоаллергенных материалов отводит влагу.',
-        specs: [
-            { name: 'Вес', value: '380 г' },
-            { name: 'Размер', value: 'S-L' },
-            { name: 'Сертификат', value: 'CE' },
-            { name: 'Вентиляция', value: 'Регулируемая' }
-        ],
-        category: 'Шлемы'
-    },
-    {
-        id: 14,
-        name: 'Smith Holt',
-        price: '11 900 ₽',
-        images: [
-            'https://images.unsplash.com/photo-1551522435-a13afa10f103?w=600&h=400&fit=crop',
-            'https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=600&h=400&fit=crop'
-        ],
-        desc: 'Бюджетная модель шлема с отличной защитой. Система регулировки размера SnapFit. Внутренняя подкладка из мягкого материала для комфорта.',
-        specs: [
-            { name: 'Вес', value: '350 г' },
-            { name: 'Размер', value: 'M-L' },
-            { name: 'Сертификат', value: 'EN 1077' },
-            { name: 'Вентиляция', value: 'Фиксированная' }
-        ],
-        category: 'Шлемы'
-    },
-    {
-        id: 15,
-        name: 'POC Obex BC',
-        price: '19 900 ₽',
-        images: [
-            'https://images.unsplash.com/photo-1551522435-a13afa10f103?w=600&h=400&fit=crop',
-            'https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=600&h=400&fit=crop'
-        ],
-        desc: 'Профессиональный шлем для бэккантри. Защита от боковых и задних ударов. Технология RECCO для поиска в лавинах. Легкая и прочная конструкция.',
-        specs: [
-            { name: 'Вес', value: '520 г' },
-            { name: 'Размер', value: 'S-XL' },
-            { name: 'Сертификат', value: 'EN 1077' },
-            { name: 'RECCO', value: 'Да' }
-        ],
-        category: 'Шлемы'
-    },
-    {
-        id: 16,
-        name: 'Giro Ledge',
-        price: '12 900 ₽',
-        images: [
-            'https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=600&h=400&fit=crop',
-            'https://images.unsplash.com/photo-1551522435-a13afa10f103?w=600&h=400&fit=crop'
-        ],
-        desc: 'Стильный и безопасный шлем для активного катания. Система регулировки In Form 2. Отличная вентиляция и комфортная посадка. Идеально подходит для фрирайда.',
-        specs: [
-            { name: 'Вес', value: '410 г' },
-            { name: 'Размер', value: 'S-L' },
-            { name: 'Сертификат', value: 'CE' },
-            { name: 'Вентиляция', value: 'Регулируемая' }
-        ],
-        category: 'Шлемы'
-    },
-    {
-        id: 17,
-        name: 'Bern Watts',
-        price: '13 900 ₽',
-        images: [
-            'https://images.unsplash.com/photo-1551522435-a13afa10f103?w=600&h=400&fit=crop',
-            'https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=600&h=400&fit=crop'
-        ],
-        desc: 'Универсальный шлем для парка и улицы. Защита от боковых ударов. Внутренняя подкладка с технологией Zip Mold для комфортной посадки.',
-        specs: [
-            { name: 'Вес', value: '430 г' },
-            { name: 'Размер', value: 'M-XL' },
-            { name: 'Сертификат', value: 'EN 1077' },
-            { name: 'Вентиляция', value: 'Активная' }
-        ],
-        category: 'Шлемы'
-    },
-    {
-        id: 18,
-        name: 'Sweet Protection Trooper 2Vi',
-        price: '22 900 ₽',
-        images: [
-            'https://images.unsplash.com/photo-1551522435-a13afa10f103?w=600&h=400&fit=crop',
-            'https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=600&h=400&fit=crop'
-        ],
-        desc: 'Топовая модель шлема для агрессивного катания. Технология 2Vi для максимальной защиты. Высококачественные материалы и отличная вентиляция для комфорта.',
-        specs: [
-            { name: 'Вес', value: '550 г' },
-            { name: 'Размер', value: 'S-XL' },
-            { name: 'Сертификат', value: 'ASTM' },
-            { name: 'Вентиляция', value: 'Регулируемая' }
-        ],
-        category: 'Шлемы'
-    },
-    
-    // === МАСКИ (6 шт) ===
-    {
-        id: 19,
-        name: 'Oakley Flight Deck L',
-        price: '15 900 ₽',
-        images: [
-            'https://images.unsplash.com/photo-1517879484726-e0f835e2f559?w=600&h=400&fit=crop'
-        ],
-        desc: 'Большая маска с широким обзором. Технология Prizm для четкости изображения. Тройной слой пены для комфорта и антизапотевающее покрытие.',
-        specs: [
-            { name: 'Линза', value: 'Prizm' },
-            { name: 'Обзор', value: 'Широкий' },
-            { name: 'Покрытие', value: 'Антизапотевающее' },
-            { name: 'Размер', value: 'L' }
-        ],
-        category: 'Маски'
-    },
-    {
-        id: 20,
-        name: 'Smith I/O MAG',
-        price: '18 900 ₽',
-        images: [
-            'https://images.unsplash.com/photo-1517879484726-e0f835e2f559?w=600&h=400&fit=crop'
-        ],
-        desc: 'Профессиональная маска с магнитной системой смены линз. Технология ChromaPop для ярких цветов. Двойная пена для максимального комфорта.',
-        specs: [
-            { name: 'Линза', value: 'ChromaPop' },
-            { name: 'Смена линз', value: 'MAG' },
-            { name: 'Покрытие', value: '5-слойное' },
-            { name: 'Размер', value: 'M' }
-        ],
-        category: 'Маски'
-    },
-    {
-        id: 21,
-        name: 'Dragon X2s',
-        price: '14 900 ₽',
-        images: [
-            'https://images.unsplash.com/photo-1517879484726-e0f835e2f559?w=600&h=400&fit=crop'
-        ],
-        desc: 'Маска с футуристическим дизайном. Технология Lumalens для четкости. Система быстрой смены линз Swiftlock. Отличная защита от UV-лучей.',
-        specs: [
-            { name: 'Линза', value: 'Lumalens' },
-            { name: 'Смена линз', value: 'Swiftlock' },
-            { name: 'UV защита', value: '100%' },
-            { name: 'Размер', value: 'L' }
-        ],
-        category: 'Маски'
-    },
-    {
-        id: 22,
-        name: 'Anon M4',
-        price: '16 900 ₽',
-        images: [
-            'https://images.unsplash.com/photo-1517879484726-e0f835e2f559?w=600&h=400&fit=crop'
-        ],
-        desc: 'Инновационная маска с периферийным обзором. Технология Cylindrical для минимального искажения. Магнитная система смены линз MFI.',
-        specs: [
-            { name: 'Линза', value: 'Cylindrical' },
-            { name: 'Смена линз', value: 'MFI' },
-            { name: 'Покрытие', value: 'Антизапотевающее' },
-            { name: 'Размер', value: 'M' }
-        ],
-        category: 'Маски'
-    },
-    {
-        id: 23,
-        name: 'Giro Contact',
-        price: '12 900 ₽',
-        images: [
-            'https://images.unsplash.com/photo-1517879484726-e0f835e2f559?w=600&h=400&fit=crop'
-        ],
-        desc: 'Универсальная маска с увеличенным обзором. Технология VIVID для четкости в любую погоду. Отличная вентиляция и комфортная посадка.',
-        specs: [
-            { name: 'Линза', value: 'VIVID' },
-            { name: 'Обзор', value: 'Увеличенный' },
-            { name: 'UV защита', value: '100%' },
-            { name: 'Размер', value: 'L' }
-        ],
-        category: 'Маски'
-    },
-    {
-        id: 24,
-        name: 'Electric EGX',
-        price: '13 900 ₽',
-        images: [
-            'https://images.unsplash.com/photo-1517879484726-e0f835e2f559?w=600&h=400&fit=crop'
-        ],
-        desc: 'Стильная маска с отличной защитой от солнца. Технология Plano для четкости. Система Quick Change для быстрой смены линз.',
-        specs: [
-            { name: 'Линза', value: 'Plano' },
-            { name: 'Смена линз', value: 'Quick Change' },
-            { name: 'UV защита', value: '100%' },
-            { name: 'Размер', value: 'M' }
-        ],
-        category: 'Маски'
-    },
-    
-    // === ЧЕХЛЫ (6 шт) ===
-    {
-        id: 25,
-        name: 'Dakine Low Rider',
-        price: '8 900 ₽',
-        images: [
-            'https://images.unsplash.com/photo-1560490441-7910b4830b6a?w=600&h=400&fit=crop'
-        ],
-        desc: 'Универсальный чехол для сноуборда. Защищает доску при транспортировке. Имеет дополнительные карманы для креплений и инструментов.',
-        specs: [
-            { name: 'Длина', value: '156 см' },
-            { name: 'Материал', value: 'Polyester' },
-            { name: 'Карманы', value: '2' },
-            { name: 'Вес', value: '0.8 кг' }
-        ],
-        category: 'Чехлы'
-    },
-    {
-        id: 26,
-        name: 'Burton Wheelie Gig',
-        price: '12 900 ₽',
-        images: [
-            'https://images.unsplash.com/photo-1560490441-7910b4830b6a?w=600&h=400&fit=crop'
-        ],
-        desc: 'Чехол с колесами для легкой транспортировки. Жесткая конструкция для защиты от ударов. Удобные ручки и дополнительные карманы для снаряжения.',
-        specs: [
-            { name: 'Длина', value: '160 см' },
-            { name: 'Материал', value: 'Нейлон' },
-            { name: 'Колеса', value: 'Да' },
-            { name: 'Карманы', value: '3' }
-        ],
-        category: 'Чехлы'
-    },
-    {
-        id: 27,
-        name: 'Jones Snowboard Bag',
-        price: '10 900 ₽',
-        images: [
-            'https://images.unsplash.com/photo-1560490441-7910b4830b6a?w=600&h=400&fit=crop'
-        ],
-        desc: 'Легкий чехол для сноуборда. Используется при транспортировке и хранении. Защищает от царапин и пыли. Водоотталкивающая пропитка.',
-        specs: [
-            { name: 'Длина', value: '165 см' },
-            { name: 'Материал', value: 'Polyester' },
-            { name: 'Водоотталкивание', value: 'Да' },
-            { name: 'Вес', value: '0.9 кг' }
-        ],
-        category: 'Чехлы'
-    },
-    {
-        id: 28,
-        name: 'Ride Protective Sleeve',
-        price: '6 900 ₽',
-        images: [
-            'https://images.unsplash.com/photo-1560490441-7910b4830b6a?w=600&h=400&fit=crop'
-        ],
-        desc: 'Простой и удобный чехол-рукав для ежедневного использования. Защищает доску от царапин. Легко складывается и занимает минимум места.',
-        specs: [
-            { name: 'Длина', value: '158 см' },
-            { name: 'Материал', value: 'Неопрен' },
-            { name: 'Вес', value: '0.5 кг' },
-            { name: 'Складной', value: 'Да' }
-        ],
-        category: 'Чехлы'
-    },
-    {
-        id: 29,
-        name: 'Salomon Board Bag',
-        price: '9 900 ₽',
-        images: [
-            'https://images.unsplash.com/photo-1560490441-7910b4830b6a?w=600&h=400&fit=crop'
-        ],
-        desc: 'Универсальный чехол для доски и креплений. Имеет отдельные отделения для снаряжения. Жесткая конструкция для защиты при транспортировке.',
-        specs: [
-            { name: 'Длина', value: '162 см' },
-            { name: 'Материал', value: 'Polyester' },
-            { name: 'Отделения', value: '2' },
-            { name: 'Вес', value: '1.2 кг' }
-        ],
-        category: 'Чехлы'
-    },
-    {
-        id: 30,
-        name: 'K2 Travel Cover',
-        price: '7 900 ₽',
-        images: [
-            'https://images.unsplash.com/photo-1560490441-7910b4830b6a?w=600&h=400&fit=crop'
-        ],
-        desc: 'Компактный чехол для путешествий. Защищает доску от пыли и царапин. Легкий и прочный материал. Идеален для полетов и поездок.',
-        specs: [
-            { name: 'Длина', value: '155 см' },
-            { name: 'Материал', value: 'Нейлон' },
-            { name: 'Вес', value: '0.7 кг' },
-            { name: 'Складной', value: 'Да' }
-        ],
-        category: 'Чехлы'
-    },
-    
-    // === КРЕПЛЕНИЯ (6 шт) ===
-    {
-        id: 31,
-        name: 'Union Force',
-        price: '24 500 ₽',
-        images: [
-            'https://images.unsplash.com/photo-1560490441-7910b4830b6a?w=600&h=400&fit=crop'
-        ],
-        desc: 'Надежные крепления для любого стиля катания. Алюминиевая база с высоким качеством обработки. Быстрая регулировка под любой размер ботинка. Отличная передача усилий на кант.',
-        specs: [
-            { name: 'Вес', value: '1.2 кг' },
-            { name: 'Материал', value: 'Алюминий' },
-            { name: 'Размер', value: 'S/M' },
-            { name: 'Жесткость', value: '7/10' }
-        ],
-        category: 'Крепления'
-    },
-    {
-        id: 32,
-        name: 'Burton Genesis',
-        price: '26 900 ₽',
-        images: [
-            'https://images.unsplash.com/photo-1560490441-7910b4830b6a?w=600&h=400&fit=crop'
-        ],
-        desc: 'Крепления с высокой поддержкой. Технология AutoCAN для быстрой настройки. Удобный дизайн и отличная амортизация. Идеальны для фрирайда.',
-        specs: [
-            { name: 'Вес', value: '1.4 кг' },
-            { name: 'Материал', value: 'Композит' },
-            { name: 'Размер', value: 'L' },
-            { name: 'Жесткость', value: '8/10' }
-        ],
-        category: 'Крепления'
-    },
-    {
-        id: 33,
-        name: 'K2 Indy',
-        price: '19 900 ₽',
-        images: [
-            'https://images.unsplash.com/photo-1560490441-7910b4830b6a?w=600&h=400&fit=crop'
-        ],
-        desc: 'Бюджетные крепления для парка и трасс. Прочная конструкция и быстрая регулировка. Отличное соотношение цены и качества.',
-        specs: [
-            { name: 'Вес', value: '1.0 кг' },
-            { name: 'Материал', value: 'Алюминий' },
-            { name: 'Размер', value: 'M' },
-            { name: 'Жесткость', value: '6/10' }
-        ],
-        category: 'Крепления'
-    },
-    {
-        id: 34,
-        name: 'Ride A-10',
-        price: '22 900 ₽',
-        images: [
-            'https://images.unsplash.com/photo-1560490441-7910b4830b6a?w=600&h=400&fit=crop'
-        ],
-        desc: 'Крепления с высокой жесткостью для агрессивного катания. Технология Series 4 для максимальной передачи усилий. Отличная поддержка ноги.',
-        specs: [
-            { name: 'Вес', value: '1.3 кг' },
-            { name: 'Материал', value: 'Алюминий' },
-            { name: 'Размер', value: 'L' },
-            { name: 'Жесткость', value: '9/10' }
-        ],
-        category: 'Крепления'
-    },
-    {
-        id: 35,
-        name: 'Salomon Hologram',
-        price: '21 900 ₽',
-        images: [
-            'https://images.unsplash.com/photo-1560490441-7910b4830b6a?w=600&h=400&fit=crop'
-        ],
-        desc: 'Инновационные крепления с технологией Shadow Fit. Автоматическая подстройка под стиль катания. Легкие и прочные.',
-        specs: [
-            { name: 'Вес', value: '1.1 кг' },
-            { name: 'Материал', value: 'Композит' },
-            { name: 'Размер', value: 'M/L' },
-            { name: 'Жесткость', value: '7/10' }
-        ],
-        category: 'Крепления'
-    },
-    {
-        id: 36,
-        name: 'Drake Fifty',
-        price: '18 900 ₽',
-        images: [
-            'https://images.unsplash.com/photo-1560490441-7910b4830b6a?w=600&h=400&fit=crop'
-        ],
-        desc: 'Надежные крепления для фрирайда и парка. Алюминиевая конструкция с быстрой регулировкой. Отличная передача усилий на кант.',
-        specs: [
-            { name: 'Вес', value: '1.0 кг' },
-            { name: 'Материал', value: 'Алюминий' },
-            { name: 'Размер', value: 'M' },
-            { name: 'Жесткость', value: '6/10' }
-        ],
-        category: 'Крепления'
-    }
-];
-
-// === ФУНКЦИЯ ДЛЯ ЗАГРУЗКИ ДАННЫХ ===
-function loadProducts() {
-    let storedProducts = JSON.parse(localStorage.getItem('snowboard_products'));
-    
-    if (!storedProducts || storedProducts.length < defaultProducts.length) {
-        localStorage.setItem('snowboard_products', JSON.stringify(defaultProducts));
-        return defaultProducts;
+// ===== ЗАГРУЗКА ДАННЫХ =====
+function loadData() {
+    // Загрузка товаров
+    const storedProducts = localStorage.getItem('snowshop_products');
+    if (storedProducts) {
+        products = JSON.parse(storedProducts);
+    } else {
+        products = [
+            { id: 1, name: 'Burton Custom', price: '49 900 ₽', image: 'https://images.unsplash.com/photo-1551698613-55f2bf2cb3f1?w=400&h=400&fit=crop', category: 'boards', desc: 'Классический фрирайд, универсал' },
+            { id: 2, name: 'Union Force', price: '24 500 ₽', image: 'https://images.unsplash.com/photo-1634067473700-8f2e5c6aa2b8?w=400&h=400&fit=crop', category: 'bindings', desc: 'Надёжные крепления для всего' },
+            { id: 3, name: 'Nitro Team', price: '32 200 ₽', image: 'https://images.unsplash.com/photo-1600442717570-325f2c6af79c?w=400&h=400&fit=crop', category: 'boots', desc: 'Жёсткие ботинки для карвинга' },
+            { id: 4, name: 'Smith Vantage', price: '18 700 ₽', image: 'https://images.unsplash.com/photo-1618498082410-b4aa22193b38?w=400&h=400&fit=crop', category: 'helmets', desc: 'Лёгкий шлем с MIPS' },
+            { id: 5, name: 'Jones Flagship', price: '58 300 ₽', image: 'https://images.unsplash.com/photo-1551698613-55f2bf2cb3f1?w=400&h=400&fit=crop', category: 'boards', desc: 'Фрирайд для глубокого снега' },
+            { id: 6, name: 'Burton Step On', price: '28 900 ₽', image: 'https://images.unsplash.com/photo-1634067473700-8f2e5c6aa2b8?w=400&h=400&fit=crop', category: 'bindings', desc: 'Система быстрого входа' },
+        ];
+        saveProducts();
     }
     
-    const storedIds = storedProducts.map(p => p.id);
-    const missingProducts = defaultProducts.filter(p => !storedIds.includes(p.id));
-    
-    if (missingProducts.length > 0) {
-        storedProducts = [...storedProducts, ...missingProducts];
-        localStorage.setItem('snowboard_products', JSON.stringify(storedProducts));
+    // Загрузка услуг
+    const storedServices = localStorage.getItem('snowshop_services');
+    if (storedServices) {
+        services = JSON.parse(storedServices);
+    } else {
+        services = [
+            { id: 1, name: 'Заточка кантов', price: '1 500 ₽', desc: 'Профессиональная заточка кантов на станке. Восстанавливаем геометрию.' },
+            { id: 2, name: 'Смазка скользяка', price: '2 200 ₽', desc: 'Горячая смазка с чисткой. Используем только качественные парафины.' },
+            { id: 3, name: 'Ремонт скользящей поверхности', price: '3 500 ₽', desc: 'Устранение царапин, сколов и пробоин. Полное восстановление.' },
+            { id: 4, name: 'Установка креплений', price: '1 000 ₽', desc: 'Профессиональная установка и настройка креплений под ваш стиль катания.' },
+        ];
+        saveServices();
     }
     
-    return storedProducts;
+    renderCatalog(currentCategory);
+    renderServices();
 }
 
-let products = loadProducts();
+// ===== СОХРАНЕНИЕ ДАННЫХ =====
+function saveProducts() {
+    localStorage.setItem('snowshop_products', JSON.stringify(products));
+}
 
-// === РЕНДЕР КАТАЛОГА ===
+function saveServices() {
+    localStorage.setItem('snowshop_services', JSON.stringify(services));
+}
+
+// ===== РЕНДЕРИНГ КАТАЛОГА =====
 function renderCatalog(category) {
-    const container = document.getElementById('catalog');
+    const catalog = document.getElementById('catalog');
     const filtered = products.filter(p => p.category === category);
-
+    
     if (filtered.length === 0) {
-        container.innerHTML = `<div class="empty-message">Нет товаров в этой категории</div>`;
+        catalog.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:40px 0; color:var(--text-secondary);">❄️ Товаров пока нет</div>`;
         return;
     }
 
-    container.innerHTML = filtered.map(p => `
-        <div class="product-card" data-id="${p.id}" onclick="openModal(${p.id})">
-            <img src="${p.images && p.images.length > 0 ? p.images[0] : 'https://placehold.co/600x400/ffffff/cccccc?text=No+Image'}" alt="${p.name}" loading="lazy" onerror="this.src='https://placehold.co/600x400/ffffff/cccccc?text=No+Image'" />
-            <h3>${p.name}</h3>
+    catalog.innerHTML = filtered.map((p, index) => `
+        <div class="product-card" style="animation-delay: ${index * 0.05}s;">
+            <img src="${p.image}" alt="${p.name}" loading="lazy" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Crect fill=%22%2314181c%22 width=%22100%22 height=%22100%22/%3E%3Ctext x=%2250%22 y=%2255%22 text-anchor=%22middle%22 fill=%22%23555%22 font-size=%2240%22 font-family=%22Arial%22%3E🏂%3C/text%3E%3C/svg%3E'">
+            <div class="name">${p.name}</div>
             <div class="price">${p.price}</div>
-            <div class="desc-preview">${p.desc}</div>
-            <div class="specs">
-                ${p.specs.slice(0, 2).map(s => `<span>${s.name}: ${s.value}</span>`).join('')}
-            </div>
-            <div class="read-more">Читать полностью →</div>
+            <div class="desc">${p.desc || ''}</div>
         </div>
     `).join('');
 }
 
-// === РЕНДЕР НАВИГАЦИИ ===
-function renderNav() {
-    const nav = document.getElementById('bottom-nav');
-    if (!categories || categories.length === 0) {
-        nav.innerHTML = '<span style="color:#8e8e93; padding:8px; font-size:14px;">Нет категорий</span>';
+// ===== РЕНДЕРИНГ УСЛУГ =====
+function renderServices() {
+    const servicesContainer = document.getElementById('services');
+    
+    if (services.length === 0) {
+        servicesContainer.innerHTML = `
+            <div style="text-align:center; padding:40px 0; color:var(--text-secondary);">
+                🔧 Услуг пока нет
+            </div>
+        `;
         return;
     }
 
-    nav.innerHTML = categories.map(cat => `
-        <button class="nav-btn ${currentTab === cat.name ? 'active' : ''}" data-tab="${cat.name}">
-            <img src="${cat.icon}" alt="${cat.name}" onerror="this.src='https://placehold.co/32/cccccc/aaaaaa?text=?'" />
-        </button>
+    servicesContainer.innerHTML = services.map((s, index) => `
+        <div class="service-card" style="animation-delay: ${index * 0.05}s;">
+            <div class="service-header">
+                <div class="service-name">${s.name}</div>
+                <div class="service-price">${s.price}</div>
+            </div>
+            <div class="service-desc">${s.desc || 'Без описания'}</div>
+        </div>
     `).join('');
+}
 
+// ===== НАВИГАЦИЯ =====
+function setupNavigation() {
     document.querySelectorAll('.nav-btn').forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            e.preventDefault();
+        btn.addEventListener('click', function() {
+            const tab = this.dataset.tab;
+            const category = this.dataset.category;
+            
+            // Обновляем активную кнопку
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
             this.classList.add('active');
-            currentTab = this.dataset.tab;
-            renderCatalog(currentTab);
+            
+            // Переключаем вкладки
+            currentTab = tab;
+            
+            if (tab === 'catalog') {
+                document.getElementById('catalog').style.display = 'grid';
+                document.getElementById('services').style.display = 'none';
+                currentCategory = category;
+                renderCatalog(currentCategory);
+            } else if (tab === 'services') {
+                document.getElementById('catalog').style.display = 'none';
+                document.getElementById('services').style.display = 'flex';
+                renderServices();
+            }
         });
     });
 }
 
-// === МОДАЛЬНОЕ ОКНО С КАРУСЕЛЬЮ ===
-function openModal(productId) {
-    const product = products.find(p => p.id === productId);
-    if (!product) return;
-
-    const modal = document.getElementById('product-modal');
-    const body = document.getElementById('modal-body');
-    
-    currentImageIndex = 0;
-    
-    const hasMultipleImages = product.images && product.images.length > 1;
-    const images = product.images || ['https://placehold.co/600x400/ffffff/cccccc?text=No+Image'];
-
-    body.innerHTML = `
-        <div class="modal-image-container">
-            <img id="modal-main-image" src="${images[0]}" alt="${product.name}" onerror="this.src='https://placehold.co/600x400/ffffff/cccccc?text=No+Image'" />
-            ${hasMultipleImages ? `
-                <button class="carousel-btn carousel-left" onclick="changeImage(${product.id}, -1)">‹</button>
-                <button class="carousel-btn carousel-right" onclick="changeImage(${product.id}, 1)">›</button>
-                <div class="carousel-dots">
-                    ${images.map((_, idx) => `<span class="carousel-dot ${idx === 0 ? 'active' : ''}" onclick="goToImage(${product.id}, ${idx})"></span>`).join('')}
-                </div>
-            ` : ''}
-        </div>
-        <h2>${product.name}</h2>
-        <div class="modal-price">${product.price}</div>
-        <div class="modal-desc">${product.desc}</div>
-        <div class="modal-specs">
-            ${product.specs.map(s => `<div class="spec-item"><span class="spec-name">${s.name}</span><span class="spec-value">${s.value}</span></div>`).join('')}
-        </div>
-    `;
-
-    modal.style.display = 'flex';
-    document.body.style.overflow = 'hidden';
-    
-    // Сохраняем ID товара для карусели
-    modal.dataset.productId = productId;
-}
-
-function closeModal() {
-    document.getElementById('product-modal').style.display = 'none';
-    document.body.style.overflow = 'hidden';
-}
-
-function changeImage(productId, direction) {
-    const product = products.find(p => p.id === productId);
-    if (!product || !product.images || product.images.length <= 1) return;
-    
-    const images = product.images;
-    currentImageIndex = (currentImageIndex + direction + images.length) % images.length;
-    
-    const mainImg = document.getElementById('modal-main-image');
-    if (mainImg) {
-        mainImg.src = images[currentImageIndex];
-        mainImg.alt = product.name;
-    }
-    
-    // Обновляем точки
-    const dots = document.querySelectorAll('.carousel-dot');
-    dots.forEach((dot, idx) => {
-        dot.classList.toggle('active', idx === currentImageIndex);
-    });
-}
-
-function goToImage(productId, index) {
-    const product = products.find(p => p.id === productId);
-    if (!product || !product.images || index >= product.images.length) return;
-    
-    currentImageIndex = index;
-    const mainImg = document.getElementById('modal-main-image');
-    if (mainImg) {
-        mainImg.src = product.images[index];
-        mainImg.alt = product.name;
-    }
-    
-    const dots = document.querySelectorAll('.carousel-dot');
-    dots.forEach((dot, idx) => {
-        dot.classList.toggle('active', idx === index);
-    });
-}
-
-// === ЗАКРЫТИЕ МОДАЛКИ ===
-document.addEventListener('DOMContentLoaded', function() {
-    const modal = document.getElementById('product-modal');
-    const closeBtn = document.getElementById('modal-close');
-    
-    if (closeBtn) {
-        closeBtn.addEventListener('click', closeModal);
-    }
-    
-    if (modal) {
-        modal.addEventListener('click', function(e) {
-            if (e.target === this) closeModal();
-        });
-    }
-});
-
-// === ЗАГРУЗОЧНЫЙ ЭКРАН ===
-function updateCountdown() {
-    const now = new Date();
-    const target = new Date(now.getFullYear(), 11, 1);
-    if (now > target) target.setFullYear(target.getFullYear() + 1);
-    const diff = Math.max(0, target - now);
-
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
-    const minutes = Math.floor((diff / (1000 * 60)) % 60);
-    const seconds = Math.floor((diff / 1000) % 60);
-
-    const daysEl = document.getElementById('days');
-    const hoursEl = document.getElementById('hours');
-    const minutesEl = document.getElementById('minutes');
-    const secondsEl = document.getElementById('seconds');
-    
-    if (daysEl) daysEl.textContent = String(days).padStart(2, '0');
-    if (hoursEl) hoursEl.textContent = String(hours).padStart(2, '0');
-    if (minutesEl) minutesEl.textContent = String(minutes).padStart(2, '0');
-    if (secondsEl) secondsEl.textContent = String(seconds).padStart(2, '0');
-
-    const msg = document.getElementById('splash-message');
-    if (msg) {
-        if (days < 30) msg.textContent = '❄️ Сезон уже близко!';
-        else if (days < 60) msg.textContent = '⛷️ Готовь снаряжение!';
-        else msg.textContent = '🏔️ До первого снега осталось...';
-    }
-}
-
-function shouldHideSplash() {
-    const now = new Date();
-    return now.getMonth() === 11 && now.getDate() === 1;
-}
-
-// === ИНИЦИАЛИЗАЦИЯ ===
-document.addEventListener('DOMContentLoaded', function() {
+// ===== ЗАГРУЗОЧНЫЙ ЭКРАН =====
+function initSplash() {
     const splash = document.getElementById('splash-screen');
-    const app = document.getElementById('app');
-    const closeBtn = document.getElementById('close-splash');
-
-    if (shouldHideSplash()) {
-        if (splash) splash.style.display = 'none';
-        if (app) {
-            app.style.display = 'flex';
-            setTimeout(() => {
-                app.classList.add('visible');
-            }, 50);
-            renderNav();
-            if (currentTab) renderCatalog(currentTab);
-        }
+    const mainApp = document.getElementById('main-app');
+    const skipBtn = document.getElementById('skip-splash');
+    
+    const today = new Date();
+    const decFirst = new Date(today.getFullYear(), 11, 1);
+    if (today >= decFirst) {
+        splash.style.display = 'none';
+        mainApp.style.display = 'flex';
         return;
     }
 
-    updateCountdown();
-    const countdownInterval = setInterval(updateCountdown, 1000);
-
-    let splashTimer = setTimeout(() => {
-        if (splash) {
-            splash.style.opacity = '0';
-            setTimeout(() => {
-                splash.style.display = 'none';
-                if (app) {
-                    app.style.display = 'flex';
-                    setTimeout(() => {
-                        app.classList.add('visible');
-                    }, 50);
-                    renderNav();
-                    if (currentTab) renderCatalog(currentTab);
-                }
-            }, 400);
+    function updateCountdown() {
+        const now = new Date();
+        const winter = new Date(now.getFullYear(), 11, 1);
+        if (now > winter) winter.setFullYear(winter.getFullYear() + 1);
+        
+        const diff = winter - now;
+        if (diff <= 0) {
+            document.getElementById('days').textContent = '00';
+            document.getElementById('hours').textContent = '00';
+            document.getElementById('minutes').textContent = '00';
+            document.getElementById('seconds').textContent = '00';
+            return;
         }
-        clearInterval(countdownInterval);
-    }, 5000);
+        
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+        
+        document.getElementById('days').textContent = String(days).padStart(2, '0');
+        document.getElementById('hours').textContent = String(hours).padStart(2, '0');
+        document.getElementById('minutes').textContent = String(minutes).padStart(2, '0');
+        document.getElementById('seconds').textContent = String(seconds).padStart(2, '0');
+    }
+    
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
+    
+    const timeout = setTimeout(closeSplash, 5000);
+    skipBtn.addEventListener('click', closeSplash);
+    
+    function closeSplash() {
+        clearTimeout(timeout);
+        splash.style.opacity = '0';
+        setTimeout(() => {
+            splash.style.display = 'none';
+            mainApp.style.display = 'flex';
+        }, 400);
+    }
+}
 
-    if (closeBtn) {
-        closeBtn.addEventListener('click', function() {
-            clearTimeout(splashTimer);
-            clearInterval(countdownInterval);
-            if (splash) {
-                splash.style.opacity = '0';
-                setTimeout(() => {
-                    splash.style.display = 'none';
-                    if (app) {
-                        app.style.display = 'flex';
-                        setTimeout(() => {
-                            app.classList.add('visible');
-                        }, 50);
-                        renderNav();
-                        if (currentTab) renderCatalog(currentTab);
-                    }
-                }, 400);
-            }
+// ===== АДМИНКА: ТОВАРЫ =====
+function addProduct() {
+    const name = document.getElementById('product-name').value.trim();
+    const price = document.getElementById('product-price').value.trim();
+    const image = document.getElementById('product-image').value.trim();
+    const category = document.getElementById('product-category').value;
+    const desc = document.getElementById('product-desc').value.trim();
+    
+    if (!name || !price || !image) {
+        alert('Заполните название, цену и URL изображения');
+        return;
+    }
+    
+    products.push({
+        id: Date.now(),
+        name,
+        price,
+        image,
+        category,
+        desc: desc || 'Без описания'
+    });
+    
+    saveProducts();
+    renderAdminProductList();
+    document.getElementById('product-name').value = '';
+    document.getElementById('product-price').value = '';
+    document.getElementById('product-image').value = '';
+    document.getElementById('product-desc').value = '';
+    alert('✅ Товар добавлен!');
+}
+
+function renderAdminProductList() {
+    const container = document.getElementById('product-list-admin');
+    if (!container) return;
+    
+    if (products.length === 0) {
+        container.innerHTML = '<p style="color:var(--text-secondary);">Товаров нет</p>';
+        return;
+    }
+    
+    container.innerHTML = products.map(p => `
+        <div class="product-item">
+            <div>
+                <strong>${p.name}</strong> — ${p.price}
+                <div style="font-size:12px; color:var(--text-secondary);">${p.category} | ${p.desc ? p.desc.slice(0,30)+'...' : ''}</div>
+            </div>
+            <button class="delete-btn" onclick="deleteProduct(${p.id})">✕</button>
+        </div>
+    `).join('');
+}
+
+function deleteProduct(id) {
+    if (!confirm('Удалить товар?')) return;
+    products = products.filter(p => p.id !== id);
+    saveProducts();
+    renderAdminProductList();
+    if (document.getElementById('catalog')) {
+        renderCatalog(currentCategory);
+    }
+}
+
+// ===== АДМИНКА: УСЛУГИ =====
+function addService() {
+    const name = document.getElementById('service-name').value.trim();
+    const price = document.getElementById('service-price').value.trim();
+    const desc = document.getElementById('service-desc').value.trim();
+    
+    if (!name || !price) {
+        alert('Заполните название и цену услуги');
+        return;
+    }
+    
+    services.push({
+        id: Date.now(),
+        name,
+        price,
+        desc: desc || 'Без описания'
+    });
+    
+    saveServices();
+    renderAdminServiceList();
+    document.getElementById('service-name').value = '';
+    document.getElementById('service-price').value = '';
+    document.getElementById('service-desc').value = '';
+    alert('✅ Услуга добавлена!');
+}
+
+function renderAdminServiceList() {
+    const container = document.getElementById('service-list-admin');
+    if (!container) return;
+    
+    if (services.length === 0) {
+        container.innerHTML = '<p style="color:var(--text-secondary);">Услуг нет</p>';
+        return;
+    }
+    
+    container.innerHTML = services.map(s => `
+        <div class="service-item">
+            <div class="service-info">
+                <strong>${s.name}</strong>
+                <span class="service-meta">${s.price}</span>
+                <div style="font-size:13px; color:var(--text-secondary); margin-top:4px;">${s.desc || ''}</div>
+            </div>
+            <div class="service-actions">
+                <button class="edit-btn" onclick="editService(${s.id})">✎</button>
+                <button class="delete-btn" onclick="deleteService(${s.id})">✕</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function deleteService(id) {
+    if (!confirm('Удалить услугу?')) return;
+    services = services.filter(s => s.id !== id);
+    saveServices();
+    renderAdminServiceList();
+    if (document.getElementById('services')) {
+        renderServices();
+    }
+}
+
+function editService(id) {
+    const service = services.find(s => s.id === id);
+    if (!service) return;
+    
+    const newName = prompt('Название услуги:', service.name);
+    if (newName !== null) service.name = newName.trim() || service.name;
+    
+    const newPrice = prompt('Цена:', service.price);
+    if (newPrice !== null) service.price = newPrice.trim() || service.price;
+    
+    const newDesc = prompt('Описание:', service.desc);
+    if (newDesc !== null) service.desc = newDesc.trim() || service.desc;
+    
+    saveServices();
+    renderAdminServiceList();
+    if (document.getElementById('services')) {
+        renderServices();
+    }
+}
+
+// ===== АДМИНКА: ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК =====
+function setupAdminTabs() {
+    const tabs = document.querySelectorAll('.admin-tab');
+    tabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            tabs.forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+            
+            const panel = this.dataset.tab;
+            document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
+            document.getElementById(`${panel}-panel`).classList.add('active');
         });
+    });
+}
+
+// ===== ИНИЦИАЛИЗАЦИЯ =====
+document.addEventListener('DOMContentLoaded', function() {
+    loadData();
+    setupNavigation();
+    initSplash();
+    
+    if (document.getElementById('product-list-admin')) {
+        renderAdminProductList();
+        renderAdminServiceList();
+        setupAdminTabs();
     }
 });
-
-// === ОБНОВЛЕНИЕ ДАННЫХ ИЗ LOCALSTORAGE ===
-window.refreshCatalog = function() {
-    products = JSON.parse(localStorage.getItem('snowboard_products')) || products;
-    renderNav();
-    if (currentTab) renderCatalog(currentTab);
-};
-
-// === ЗАЩИТА ОТ ЗУМА ===
-document.addEventListener('gesturestart', function(e) {
-    e.preventDefault();
-});
-
-let lastTouchEnd = 0;
-document.addEventListener('touchend', function(e) {
-    const now = Date.now();
-    if (now - lastTouchEnd <= 300) {
-        e.preventDefault();
-    }
-    lastTouchEnd = now;
-}, { passive: false });
