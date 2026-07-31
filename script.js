@@ -14,109 +14,63 @@ localStorage.setItem('snowboard_categories', JSON.stringify(categories));
 
 let currentTab = categories[0].name;
 let currentImageIndex = 0;
+let products = [];
 
-const BOT_TOKEN = '8803506830:AAFtJO4nJt4l5Cfzl_LHlQhAXIVsMorrN18';
 const APP_URL = 'https://snowtg.nazar-bronnikov22.workers.dev/';
 
-// === КОНТАКТЫ ===
-const contactsData = {
-    phone: '+7 (999) 123-45-67',
-    address: 'г. Москва, ул. Сноубордная, д. 15',
-    workHours: 'Пн-Вс: 9:00 - 19:00',
-    email: 'info@snowboard-store.ru'
-};
+// === ЗАГРУЗКА ТОВАРОВ ИЗ API ===
+async function loadProductsFromAPI() {
+    try {
+        const response = await fetch(APP_URL + 'api/products');
+        if (!response.ok) throw new Error('Ошибка загрузки');
+        const data = await response.json();
+        products = data;
+        
+        // Сохраняем копию в localStorage для офлайн-режима
+        localStorage.setItem('snowboard_products_cache', JSON.stringify(products));
+        
+        return products;
+    } catch (e) {
+        console.error('Ошибка загрузки из API:', e);
+        // Загружаем из кеша
+        const cached = localStorage.getItem('snowboard_products_cache');
+        if (cached) {
+            products = JSON.parse(cached);
+            return products;
+        }
+        return [];
+    }
+}
 
 // === ОПОВЕЩЕНИЯ ===
-function loadAnnouncement() {
+async function loadAnnouncementFromAPI() {
     try {
-        const announcement = localStorage.getItem('announcement');
-        if (!announcement) return null;
-        
-        const data = JSON.parse(announcement);
-        const now = new Date().getTime();
-        
-        if (!data.expires || now < data.expires) {
+        const response = await fetch(APP_URL + 'api/announcement');
+        const data = await response.json();
+        if (data.text) {
             const banner = document.getElementById('announcement-banner');
             const text = document.getElementById('announcement-text');
-            if (banner && text && data.text) {
+            if (banner && text) {
                 text.textContent = data.text;
                 banner.style.display = 'block';
-                return data.text;
             }
+            return data.text;
         } else {
-            // Если истекло - удаляем
-            localStorage.removeItem('announcement');
             const banner = document.getElementById('announcement-banner');
             if (banner) banner.style.display = 'none';
+            return null;
         }
     } catch (e) {
         console.error('Ошибка загрузки оповещения:', e);
-        localStorage.removeItem('announcement');
-    }
-    return null;
-}
-
-function saveAnnouncement(text, hours = 24) {
-    if (!text || text.trim() === '') {
-        localStorage.removeItem('announcement');
-        const banner = document.getElementById('announcement-banner');
-        if (banner) banner.style.display = 'none';
-        return;
-    }
-    
-    const expires = new Date().getTime() + (hours * 60 * 60 * 1000);
-    localStorage.setItem('announcement', JSON.stringify({ text: text.trim(), expires }));
-    
-    const banner = document.getElementById('announcement-banner');
-    const textEl = document.getElementById('announcement-text');
-    if (banner && textEl) {
-        textEl.textContent = text.trim();
-        banner.style.display = 'block';
+        return null;
     }
 }
 
-// === ТОВАРЫ ===
-const defaultProducts = [
-    // ... (все товары из предыдущих версий)
-    {
-        id: 43,
-        name: '📞 Контакты',
-        price: '',
-        images: [],
-        desc: 'Свяжитесь с нами любым удобным способом!',
-        specs: [
-            { name: 'Телефон', value: contactsData.phone },
-            { name: 'Адрес', value: contactsData.address },
-            { name: 'Режим работы', value: contactsData.workHours },
-            { name: 'Email', value: contactsData.email }
-        ],
-        category: 'Контакты',
-        isContact: true
-    }
-];
-
-function loadProducts() {
-    let storedProducts = JSON.parse(localStorage.getItem('snowboard_products'));
-    const allProducts = [...defaultProducts];
-    
-    if (!storedProducts || storedProducts.length < allProducts.length) {
-        localStorage.setItem('snowboard_products', JSON.stringify(allProducts));
-        return allProducts;
-    }
-    
-    const storedIds = storedProducts.map(p => p.id);
-    const missingProducts = allProducts.filter(p => !storedIds.includes(p.id));
-    
-    if (missingProducts.length > 0) {
-        storedProducts = [...storedProducts, ...missingProducts];
-        localStorage.setItem('snowboard_products', JSON.stringify(storedProducts));
-    }
-    
-    return storedProducts;
+function closeAnnouncement() {
+    document.getElementById('announcement-banner').style.display = 'none';
 }
 
-let products = loadProducts();
-
+// === РЕНДЕР КАТАЛОГА ===
 function renderCatalog(category) {
     const container = document.getElementById('catalog');
     if (!container) return;
@@ -153,7 +107,6 @@ function renderContacts(container) {
         return;
     }
     
-    // Иконки для контактов (по одной на каждый)
     const icons = ['📱', '📍', '🕐', '📧'];
     
     container.innerHTML = `
@@ -276,24 +229,7 @@ function goToImage(productId, index) {
     });
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-    const modal = document.getElementById('product-modal');
-    const closeBtn = document.getElementById('modal-close');
-    
-    if (closeBtn) {
-        closeBtn.addEventListener('click', closeModal);
-    }
-    
-    if (modal) {
-        modal.addEventListener('click', function(e) {
-            if (e.target === this) closeModal();
-        });
-    }
-    
-    // Загружаем оповещение при старте
-    loadAnnouncement();
-});
-
+// === ЗАГРУЗОЧНЫЙ ЭКРАН ===
 function updateCountdown() {
     const now = new Date();
     const target = new Date(now.getFullYear(), 11, 1);
@@ -328,10 +264,17 @@ function shouldHideSplash() {
     return now.getMonth() === 11 && now.getDate() === 1;
 }
 
-document.addEventListener('DOMContentLoaded', function() {
+// === ЗАГРУЗКА ДАННЫХ ПРИ СТАРТЕ ===
+document.addEventListener('DOMContentLoaded', async function() {
     const splash = document.getElementById('splash-screen');
     const app = document.getElementById('app');
     const closeBtn = document.getElementById('close-splash');
+
+    // Загружаем товары из API
+    await loadProductsFromAPI();
+    
+    // Загружаем оповещение
+    await loadAnnouncementFromAPI();
 
     if (shouldHideSplash()) {
         if (splash) splash.style.display = 'none';
@@ -387,11 +330,17 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
+    // Обработчики для модалки
+    const modal = document.getElementById('product-modal');
+    const modalClose = document.getElementById('modal-close');
+    if (modalClose) modalClose.addEventListener('click', closeModal);
+    if (modal) modal.addEventListener('click', function(e) {
+        if (e.target === this) closeModal();
+    });
 });
 
 window.refreshCatalog = function() {
-    products = JSON.parse(localStorage.getItem('snowboard_products')) || products;
-    renderNav();
     if (currentTab) renderCatalog(currentTab);
 };
 
@@ -407,8 +356,3 @@ document.addEventListener('touchend', function(e) {
     }
     lastTouchEnd = now;
 }, { passive: false });
-
-// === ЭКСПОРТ ДЛЯ АДМИНКИ ===
-window.loadAnnouncement = loadAnnouncement;
-window.saveAnnouncement = saveAnnouncement;
-window.contactsData = contactsData;
