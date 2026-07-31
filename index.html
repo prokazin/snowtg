@@ -1,75 +1,66 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, shrink-to-fit=no" />
-    <title>Snowboard Shop</title>
-    <link rel="stylesheet" href="style.css" />
-    <style>
-        /* Запрет зума и выделения */
-        * {
-            -webkit-tap-highlight-color: transparent;
-            -webkit-touch-callout: none;
-            -webkit-user-select: none;
-            user-select: none;
-        }
-        img, a, button {
-            -webkit-touch-callout: none;
-        }
-        /* Убираем скролл у body */
-        html, body {
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-            width: 100%;
-            height: 100%;
-            position: fixed;
-            top: 0;
-            left: 0;
-        }
-    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>SnowShop</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
 </head>
 <body>
-    <!-- ФОН (всегда виден) -->
-    <div id="background-layer"></div>
 
-    <!-- Загрузочный экран -->
+    <!-- ЭКРАН ЗАГРУЗКИ -->
     <div id="splash-screen">
         <div class="splash-content">
-            <h1>❄️ Сноуборд-сезон</h1>
-            <div id="countdown">
+            <div class="snowflake-icon">❄️</div>
+            <h1>До зимы осталось</h1>
+            <div id="countdown-timer">
                 <span id="days">00</span>:
                 <span id="hours">00</span>:
                 <span id="minutes">00</span>:
                 <span id="seconds">00</span>
             </div>
-            <p id="splash-message">До первого снега осталось...</p>
-            <button id="close-splash" class="splash-close-btn">Пропустить</button>
+            <p class="splash-sub">Готовь сани летом, а сноуборд — прямо сейчас!</p>
+            <button id="skip-splash" class="skip-btn">Пропустить</button>
         </div>
     </div>
 
-    <!-- Основной контент -->
-    <div id="app" style="display: none;">
-        <header>
-            <h1>🏔️ Snowboard Store</h1>
+    <!-- ОСНОВНОЙ ИНТЕРФЕЙС -->
+    <div id="main-app" style="display: none;">
+        <!-- Шапка -->
+        <header class="app-header">
+            <div class="header-left">
+                <span class="greeting">🏔️ SnowShop</span>
+            </div>
+            <div class="header-right">
+                <span class="user-balance">❄️ 0</span>
+            </div>
         </header>
 
-        <main id="catalog">
-            <!-- Карточки товаров -->
-        </main>
+        <!-- Контент: каталог -->
+        <main id="catalog"></main>
+        
+        <!-- Контент: сервис -->
+        <main id="services" style="display: none;"></main>
 
-        <!-- Нижняя навигация -->
-        <nav id="bottom-nav">
-            <!-- Иконки из JS -->
+        <!-- Нижнее меню -->
+        <nav class="bottom-nav">
+            <button class="nav-btn active" data-tab="catalog" data-category="boards">
+                <img src="https://img.icons8.com/ios-filled/50/FFFFFF/snowboard.png" alt="Сноуборды">
+            </button>
+            <button class="nav-btn" data-tab="catalog" data-category="bindings">
+                <img src="https://img.icons8.com/ios-filled/50/FFFFFF/binding.png" alt="Крепления">
+            </button>
+            <button class="nav-btn" data-tab="catalog" data-category="boots">
+                <img src="https://img.icons8.com/ios-filled/50/FFFFFF/snow-boots.png" alt="Ботинки">
+            </button>
+            <button class="nav-btn" data-tab="catalog" data-category="helmets">
+                <img src="https://img.icons8.com/ios-filled/50/FFFFFF/safety-helmet.png" alt="Шлемы">
+            </button>
+            <button class="nav-btn" data-tab="services" data-category="services">
+                <img src="https://img.icons8.com/ios-filled/50/FFFFFF/tools.png" alt="Сервис">
+            </button>
         </nav>
-    </div>
-
-    <!-- Модальное окно -->
-    <div id="product-modal" class="modal" style="display: none;">
-        <div class="modal-content">
-            <span class="modal-close" id="modal-close">&times;</span>
-            <div id="modal-body"></div>
-        </div>
     </div>
 
     <script src="script.js"></script>
