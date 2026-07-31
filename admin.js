@@ -26,26 +26,34 @@ function switchTab(tab) {
 }
 
 function loadCurrentAnnouncement() {
-    const announcement = localStorage.getItem('announcement');
-    const container = document.getElementById('current-announcement');
-    const textEl = document.getElementById('current-announcement-text');
-    
-    if (announcement) {
-        try {
+    try {
+        const announcement = localStorage.getItem('announcement');
+        const container = document.getElementById('current-announcement');
+        const textEl = document.getElementById('current-announcement-text');
+        
+        if (!container || !textEl) return;
+        
+        if (announcement) {
             const data = JSON.parse(announcement);
             const now = new Date().getTime();
-            if (data.expires && now < data.expires) {
+            if (data.expires && now < data.expires && data.text) {
                 container.style.display = 'block';
                 textEl.textContent = data.text;
                 return;
             }
-        } catch (e) {}
+        }
+        container.style.display = 'none';
+    } catch (e) {
+        console.error('Ошибка загрузки оповещения:', e);
+        localStorage.removeItem('announcement');
+        const container = document.getElementById('current-announcement');
+        if (container) container.style.display = 'none';
     }
-    container.style.display = 'none';
 }
 
 function sendAnnouncement() {
     const input = document.getElementById('announcement-input');
+    if (!input) return;
     const text = input.value.trim();
     
     if (!text) {
@@ -53,15 +61,18 @@ function sendAnnouncement() {
         return;
     }
     
-    // Сохраняем в localStorage
     const expires = new Date().getTime() + (24 * 60 * 60 * 1000);
     localStorage.setItem('announcement', JSON.stringify({ text, expires }));
     
-    // Обновляем отображение
     loadCurrentAnnouncement();
-    
-    // Очищаем поле
     input.value = '';
+    
+    // Обновляем баннер в основном приложении (если открыто)
+    if (window.opener && !window.opener.closed) {
+        try {
+            window.opener.saveAnnouncement(text, 24);
+        } catch (e) {}
+    }
     
     alert('✅ Оповещение отправлено!\nОно будет отображаться 24 часа.');
 }
@@ -69,7 +80,16 @@ function sendAnnouncement() {
 function clearAnnouncement() {
     if (!confirm('Удалить оповещение?')) return;
     localStorage.removeItem('announcement');
-    document.getElementById('current-announcement').style.display = 'none';
+    const container = document.getElementById('current-announcement');
+    if (container) container.style.display = 'none';
+    
+    // Обновляем баннер в основном приложении
+    if (window.opener && !window.opener.closed) {
+        try {
+            window.opener.saveAnnouncement('', 0);
+        } catch (e) {}
+    }
+    
     alert('✅ Оповещение удалено!');
 }
 
@@ -99,6 +119,7 @@ function getCategories() {
 
 function addSpecRow(nameValue, valueValue) {
     const container = document.getElementById('specs-container');
+    if (!container) return;
     const row = document.createElement('div');
     row.className = 'spec-row';
     row.innerHTML = `
@@ -111,6 +132,7 @@ function addSpecRow(nameValue, valueValue) {
 
 function removeSpec(button) {
     const container = document.getElementById('specs-container');
+    if (!container) return;
     if (container.children.length > 1) {
         button.parentElement.remove();
     } else {
@@ -133,6 +155,7 @@ function getSpecs() {
 
 function addServiceSpecRow(nameValue, valueValue) {
     const container = document.getElementById('service-specs-container');
+    if (!container) return;
     const row = document.createElement('div');
     row.className = 'spec-row';
     row.innerHTML = `
@@ -145,6 +168,7 @@ function addServiceSpecRow(nameValue, valueValue) {
 
 function removeServiceSpec(button) {
     const container = document.getElementById('service-specs-container');
+    if (!container) return;
     if (container.children.length > 1) {
         button.parentElement.remove();
     } else {
@@ -203,7 +227,7 @@ function renderProductList() {
     const filtered = products.filter(p => p.category !== 'Сервис' && !p.isContact);
     
     if (!filtered || filtered.length === 0) {
-        list.innerHTML = '<p style="color:#8e8e93; padding:10px 0;">Нет товаров</p>';
+        list.innerHTML = '<p style="color:#8e8e93; padding:10px 0; text-align:center;">Нет товаров</p>';
         return;
     }
     
@@ -269,14 +293,17 @@ function addProduct() {
     document.getElementById('product-image-file').value = '';
     
     const container = document.getElementById('specs-container');
-    container.innerHTML = '';
-    addSpecRow('', '');
+    if (container) {
+        container.innerHTML = '';
+        addSpecRow('', '');
+    }
     
     alert('✅ Товар "' + name + '" добавлен!');
 }
 
 function uploadProductImage() {
     const fileInput = document.getElementById('product-image-file');
+    if (!fileInput) return;
     const file = fileInput.files[0];
     if (!file) {
         alert('Выберите файл с изображением');
@@ -317,13 +344,15 @@ function editProduct(index) {
     document.getElementById('product-category').value = p.category;
     
     const container = document.getElementById('specs-container');
-    container.innerHTML = '';
-    if (p.specs && p.specs.length > 0) {
-        p.specs.forEach(spec => {
-            addSpecRow(spec.name, spec.value);
-        });
-    } else {
-        addSpecRow('', '');
+    if (container) {
+        container.innerHTML = '';
+        if (p.specs && p.specs.length > 0) {
+            p.specs.forEach(spec => {
+                addSpecRow(spec.name, spec.value);
+            });
+        } else {
+            addSpecRow('', '');
+        }
     }
     
     products.splice(index, 1);
@@ -354,7 +383,7 @@ function renderServiceList() {
     const services = products.filter(p => p.category === 'Сервис');
     
     if (!services || services.length === 0) {
-        list.innerHTML = '<p style="color:#8e8e93; padding:10px 0;">Нет услуг</p>';
+        list.innerHTML = '<p style="color:#8e8e93; padding:10px 0; text-align:center;">Нет услуг</p>';
         return;
     }
     
@@ -419,14 +448,17 @@ function addService() {
     document.getElementById('service-image-file').value = '';
     
     const container = document.getElementById('service-specs-container');
-    container.innerHTML = '';
-    addServiceSpecRow('', '');
+    if (container) {
+        container.innerHTML = '';
+        addServiceSpecRow('', '');
+    }
     
     alert('✅ Услуга "' + name + '" добавлена!');
 }
 
 function uploadServiceImage() {
     const fileInput = document.getElementById('service-image-file');
+    if (!fileInput) return;
     const file = fileInput.files[0];
     if (!file) {
         alert('Выберите файл с изображением');
@@ -466,13 +498,15 @@ function editService(index) {
     document.getElementById('service-desc').value = p.desc;
     
     const container = document.getElementById('service-specs-container');
-    container.innerHTML = '';
-    if (p.specs && p.specs.length > 0) {
-        p.specs.forEach(spec => {
-            addServiceSpecRow(spec.name, spec.value);
-        });
-    } else {
-        addServiceSpecRow('', '');
+    if (container) {
+        container.innerHTML = '';
+        if (p.specs && p.specs.length > 0) {
+            p.specs.forEach(spec => {
+                addServiceSpecRow(spec.name, spec.value);
+            });
+        } else {
+            addServiceSpecRow('', '');
+        }
     }
     
     products.splice(index, 1);
@@ -492,12 +526,16 @@ function loginAdmin() {
         loadCurrentAnnouncement();
         
         const container = document.getElementById('specs-container');
-        container.innerHTML = '';
-        addSpecRow('', '');
+        if (container) {
+            container.innerHTML = '';
+            addSpecRow('', '');
+        }
         
         const serviceContainer = document.getElementById('service-specs-container');
-        serviceContainer.innerHTML = '';
-        addServiceSpecRow('', '');
+        if (serviceContainer) {
+            serviceContainer.innerHTML = '';
+            addServiceSpecRow('', '');
+        }
         
     } else {
         alert('❌ Неверный пароль');
