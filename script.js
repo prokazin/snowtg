@@ -1,37 +1,34 @@
 // ===== ГЛОБАЛЬНЫЕ ДАННЫЕ =====
 let products = [];
 let services = [];
-let currentTab = 'catalog';
 let currentCategory = 'boards';
 
 // ===== ЗАГРУЗКА ДАННЫХ =====
 function loadData() {
-    // Загрузка товаров
     const storedProducts = localStorage.getItem('snowshop_products');
     if (storedProducts) {
         products = JSON.parse(storedProducts);
     } else {
         products = [
-            { id: 1, name: 'Burton Custom', price: '49 900 ₽', image: 'https://images.unsplash.com/photo-1551698613-55f2bf2cb3f1?w=400&h=400&fit=crop', category: 'boards', desc: 'Классический фрирайд, универсал' },
-            { id: 2, name: 'Union Force', price: '24 500 ₽', image: 'https://images.unsplash.com/photo-1634067473700-8f2e5c6aa2b8?w=400&h=400&fit=crop', category: 'bindings', desc: 'Надёжные крепления для всего' },
-            { id: 3, name: 'Nitro Team', price: '32 200 ₽', image: 'https://images.unsplash.com/photo-1600442717570-325f2c6af79c?w=400&h=400&fit=crop', category: 'boots', desc: 'Жёсткие ботинки для карвинга' },
-            { id: 4, name: 'Smith Vantage', price: '18 700 ₽', image: 'https://images.unsplash.com/photo-1618498082410-b4aa22193b38?w=400&h=400&fit=crop', category: 'helmets', desc: 'Лёгкий шлем с MIPS' },
+            { id: 1, name: 'Burton Custom', price: '49 900 ₽', image: 'https://images.unsplash.com/photo-1551698613-55f2bf2cb3f1?w=400&h=400&fit=crop', category: 'boards', desc: 'Классический фрирайд' },
+            { id: 2, name: 'Union Force', price: '24 500 ₽', image: 'https://images.unsplash.com/photo-1634067473700-8f2e5c6aa2b8?w=400&h=400&fit=crop', category: 'bindings', desc: 'Надёжные крепления' },
+            { id: 3, name: 'Nitro Team', price: '32 200 ₽', image: 'https://images.unsplash.com/photo-1600442717570-325f2c6af79c?w=400&h=400&fit=crop', category: 'boots', desc: 'Жёсткие ботинки' },
+            { id: 4, name: 'Smith Vantage', price: '18 700 ₽', image: 'https://images.unsplash.com/photo-1618498082410-b4aa22193b38?w=400&h=400&fit=crop', category: 'helmets', desc: 'Лёгкий шлем' },
             { id: 5, name: 'Jones Flagship', price: '58 300 ₽', image: 'https://images.unsplash.com/photo-1551698613-55f2bf2cb3f1?w=400&h=400&fit=crop', category: 'boards', desc: 'Фрирайд для глубокого снега' },
-            { id: 6, name: 'Burton Step On', price: '28 900 ₽', image: 'https://images.unsplash.com/photo-1634067473700-8f2e5c6aa2b8?w=400&h=400&fit=crop', category: 'bindings', desc: 'Система быстрого входа' },
+            { id: 6, name: 'Burton Step On', price: '28 900 ₽', image: 'https://images.unsplash.com/photo-1634067473700-8f2e5c6aa2b8?w=400&h=400&fit=crop', category: 'bindings', desc: 'Быстрый вход' },
         ];
         saveProducts();
     }
     
-    // Загрузка услуг
     const storedServices = localStorage.getItem('snowshop_services');
     if (storedServices) {
         services = JSON.parse(storedServices);
     } else {
         services = [
-            { id: 1, name: 'Заточка кантов', price: '1 500 ₽', desc: 'Профессиональная заточка кантов на станке. Восстанавливаем геометрию.' },
-            { id: 2, name: 'Смазка скользяка', price: '2 200 ₽', desc: 'Горячая смазка с чисткой. Используем только качественные парафины.' },
-            { id: 3, name: 'Ремонт скользящей поверхности', price: '3 500 ₽', desc: 'Устранение царапин, сколов и пробоин. Полное восстановление.' },
-            { id: 4, name: 'Установка креплений', price: '1 000 ₽', desc: 'Профессиональная установка и настройка креплений под ваш стиль катания.' },
+            { id: 1, name: 'Заточка кантов', price: '1 500 ₽', desc: 'Профессиональная заточка кантов' },
+            { id: 2, name: 'Смазка скользяка', price: '2 200 ₽', desc: 'Горячая смазка с чисткой' },
+            { id: 3, name: 'Ремонт скользящей поверхности', price: '3 500 ₽', desc: 'Устранение царапин и сколов' },
+            { id: 4, name: 'Установка креплений', price: '1 000 ₽', desc: 'Профессиональная установка' },
         ];
         saveServices();
     }
@@ -40,7 +37,6 @@ function loadData() {
     renderServices();
 }
 
-// ===== СОХРАНЕНИЕ ДАННЫХ =====
 function saveProducts() {
     localStorage.setItem('snowshop_products', JSON.stringify(products));
 }
@@ -49,11 +45,9 @@ function saveServices() {
     localStorage.setItem('snowshop_services', JSON.stringify(services));
 }
 
-// ===== РЕНДЕРИНГ КАТАЛОГА =====
+// ===== РЕНДЕРИНГ =====
 function renderCatalog(category) {
     const catalog = document.getElementById('catalog');
-    if (!catalog) return;
-    
     const filtered = products.filter(p => p.category === category);
     
     if (filtered.length === 0) {
@@ -71,21 +65,15 @@ function renderCatalog(category) {
     `).join('');
 }
 
-// ===== РЕНДЕРИНГ УСЛУГ =====
 function renderServices() {
-    const servicesContainer = document.getElementById('services');
-    if (!servicesContainer) return;
+    const container = document.getElementById('services');
     
     if (services.length === 0) {
-        servicesContainer.innerHTML = `
-            <div style="text-align:center; padding:40px 0; color:var(--text-secondary);">
-                🔧 Услуг пока нет
-            </div>
-        `;
+        container.innerHTML = `<div style="text-align:center; padding:40px 0; color:var(--text-secondary);">🔧 Услуг пока нет</div>`;
         return;
     }
 
-    servicesContainer.innerHTML = services.map((s, index) => `
+    container.innerHTML = services.map((s, index) => `
         <div class="service-card" style="animation-delay: ${index * 0.05}s;">
             <div class="service-header">
                 <div class="service-name">${s.name}</div>
@@ -106,8 +94,6 @@ function setupNavigation() {
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
             this.classList.add('active');
             
-            currentTab = tab;
-            
             if (tab === 'catalog') {
                 document.getElementById('catalog').style.display = 'grid';
                 document.getElementById('services').style.display = 'none';
@@ -122,54 +108,20 @@ function setupNavigation() {
     });
 }
 
-// ===== ЗАГРУЗОЧНЫЙ ЭКРАН (ПОЛНОСТЬЮ ИСПРАВЛЕННЫЙ) =====
+// ===== ЗАГРУЗОЧНЫЙ ЭКРАН =====
 function initSplash() {
-    console.log('initSplash вызван');
-    
     const splash = document.getElementById('splash-screen');
     const mainApp = document.getElementById('main-app');
     const skipBtn = document.getElementById('skip-splash');
     
-    // Проверяем, найдены ли элементы
-    if (!splash) {
-        console.error('Splash screen не найден!');
-        return;
-    }
-    if (!mainApp) {
-        console.error('Main app не найден!');
-        return;
-    }
-    if (!skipBtn) {
-        console.error('Skip button не найден!');
-        return;
-    }
-    
-    console.log('Все элементы найдены');
-    
-    // Проверка: если 1 декабря или позже - скрываем сплэш
     const today = new Date();
     const decFirst = new Date(today.getFullYear(), 11, 1);
     if (today >= decFirst) {
-        console.log('Сплэш скрыт (1 декабря)');
         splash.style.display = 'none';
         mainApp.style.display = 'flex';
         return;
     }
 
-    // Получаем элементы таймера
-    const daysEl = document.getElementById('days');
-    const hoursEl = document.getElementById('hours');
-    const minutesEl = document.getElementById('minutes');
-    const secondsEl = document.getElementById('seconds');
-    
-    if (!daysEl || !hoursEl || !minutesEl || !secondsEl) {
-        console.error('Элементы таймера не найдены!');
-        return;
-    }
-    
-    console.log('Элементы таймера найдены');
-
-    // Функция обновления таймера
     function updateCountdown() {
         const now = new Date();
         const winter = new Date(now.getFullYear(), 11, 1);
@@ -177,10 +129,10 @@ function initSplash() {
         
         const diff = winter - now;
         if (diff <= 0) {
-            daysEl.textContent = '00';
-            hoursEl.textContent = '00';
-            minutesEl.textContent = '00';
-            secondsEl.textContent = '00';
+            document.getElementById('days').textContent = '00';
+            document.getElementById('hours').textContent = '00';
+            document.getElementById('minutes').textContent = '00';
+            document.getElementById('seconds').textContent = '00';
             return;
         }
         
@@ -189,46 +141,28 @@ function initSplash() {
         const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
         const seconds = Math.floor((diff % (1000 * 60)) / 1000);
         
-        daysEl.textContent = String(days).padStart(2, '0');
-        hoursEl.textContent = String(hours).padStart(2, '0');
-        minutesEl.textContent = String(minutes).padStart(2, '0');
-        secondsEl.textContent = String(seconds).padStart(2, '0');
-        
-        console.log(`Таймер обновлен: ${days}д ${hours}ч ${minutes}м ${seconds}с`);
+        document.getElementById('days').textContent = String(days).padStart(2, '0');
+        document.getElementById('hours').textContent = String(hours).padStart(2, '0');
+        document.getElementById('minutes').textContent = String(minutes).padStart(2, '0');
+        document.getElementById('seconds').textContent = String(seconds).padStart(2, '0');
     }
     
-    // Запускаем таймер
     updateCountdown();
-    const timerInterval = setInterval(updateCountdown, 1000);
-    console.log('Таймер запущен');
+    setInterval(updateCountdown, 1000);
     
-    // Функция закрытия сплэша
     function closeSplash() {
-        console.log('Закрытие сплэша');
-        clearInterval(timerInterval);
         splash.style.opacity = '0';
-        splash.style.transition = 'opacity 0.4s ease';
         setTimeout(() => {
             splash.style.display = 'none';
             mainApp.style.display = 'flex';
-            console.log('Сплэш закрыт, приложение показано');
         }, 400);
     }
     
-    // Автоматическое закрытие через 5 секунд
-    const timeout = setTimeout(closeSplash, 5000);
-    console.log('Авто-закрытие через 5 секунд');
-    
-    // Закрытие по кнопке "Пропустить"
-    skipBtn.addEventListener('click', function(e) {
-        e.preventDefault();
-        console.log('Кнопка "Пропустить" нажата');
-        clearTimeout(timeout);
-        closeSplash();
-    });
+    setTimeout(closeSplash, 5000);
+    skipBtn.addEventListener('click', closeSplash);
 }
 
-// ===== АДМИНКА: ТОВАРЫ =====
+// ===== АДМИНКА =====
 function addProduct() {
     const name = document.getElementById('product-name').value.trim();
     const price = document.getElementById('product-price').value.trim();
@@ -237,19 +171,11 @@ function addProduct() {
     const desc = document.getElementById('product-desc').value.trim();
     
     if (!name || !price || !image) {
-        alert('Заполните название, цену и URL изображения');
+        alert('Заполните все поля');
         return;
     }
     
-    products.push({
-        id: Date.now(),
-        name,
-        price,
-        image,
-        category,
-        desc: desc || 'Без описания'
-    });
-    
+    products.push({ id: Date.now(), name, price, image, category, desc: desc || 'Без описания' });
     saveProducts();
     renderAdminProductList();
     document.getElementById('product-name').value = '';
@@ -272,7 +198,7 @@ function renderAdminProductList() {
         <div class="product-item">
             <div>
                 <strong>${p.name}</strong> — ${p.price}
-                <div style="font-size:12px; color:var(--text-secondary);">${p.category} | ${p.desc ? p.desc.slice(0,30)+'...' : ''}</div>
+                <div style="font-size:12px; color:var(--text-secondary);">${p.category}</div>
             </div>
             <button class="delete-btn" onclick="deleteProduct(${p.id})">✕</button>
         </div>
@@ -284,29 +210,20 @@ function deleteProduct(id) {
     products = products.filter(p => p.id !== id);
     saveProducts();
     renderAdminProductList();
-    if (document.getElementById('catalog')) {
-        renderCatalog(currentCategory);
-    }
+    renderCatalog(currentCategory);
 }
 
-// ===== АДМИНКА: УСЛУГИ =====
 function addService() {
     const name = document.getElementById('service-name').value.trim();
     const price = document.getElementById('service-price').value.trim();
     const desc = document.getElementById('service-desc').value.trim();
     
     if (!name || !price) {
-        alert('Заполните название и цену услуги');
+        alert('Заполните название и цену');
         return;
     }
     
-    services.push({
-        id: Date.now(),
-        name,
-        price,
-        desc: desc || 'Без описания'
-    });
-    
+    services.push({ id: Date.now(), name, price, desc: desc || 'Без описания' });
     saveServices();
     renderAdminServiceList();
     document.getElementById('service-name').value = '';
@@ -329,7 +246,7 @@ function renderAdminServiceList() {
             <div class="service-info">
                 <strong>${s.name}</strong>
                 <span class="service-meta">${s.price}</span>
-                <div style="font-size:13px; color:var(--text-secondary); margin-top:4px;">${s.desc || ''}</div>
+                <div style="font-size:13px; color:var(--text-secondary);">${s.desc || ''}</div>
             </div>
             <div class="service-actions">
                 <button class="edit-btn" onclick="editService(${s.id})">✎</button>
@@ -344,39 +261,31 @@ function deleteService(id) {
     services = services.filter(s => s.id !== id);
     saveServices();
     renderAdminServiceList();
-    if (document.getElementById('services')) {
-        renderServices();
-    }
+    renderServices();
 }
 
 function editService(id) {
     const service = services.find(s => s.id === id);
     if (!service) return;
     
-    const newName = prompt('Название услуги:', service.name);
+    const newName = prompt('Название:', service.name);
     if (newName !== null) service.name = newName.trim() || service.name;
-    
     const newPrice = prompt('Цена:', service.price);
     if (newPrice !== null) service.price = newPrice.trim() || service.price;
-    
     const newDesc = prompt('Описание:', service.desc);
     if (newDesc !== null) service.desc = newDesc.trim() || service.desc;
     
     saveServices();
     renderAdminServiceList();
-    if (document.getElementById('services')) {
-        renderServices();
-    }
+    renderServices();
 }
 
-// ===== АДМИНКА: ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК =====
 function setupAdminTabs() {
     const tabs = document.querySelectorAll('.admin-tab');
     tabs.forEach(tab => {
         tab.addEventListener('click', function() {
             tabs.forEach(t => t.classList.remove('active'));
             this.classList.add('active');
-            
             const panel = this.dataset.tab;
             document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
             document.getElementById(`${panel}-panel`).classList.add('active');
@@ -386,7 +295,6 @@ function setupAdminTabs() {
 
 // ===== ИНИЦИАЛИЗАЦИЯ =====
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOM загружен');
     loadData();
     setupNavigation();
     initSplash();
