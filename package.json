@@ -1,8 +1,0 @@
-{
-  "name": "snowshop",
-  "version": "1.0.0",
-  "description": "SnowShop Telegram Mini App",
-  "scripts": {
-    "build": "echo 'No build needed'"
-  }
-}
