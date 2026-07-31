@@ -1,4 +1,3 @@
-// === КАТЕГОРИИ (ТОЛЬКО ЧЕРЕЗ КОД) ===
 const categories = [
     { name: 'Доски', icon: 'Доски.png' },
     { name: 'Ботинки', icon: 'Ботинки.png' },
@@ -14,41 +13,14 @@ localStorage.setItem('snowboard_categories', JSON.stringify(categories));
 let currentTab = categories[0].name;
 let currentImageIndex = 0;
 
-// === ФОТО ДЛЯ КАЖДОЙ КАТЕГОРИИ ===
-const categoryImages = {
-    'Доски': [
-        'https://images.unsplash.com/photo-1604915124551-0313421f71da?w=600&h=400&fit=crop',
-        'https://images.unsplash.com/photo-1605087878415-00a4b0e7b5e2?w=600&h=400&fit=crop',
-        'https://images.unsplash.com/photo-1504544750208-dc0358e63f7f?w=600&h=400&fit=crop',
-        'https://images.unsplash.com/photo-1558604150-9989afc14a4c?w=600&h=400&fit=crop'
-    ],
-    'Ботинки': [
-        'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&h=400&fit=crop',
-        'https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?w=600&h=400&fit=crop',
-        'https://images.unsplash.com/photo-1605348532760-6753d2c43329?w=600&h=400&fit=crop'
-    ],
-    'Шлемы': [
-        'https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=600&h=400&fit=crop',
-        'https://images.unsplash.com/photo-1551522435-a13afa10f103?w=600&h=400&fit=crop'
-    ],
-    'Маски': [
-        'https://images.unsplash.com/photo-1517879484726-e0f835e2f559?w=600&h=400&fit=crop'
-    ],
-    'Чехлы': [
-        'https://images.unsplash.com/photo-1560490441-7910b4830b6a?w=600&h=400&fit=crop'
-    ],
-    'Крепления': [
-        'https://images.unsplash.com/photo-1560490441-7910b4830b6a?w=600&h=400&fit=crop'
-    ],
-    'Сервис': [
-        'https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?w=600&h=400&fit=crop',
-        'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=600&h=400&fit=crop'
-    ]
-};
+// Информация о боте
+const BOT_TOKEN = '8803506830:AAFtJO4nJt4l5Cfzl_LHlQhAXIVsMorrN18';
+const APP_URL = 'https://snowtg.nazar-bronnikov22.workers.dev/';
 
-// === ВСЕ ТОВАРЫ (42 шт - 36 товаров + 6 услуг) ===
+console.log('🤖 Бот запущен!');
+console.log('🔗 Ссылка на приложение:', APP_URL);
+
 const defaultProducts = [
-    // === ДОСКИ (6 шт) ===
     {
         id: 1,
         name: 'Burton Custom 2025',
@@ -157,8 +129,6 @@ const defaultProducts = [
         ],
         category: 'Доски'
     },
-    
-    // === БОТИНКИ (6 шт) ===
     {
         id: 7,
         name: 'Adidas Tactical ADV',
@@ -267,8 +237,6 @@ const defaultProducts = [
         ],
         category: 'Ботинки'
     },
-    
-    // === ШЛЕМЫ (6 шт) ===
     {
         id: 13,
         name: 'Oakley MOD1',
@@ -371,8 +339,6 @@ const defaultProducts = [
         ],
         category: 'Шлемы'
     },
-    
-    // === МАСКИ (6 шт) ===
     {
         id: 19,
         name: 'Oakley Flight Deck L',
@@ -469,8 +435,6 @@ const defaultProducts = [
         ],
         category: 'Маски'
     },
-    
-    // === ЧЕХЛЫ (6 шт) ===
     {
         id: 25,
         name: 'Dakine Low Rider',
@@ -567,8 +531,6 @@ const defaultProducts = [
         ],
         category: 'Чехлы'
     },
-    
-    // === КРЕПЛЕНИЯ (6 шт) ===
     {
         id: 31,
         name: 'Union Force',
@@ -665,8 +627,6 @@ const defaultProducts = [
         ],
         category: 'Крепления'
     },
-    
-    // === СЕРВИС (6 услуг) ===
     {
         id: 37,
         name: 'Заточка кантов',
@@ -769,7 +729,6 @@ const defaultProducts = [
     }
 ];
 
-// === ФУНКЦИЯ ДЛЯ ЗАГРУЗКИ ДАННЫХ ===
 function loadProducts() {
     let storedProducts = JSON.parse(localStorage.getItem('snowboard_products'));
     
@@ -791,7 +750,6 @@ function loadProducts() {
 
 let products = loadProducts();
 
-// === РЕНДЕР КАТАЛОГА ===
 function renderCatalog(category) {
     const container = document.getElementById('catalog');
     const filtered = products.filter(p => p.category === category);
@@ -815,7 +773,6 @@ function renderCatalog(category) {
     `).join('');
 }
 
-// === РЕНДЕР НАВИГАЦИИ ===
 function renderNav() {
     const nav = document.getElementById('bottom-nav');
     if (!categories || categories.length === 0) {
@@ -840,7 +797,6 @@ function renderNav() {
     });
 }
 
-// === МОДАЛЬНОЕ ОКНО С КАРУСЕЛЬЮ ===
 function openModal(productId) {
     const product = products.find(p => p.id === productId);
     if (!product) return;
@@ -919,7 +875,6 @@ function goToImage(productId, index) {
     });
 }
 
-// === ЗАКРЫТИЕ МОДАЛКИ ===
 document.addEventListener('DOMContentLoaded', function() {
     const modal = document.getElementById('product-modal');
     const closeBtn = document.getElementById('modal-close');
@@ -935,7 +890,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// === ЗАГРУЗОЧНЫЙ ЭКРАН ===
 function updateCountdown() {
     const now = new Date();
     const target = new Date(now.getFullYear(), 11, 1);
@@ -970,7 +924,6 @@ function shouldHideSplash() {
     return now.getMonth() === 11 && now.getDate() === 1;
 }
 
-// === ИНИЦИАЛИЗАЦИЯ ===
 document.addEventListener('DOMContentLoaded', function() {
     const splash = document.getElementById('splash-screen');
     const app = document.getElementById('app');
@@ -1032,14 +985,12 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// === ОБНОВЛЕНИЕ ДАННЫХ ИЗ LOCALSTORAGE ===
 window.refreshCatalog = function() {
     products = JSON.parse(localStorage.getItem('snowboard_products')) || products;
     renderNav();
     if (currentTab) renderCatalog(currentTab);
 };
 
-// === ЗАЩИТА ОТ ЗУМА ===
 document.addEventListener('gesturestart', function(e) {
     e.preventDefault();
 });
