@@ -52,6 +52,8 @@ function saveServices() {
 // ===== РЕНДЕРИНГ КАТАЛОГА =====
 function renderCatalog(category) {
     const catalog = document.getElementById('catalog');
+    if (!catalog) return;
+    
     const filtered = products.filter(p => p.category === category);
     
     if (filtered.length === 0) {
@@ -72,6 +74,7 @@ function renderCatalog(category) {
 // ===== РЕНДЕРИНГ УСЛУГ =====
 function renderServices() {
     const servicesContainer = document.getElementById('services');
+    if (!servicesContainer) return;
     
     if (services.length === 0) {
         servicesContainer.innerHTML = `
@@ -119,20 +122,52 @@ function setupNavigation() {
     });
 }
 
-// ===== ЗАГРУЗОЧНЫЙ ЭКРАН (ИСПРАВЛЕННЫЙ) =====
+// ===== ЗАГРУЗОЧНЫЙ ЭКРАН (ПОЛНОСТЬЮ ИСПРАВЛЕННЫЙ) =====
 function initSplash() {
+    console.log('initSplash вызван');
+    
     const splash = document.getElementById('splash-screen');
     const mainApp = document.getElementById('main-app');
     const skipBtn = document.getElementById('skip-splash');
+    
+    // Проверяем, найдены ли элементы
+    if (!splash) {
+        console.error('Splash screen не найден!');
+        return;
+    }
+    if (!mainApp) {
+        console.error('Main app не найден!');
+        return;
+    }
+    if (!skipBtn) {
+        console.error('Skip button не найден!');
+        return;
+    }
+    
+    console.log('Все элементы найдены');
     
     // Проверка: если 1 декабря или позже - скрываем сплэш
     const today = new Date();
     const decFirst = new Date(today.getFullYear(), 11, 1);
     if (today >= decFirst) {
+        console.log('Сплэш скрыт (1 декабря)');
         splash.style.display = 'none';
         mainApp.style.display = 'flex';
         return;
     }
+
+    // Получаем элементы таймера
+    const daysEl = document.getElementById('days');
+    const hoursEl = document.getElementById('hours');
+    const minutesEl = document.getElementById('minutes');
+    const secondsEl = document.getElementById('seconds');
+    
+    if (!daysEl || !hoursEl || !minutesEl || !secondsEl) {
+        console.error('Элементы таймера не найдены!');
+        return;
+    }
+    
+    console.log('Элементы таймера найдены');
 
     // Функция обновления таймера
     function updateCountdown() {
@@ -142,10 +177,10 @@ function initSplash() {
         
         const diff = winter - now;
         if (diff <= 0) {
-            document.getElementById('days').textContent = '00';
-            document.getElementById('hours').textContent = '00';
-            document.getElementById('minutes').textContent = '00';
-            document.getElementById('seconds').textContent = '00';
+            daysEl.textContent = '00';
+            hoursEl.textContent = '00';
+            minutesEl.textContent = '00';
+            secondsEl.textContent = '00';
             return;
         }
         
@@ -154,34 +189,41 @@ function initSplash() {
         const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
         const seconds = Math.floor((diff % (1000 * 60)) / 1000);
         
-        document.getElementById('days').textContent = String(days).padStart(2, '0');
-        document.getElementById('hours').textContent = String(hours).padStart(2, '0');
-        document.getElementById('minutes').textContent = String(minutes).padStart(2, '0');
-        document.getElementById('seconds').textContent = String(seconds).padStart(2, '0');
+        daysEl.textContent = String(days).padStart(2, '0');
+        hoursEl.textContent = String(hours).padStart(2, '0');
+        minutesEl.textContent = String(minutes).padStart(2, '0');
+        secondsEl.textContent = String(seconds).padStart(2, '0');
+        
+        console.log(`Таймер обновлен: ${days}д ${hours}ч ${minutes}м ${seconds}с`);
     }
     
     // Запускаем таймер
     updateCountdown();
     const timerInterval = setInterval(updateCountdown, 1000);
+    console.log('Таймер запущен');
     
     // Функция закрытия сплэша
     function closeSplash() {
-        clearInterval(timerInterval); // Останавливаем таймер
+        console.log('Закрытие сплэша');
+        clearInterval(timerInterval);
         splash.style.opacity = '0';
         splash.style.transition = 'opacity 0.4s ease';
         setTimeout(() => {
             splash.style.display = 'none';
             mainApp.style.display = 'flex';
+            console.log('Сплэш закрыт, приложение показано');
         }, 400);
     }
     
     // Автоматическое закрытие через 5 секунд
     const timeout = setTimeout(closeSplash, 5000);
+    console.log('Авто-закрытие через 5 секунд');
     
     // Закрытие по кнопке "Пропустить"
     skipBtn.addEventListener('click', function(e) {
         e.preventDefault();
-        clearTimeout(timeout); // Отменяем авто-закрытие
+        console.log('Кнопка "Пропустить" нажата');
+        clearTimeout(timeout);
         closeSplash();
     });
 }
@@ -344,6 +386,7 @@ function setupAdminTabs() {
 
 // ===== ИНИЦИАЛИЗАЦИЯ =====
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM загружен');
     loadData();
     setupNavigation();
     initSplash();
