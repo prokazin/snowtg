@@ -1,7 +1,0 @@
-name = "snowshop-bot"
-main = "bot-worker.js"
-compatibility_date = "2024-01-01"
-
-[vars]
-BOT_TOKEN = "8803506830:AAFtJO4nJt4l5Cfzl_LHlQhAXIVsMorrN18"
-WEBAPP_URL = "https://snowtg.nazar-bronnikov22.workers.dev/"
