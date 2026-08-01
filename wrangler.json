@@ -11,5 +11,8 @@
       "binding": "KV",
       "id": "168606ad1c7a41b891a8f1d6d9979efd"
     }
-  ]
+  ],
+  "assets": {
+    "directory": "."
+  }
 }
