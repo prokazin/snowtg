@@ -1,11 +1,10 @@
-// === ПОЛНЫЙ КОД ДЛЯ CLOUDFLARE WORKER С KV ===
+// === ПОЛНЫЙ КОД ДЛЯ CLOUDFLARE WORKER ===
 
 const BOT_TOKEN = '8803506830:AAFtJO4nJt4l5Cfzl_LHlQhAXIVsMorrN18';
 const APP_URL = 'https://snowtg.nazar-bronnikov22.workers.dev/';
 
 // === ДЕФОЛТНЫЕ ТОВАРЫ (43 шт) ===
 const DEFAULT_PRODUCTS = [
-    // === ДОСКИ (6 шт) ===
     {
         id: 1,
         name: 'Burton Custom 2025',
@@ -15,7 +14,7 @@ const DEFAULT_PRODUCTS = [
             'https://images.unsplash.com/photo-1504544750208-dc0358e63f7f?w=600&h=400&fit=crop',
             'https://images.unsplash.com/photo-1558604150-9989afc14a4c?w=600&h=400&fit=crop'
         ],
-        desc: 'Легендарная модель для фрирайда и парка. Идеально подходит для катания по целине и в парке.',
+        desc: 'Легендарная модель для фрирайда и парка.',
         specs: [
             { name: 'Длина', value: '156 см' },
             { name: 'Жесткость', value: '7/10' },
@@ -33,7 +32,7 @@ const DEFAULT_PRODUCTS = [
             'https://images.unsplash.com/photo-1604915124551-0313421f71da?w=600&h=400&fit=crop',
             'https://images.unsplash.com/photo-1504544750208-dc0358e63f7f?w=600&h=400&fit=crop'
         ],
-        desc: 'Универсальная доска для фрирайда. Отлично держит дугу на жестком склоне и легко плывет по пухляку.',
+        desc: 'Универсальная доска для фрирайда.',
         specs: [
             { name: 'Длина', value: '158 см' },
             { name: 'Жесткость', value: '8/10' },
@@ -51,7 +50,7 @@ const DEFAULT_PRODUCTS = [
             'https://images.unsplash.com/photo-1605087878415-00a4b0e7b5e2?w=600&h=400&fit=crop',
             'https://images.unsplash.com/photo-1604915124551-0313421f71da?w=600&h=400&fit=crop'
         ],
-        desc: 'Профессиональная доска для больших гор. Разработана совместно с Трэвисом Райсом.',
+        desc: 'Профессиональная доска для больших гор.',
         specs: [
             { name: 'Длина', value: '157 см' },
             { name: 'Жесткость', value: '9/10' },
@@ -69,7 +68,7 @@ const DEFAULT_PRODUCTS = [
             'https://images.unsplash.com/photo-1504544750208-dc0358e63f7f?w=600&h=400&fit=crop',
             'https://images.unsplash.com/photo-1604915124551-0313421f71da?w=600&h=400&fit=crop'
         ],
-        desc: 'Новая модель с уникальной геометрией. Подходит для любого стиля катания.',
+        desc: 'Новая модель с уникальной геометрией.',
         specs: [
             { name: 'Длина', value: '154 см' },
             { name: 'Жесткость', value: '6/10' },
@@ -87,7 +86,7 @@ const DEFAULT_PRODUCTS = [
             'https://images.unsplash.com/photo-1558604150-9989afc14a4c?w=600&h=400&fit=crop',
             'https://images.unsplash.com/photo-1604915124551-0313421f71da?w=600&h=400&fit=crop'
         ],
-        desc: 'Универсальная доска для парка и трасс. Идеальный баланс между попом и стабильностью.',
+        desc: 'Универсальная доска для парка и трасс.',
         specs: [
             { name: 'Длина', value: '155 см' },
             { name: 'Жесткость', value: '7/10' },
@@ -105,7 +104,7 @@ const DEFAULT_PRODUCTS = [
             'https://images.unsplash.com/photo-1560490441-7910b4830b6a?w=600&h=400&fit=crop',
             'https://images.unsplash.com/photo-1558604150-9989afc14a4c?w=600&h=400&fit=crop'
         ],
-        desc: 'Короткая широкая доска для парка и фрирайда. Отличная плавучесть в пухляке.',
+        desc: 'Короткая широкая доска для парка и фрирайда.',
         specs: [
             { name: 'Длина', value: '151 см' },
             { name: 'Жесткость', value: '8/10' },
@@ -114,8 +113,6 @@ const DEFAULT_PRODUCTS = [
         ],
         category: 'Доски'
     },
-    
-    // === БОТИНКИ (6 шт) ===
     {
         id: 7,
         name: 'Adidas Tactical ADV',
@@ -125,7 +122,7 @@ const DEFAULT_PRODUCTS = [
             'https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?w=600&h=400&fit=crop',
             'https://images.unsplash.com/photo-1556906781-9a4129616c1c?w=600&h=400&fit=crop'
         ],
-        desc: 'Ботинки с системой быстрой шнуровки и анатомической стелькой.',
+        desc: 'Ботинки с системой быстрой шнуровки.',
         specs: [
             { name: 'Размер', value: '42-46' },
             { name: 'Жесткость', value: '6/10' },
@@ -161,7 +158,7 @@ const DEFAULT_PRODUCTS = [
             'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&h=400&fit=crop',
             'https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?w=600&h=400&fit=crop'
         ],
-        desc: 'Ботинки с двойной системой BOA для идеальной фиксации.',
+        desc: 'Ботинки с двойной системой BOA.',
         specs: [
             { name: 'Размер', value: '41-48' },
             { name: 'Жесткость', value: '9/10' },
@@ -179,7 +176,7 @@ const DEFAULT_PRODUCTS = [
             'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&h=400&fit=crop',
             'https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?w=600&h=400&fit=crop'
         ],
-        desc: 'Легкие и удобные ботинки от Nike. Технология Zoom Air.',
+        desc: 'Легкие и удобные ботинки от Nike.',
         specs: [
             { name: 'Размер', value: '40-45' },
             { name: 'Жесткость', value: '5/10' },
@@ -197,7 +194,7 @@ const DEFAULT_PRODUCTS = [
             'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&h=400&fit=crop',
             'https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?w=600&h=400&fit=crop'
         ],
-        desc: 'Классические ботинки от Vans. Отличная подошва с амортизацией.',
+        desc: 'Классические ботинки от Vans.',
         specs: [
             { name: 'Размер', value: '40-47' },
             { name: 'Жесткость', value: '6/10' },
@@ -215,7 +212,7 @@ const DEFAULT_PRODUCTS = [
             'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&h=400&fit=crop',
             'https://images.unsplash.com/photo-1605348532760-6753d2c43329?w=600&h=400&fit=crop'
         ],
-        desc: 'Профессиональные ботинки для фрирайда. Технология Power Frame.',
+        desc: 'Профессиональные ботинки для фрирайда.',
         specs: [
             { name: 'Размер', value: '41-47' },
             { name: 'Жесткость', value: '8/10' },
@@ -224,8 +221,6 @@ const DEFAULT_PRODUCTS = [
         ],
         category: 'Ботинки'
     },
-    
-    // === ШЛЕМЫ (6 шт) ===
     {
         id: 13,
         name: 'Oakley MOD1',
@@ -234,7 +229,7 @@ const DEFAULT_PRODUCTS = [
             'https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=600&h=400&fit=crop',
             'https://images.unsplash.com/photo-1551522435-a13afa10f103?w=600&h=400&fit=crop'
         ],
-        desc: 'Легкий шлем с вентиляционной системой и защитой от ударов.',
+        desc: 'Легкий шлем с вентиляционной системой.',
         specs: [
             { name: 'Вес', value: '380 г' },
             { name: 'Размер', value: 'S-L' },
@@ -268,7 +263,7 @@ const DEFAULT_PRODUCTS = [
             'https://images.unsplash.com/photo-1551522435-a13afa10f103?w=600&h=400&fit=crop',
             'https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=600&h=400&fit=crop'
         ],
-        desc: 'Профессиональный шлем для бэккантри. Защита от боковых ударов.',
+        desc: 'Профессиональный шлем для бэккантри.',
         specs: [
             { name: 'Вес', value: '520 г' },
             { name: 'Размер', value: 'S-XL' },
@@ -328,8 +323,6 @@ const DEFAULT_PRODUCTS = [
         ],
         category: 'Шлемы'
     },
-    
-    // === МАСКИ (6 шт) ===
     {
         id: 19,
         name: 'Oakley Flight Deck L',
@@ -337,7 +330,7 @@ const DEFAULT_PRODUCTS = [
         images: [
             'https://images.unsplash.com/photo-1517879484726-e0f835e2f559?w=600&h=400&fit=crop'
         ],
-        desc: 'Большая маска с широким обзором. Технология Prizm.',
+        desc: 'Большая маска с широким обзором.',
         specs: [
             { name: 'Линза', value: 'Prizm' },
             { name: 'Обзор', value: 'Широкий' },
@@ -369,7 +362,7 @@ const DEFAULT_PRODUCTS = [
         images: [
             'https://images.unsplash.com/photo-1517879484726-e0f835e2f559?w=600&h=400&fit=crop'
         ],
-        desc: 'Маска с футуристическим дизайном. Технология Lumalens.',
+        desc: 'Маска с футуристическим дизайном.',
         specs: [
             { name: 'Линза', value: 'Lumalens' },
             { name: 'Смена линз', value: 'Swiftlock' },
@@ -426,8 +419,6 @@ const DEFAULT_PRODUCTS = [
         ],
         category: 'Маски'
     },
-    
-    // === ЧЕХЛЫ (6 шт) ===
     {
         id: 25,
         name: 'Dakine Low Rider',
@@ -435,7 +426,7 @@ const DEFAULT_PRODUCTS = [
         images: [
             'https://images.unsplash.com/photo-1560490441-7910b4830b6a?w=600&h=400&fit=crop'
         ],
-        desc: 'Универсальный чехол для сноуборда. Защищает доску при транспортировке.',
+        desc: 'Универсальный чехол для сноуборда.',
         specs: [
             { name: 'Длина', value: '156 см' },
             { name: 'Материал', value: 'Polyester' },
@@ -467,7 +458,7 @@ const DEFAULT_PRODUCTS = [
         images: [
             'https://images.unsplash.com/photo-1560490441-7910b4830b6a?w=600&h=400&fit=crop'
         ],
-        desc: 'Легкий чехол для сноуборда. Используется при транспортировке и хранении.',
+        desc: 'Легкий чехол для сноуборда.',
         specs: [
             { name: 'Длина', value: '165 см' },
             { name: 'Материал', value: 'Polyester' },
@@ -483,7 +474,7 @@ const DEFAULT_PRODUCTS = [
         images: [
             'https://images.unsplash.com/photo-1560490441-7910b4830b6a?w=600&h=400&fit=crop'
         ],
-        desc: 'Простой и удобный чехол-рукав для ежедневного использования.',
+        desc: 'Простой и удобный чехол-рукав.',
         specs: [
             { name: 'Длина', value: '158 см' },
             { name: 'Материал', value: 'Неопрен' },
@@ -515,7 +506,7 @@ const DEFAULT_PRODUCTS = [
         images: [
             'https://images.unsplash.com/photo-1560490441-7910b4830b6a?w=600&h=400&fit=crop'
         ],
-        desc: 'Компактный чехол для путешествий. Защищает доску от пыли и царапин.',
+        desc: 'Компактный чехол для путешествий.',
         specs: [
             { name: 'Длина', value: '155 см' },
             { name: 'Материал', value: 'Нейлон' },
@@ -524,8 +515,6 @@ const DEFAULT_PRODUCTS = [
         ],
         category: 'Чехлы'
     },
-    
-    // === КРЕПЛЕНИЯ (6 шт) ===
     {
         id: 31,
         name: 'Union Force',
@@ -549,7 +538,7 @@ const DEFAULT_PRODUCTS = [
         images: [
             'https://images.unsplash.com/photo-1560490441-7910b4830b6a?w=600&h=400&fit=crop'
         ],
-        desc: 'Крепления с высокой поддержкой. Технология AutoCAN.',
+        desc: 'Крепления с высокой поддержкой.',
         specs: [
             { name: 'Вес', value: '1.4 кг' },
             { name: 'Материал', value: 'Композит' },
@@ -581,7 +570,7 @@ const DEFAULT_PRODUCTS = [
         images: [
             'https://images.unsplash.com/photo-1560490441-7910b4830b6a?w=600&h=400&fit=crop'
         ],
-        desc: 'Крепления с высокой жесткостью для агрессивного катания.',
+        desc: 'Крепления с высокой жесткостью.',
         specs: [
             { name: 'Вес', value: '1.3 кг' },
             { name: 'Материал', value: 'Алюминий' },
@@ -622,8 +611,6 @@ const DEFAULT_PRODUCTS = [
         ],
         category: 'Крепления'
     },
-    
-    // === СЕРВИС (6 услуг) ===
     {
         id: 37,
         name: 'Заточка кантов',
@@ -724,8 +711,6 @@ const DEFAULT_PRODUCTS = [
         ],
         category: 'Сервис'
     },
-    
-    // === КОНТАКТЫ ===
     {
         id: 43,
         name: '📞 Контакты',
@@ -752,11 +737,10 @@ export default {
         // === API: Получить все товары ===
         if (path === '/api/products') {
             try {
-                let products = await env.SNOWBOARD_STORE.get('products', 'json');
+                let products = await env.KV.get('products', 'json');
                 
-                // Если в KV пусто - записываем дефолтные
                 if (!products || products.length === 0) {
-                    await env.SNOWBOARD_STORE.put('products', JSON.stringify(DEFAULT_PRODUCTS));
+                    await env.KV.put('products', JSON.stringify(DEFAULT_PRODUCTS));
                     products = DEFAULT_PRODUCTS;
                 }
                 
@@ -768,7 +752,7 @@ export default {
                     }
                 });
             } catch (e) {
-                console.error('Ошибка получения товаров:', e);
+                console.error('Ошибка:', e);
                 return new Response(JSON.stringify({ error: 'Ошибка загрузки' }), {
                     status: 500,
                     headers: { 'Content-Type': 'application/json' }
@@ -776,11 +760,11 @@ export default {
             }
         }
 
-        // === API: Обновить товары (из админки) ===
+        // === API: Сохранить товары ===
         if (path === '/api/products' && request.method === 'POST') {
             try {
                 const products = await request.json();
-                await env.SNOWBOARD_STORE.put('products', JSON.stringify(products));
+                await env.KV.put('products', JSON.stringify(products));
                 
                 return new Response(JSON.stringify({ success: true }), {
                     headers: { 
@@ -789,8 +773,8 @@ export default {
                     }
                 });
             } catch (e) {
-                console.error('Ошибка сохранения товаров:', e);
-                return new Response(JSON.stringify({ error: 'Ошибка сохранения' }), {
+                console.error('Ошибка сохранения:', e);
+                return new Response(JSON.stringify({ error: e.message }), {
                     status: 500,
                     headers: { 'Content-Type': 'application/json' }
                 });
@@ -800,7 +784,7 @@ export default {
         // === API: Получить оповещение ===
         if (path === '/api/announcement') {
             try {
-                const announcement = await env.SNOWBOARD_STORE.get('announcement', 'json');
+                const announcement = await env.KV.get('announcement', 'json');
                 if (!announcement) {
                     return new Response(JSON.stringify({ text: null }), {
                         headers: { 
@@ -819,7 +803,7 @@ export default {
                         }
                     });
                 } else {
-                    await env.SNOWBOARD_STORE.delete('announcement');
+                    await env.KV.delete('announcement');
                     return new Response(JSON.stringify({ text: null }), {
                         headers: { 
                             'Content-Type': 'application/json',
@@ -837,18 +821,18 @@ export default {
             }
         }
 
-        // === API: Сохранить оповещение (из админки) ===
+        // === API: Сохранить оповещение ===
         if (path === '/api/announcement' && request.method === 'POST') {
             try {
                 const data = await request.json();
                 if (data.text && data.text.trim() !== '') {
                     const expires = new Date().getTime() + (24 * 60 * 60 * 1000);
-                    await env.SNOWBOARD_STORE.put('announcement', JSON.stringify({
+                    await env.KV.put('announcement', JSON.stringify({
                         text: data.text.trim(),
                         expires: expires
                     }));
                 } else {
-                    await env.SNOWBOARD_STORE.delete('announcement');
+                    await env.KV.delete('announcement');
                 }
                 
                 return new Response(JSON.stringify({ success: true }), {
@@ -890,7 +874,6 @@ async function handleTelegramMessage(message, env) {
     
     if (!chatId) return;
     
-    // Обработка callback
     if (callback) {
         await handleCallback(callback, env);
         return;
@@ -903,7 +886,7 @@ async function handleTelegramMessage(message, env) {
     
     switch (text) {
         case '/start':
-            replyText = `🏔️ Добро пожаловать в Snowboard Store!\n\n❄️ Твой гид в мире сноубординга!\n\nЗдесь ты найдешь:\n🏂 Сноуборды от ведущих брендов\n👢 Ботинки для любого стиля катания\n⛑️ Шлемы и защита\n🎭 Маски и аксессуары\n🔧 Сервис и обслуживание\n📞 Контакты и поддержка\n\n🔥 Начни свое приключение уже сегодня!`;
+            replyText = `🏔️ Добро пожаловать в Snowboard Store!\n\n❄️ Твой гид в мире сноубординга!\n\nЗдесь ты найдешь:\n🏂 Сноуборды\n👢 Ботинки\n⛑️ Шлемы\n🎭 Маски\n🔧 Сервис\n📞 Контакты\n\n🔥 Начни свое приключение уже сегодня!`;
             buttons = [
                 [{ text: '🚀 Открыть магазин', web_app: { url: APP_URL } }],
                 [{ text: '📢 Оповещения', callback_data: 'check_announcement' }],
@@ -912,7 +895,7 @@ async function handleTelegramMessage(message, env) {
             break;
             
         case '/help':
-            replyText = `❓ Помощь — Snowboard Store\n\n📌 Основные разделы:\n🛒 /catalog - Каталог\n🔧 /services - Услуги\n📞 /contacts - Контакты\n🏂 /boards - Сноуборды\n🔗 /bindings - Крепления\n👢 /boots - Ботинки\n⛑️ /helmets - Шлемы\n🎭 /masks - Маски\n🎒 /covers - Чехлы\n\n❄️ Удачи на склонах!`;
+            replyText = `❓ Помощь — Snowboard Store\n\n📌 Основные разделы:\n🛒 /catalog - Каталог\n🔧 /services - Услуги\n📞 /contacts - Контакты\n\n❄️ Удачи на склонах!`;
             buttons = [
                 [{ text: '🚀 Открыть магазин', web_app: { url: APP_URL } }],
                 [{ text: '🏔️ Главное меню', callback_data: 'start' }]
@@ -920,14 +903,14 @@ async function handleTelegramMessage(message, env) {
             break;
             
         case '/catalog':
-            replyText = `🛒 Каталог товаров\n\n🏂 /boards — Сноуборды\n🔗 /bindings — Крепления\n👢 /boots — Ботинки\n⛑️ /helmets — Шлемы\n🎭 /masks — Маски\n🎒 /covers — Чехлы\n🔧 /services — Услуги\n📞 /contacts — Контакты\n\n👇 Нажми на кнопку ниже!`;
+            replyText = `🛒 Каталог товаров\n\n🏂 Сноуборды\n👢 Ботинки\n⛑️ Шлемы\n🎭 Маски\n🎒 Чехлы\n🔗 Крепления\n🔧 Сервис\n📞 Контакты\n\n👇 Нажми на кнопку ниже!`;
             buttons = [
                 [{ text: '🛒 Смотреть каталог', web_app: { url: APP_URL } }]
             ];
             break;
             
         case '/contacts':
-            replyText = `📞 Контакты\n\n📍 Адрес: г. Москва, ул. Сноубордная, д. 15\n📱 Телефон: +7 (999) 123-45-67\n📧 Email: info@snowboard-store.ru\n🕐 Режим работы: Пн-Вс: 9:00 - 19:00\n\n🌐 Наш сайт: ${APP_URL}`;
+            replyText = `📞 Контакты\n\n📍 Адрес: г. Москва, ул. Сноубордная, д. 15\n📱 Телефон: +7 (999) 123-45-67\n📧 Email: info@snowboard-store.ru\n🕐 Режим работы: Пн-Вс: 9:00 - 19:00`;
             buttons = [
                 [{ text: '📞 Позвонить', url: 'tel:+79991234567' }],
                 [{ text: '📍 Показать на карте', url: 'https://maps.google.com/?q=Москва+ул+Сноубордная+15' }],
@@ -936,7 +919,7 @@ async function handleTelegramMessage(message, env) {
             break;
             
         default:
-            replyText = `🤔 Я не понял ваш запрос.\n\nДоступные команды:\n/start — Главное меню\n/catalog — Каталог\n/services — Услуги\n/contacts — Контакты\n/help — Помощь\n\n👇 Или нажми на кнопку ниже!`;
+            replyText = `🤔 Я не понял запрос.\n\nДоступные команды:\n/start — Главное меню\n/catalog — Каталог\n/services — Услуги\n/contacts — Контакты\n/help — Помощь`;
             buttons = [
                 [{ text: '🚀 Открыть магазин', web_app: { url: APP_URL } }],
                 [{ text: '🏔️ Главное меню', callback_data: 'start' }]
@@ -957,7 +940,7 @@ async function handleCallback(callback, env) {
     
     switch (data) {
         case 'start':
-            replyText = `🏔️ Добро пожаловать в Snowboard Store!\n\n❄️ Твой гид в мире сноубординга!\n\nЗдесь ты найдешь:\n🏂 Сноуборды\n👢 Ботинки\n⛑️ Шлемы\n🎭 Маски\n🔧 Сервис\n📞 Контакты\n\n🔥 Начни свое приключение уже сегодня!`;
+            replyText = `🏔️ Добро пожаловать в Snowboard Store!\n\n❄️ Твой гид в мире сноубординга!\n\n🔥 Начни свое приключение уже сегодня!`;
             buttons = [
                 [{ text: '🚀 Открыть магазин', web_app: { url: APP_URL } }],
                 [{ text: '📢 Оповещения', callback_data: 'check_announcement' }],
@@ -967,20 +950,20 @@ async function handleCallback(callback, env) {
             
         case 'check_announcement':
             try {
-                const announcement = await env.SNOWBOARD_STORE.get('announcement', 'json');
+                const announcement = await env.KV.get('announcement', 'json');
                 if (announcement && announcement.text) {
                     const now = new Date().getTime();
                     if (announcement.expires && now < announcement.expires) {
-                        replyText = `📢 Оповещение от магазина:\n\n${announcement.text}`;
+                        replyText = `📢 Оповещение:\n\n${announcement.text}`;
                     } else {
-                        await env.SNOWBOARD_STORE.delete('announcement');
-                        replyText = '📢 Активных оповещений нет. Все работает в штатном режиме! 🏔️';
+                        await env.KV.delete('announcement');
+                        replyText = '📢 Активных оповещений нет. 🏔️';
                     }
                 } else {
-                    replyText = '📢 Активных оповещений нет. Все работает в штатном режиме! 🏔️';
+                    replyText = '📢 Активных оповещений нет. 🏔️';
                 }
             } catch (e) {
-                replyText = '📢 Активных оповещений нет. Все работает в штатном режиме! 🏔️';
+                replyText = '📢 Активных оповещений нет. 🏔️';
             }
             buttons = [
                 [{ text: '🏔️ Главное меню', callback_data: 'start' }]
@@ -988,11 +971,11 @@ async function handleCallback(callback, env) {
             break;
             
         case 'contacts':
-            replyText = `📞 Контакты\n\n📍 Адрес: г. Москва, ул. Сноубордная, д. 15\n📱 Телефон: +7 (999) 123-45-67\n📧 Email: info@snowboard-store.ru\n🕐 Режим работы: Пн-Вс: 9:00 - 19:00\n\n🌐 Наш сайт: ${APP_URL}`;
+            replyText = `📞 Контакты\n\n📍 г. Москва, ул. Сноубордная, д. 15\n📱 +7 (999) 123-45-67\n📧 info@snowboard-store.ru\n🕐 Пн-Вс: 9:00 - 19:00`;
             buttons = [
                 [{ text: '📞 Позвонить', url: 'tel:+79991234567' }],
-                [{ text: '📍 Показать на карте', url: 'https://maps.google.com/?q=Москва+ул+Сноубордная+15' }],
-                [{ text: '🏔️ Главное меню', callback_data: 'start' }]
+                [{ text: '📍 На карте', url: 'https://maps.google.com/?q=Москва+ул+Сноубордная+15' }],
+                [{ text: '🏔️ Назад', callback_data: 'start' }]
             ];
             break;
     }
