@@ -7,9 +7,15 @@ async function loadProductsFromAPI() {
     try {
         const response = await fetch(API_URL + 'api/products');
         if (!response.ok) throw new Error('Ошибка загрузки');
-        return await response.json();
+        const data = await response.json();
+        return data;
     } catch (e) {
         console.error('Ошибка загрузки из API:', e);
+        // Пробуем загрузить из localStorage
+        const cached = localStorage.getItem('snowboard_products_cache');
+        if (cached) {
+            return JSON.parse(cached);
+        }
         return [];
     }
 }
@@ -23,10 +29,11 @@ async function saveProductsToAPI(products) {
             body: JSON.stringify(products)
         });
         if (!response.ok) throw new Error('Ошибка сохранения');
-        return true;
+        const result = await response.json();
+        return result.success === true;
     } catch (e) {
         console.error('Ошибка сохранения в API:', e);
-        alert('Ошибка сохранения на сервере');
+        alert('❌ Ошибка сохранения на сервере: ' + e.message);
         return false;
     }
 }
@@ -225,15 +232,21 @@ async function getProducts() {
 async function saveProducts(products) {
     const success = await saveProductsToAPI(products);
     if (success) {
+        // Сохраняем кеш в localStorage
+        localStorage.setItem('snowboard_products_cache', JSON.stringify(products));
         await renderProductList();
         await renderServiceList();
+        
+        // Обновляем основное приложение (если открыто)
         if (window.opener && !window.opener.closed) {
             window.opener.products = products;
             if (window.opener.currentTab) {
                 window.opener.renderCatalog(window.opener.currentTab);
             }
         }
+        return true;
     }
+    return false;
 }
 
 async function renderProductList() {
@@ -290,7 +303,7 @@ async function addProduct() {
     const products = await getProducts();
     const newId = products.length ? Math.max(...products.map(p => p.id)) + 1 : 1;
     
-    products.push({ 
+    const newProduct = { 
         id: newId, 
         name, 
         price, 
@@ -299,23 +312,26 @@ async function addProduct() {
         specs, 
         category,
         isContact: false
-    });
+    };
     
-    await saveProducts(products);
+    products.push(newProduct);
     
-    document.getElementById('product-name').value = '';
-    document.getElementById('product-price').value = '';
-    document.getElementById('product-image-url').value = '';
-    document.getElementById('product-desc').value = '';
-    document.getElementById('product-image-file').value = '';
-    
-    const container = document.getElementById('specs-container');
-    if (container) {
-        container.innerHTML = '';
-        addSpecRow('', '');
+    const saved = await saveProducts(products);
+    if (saved) {
+        document.getElementById('product-name').value = '';
+        document.getElementById('product-price').value = '';
+        document.getElementById('product-image-url').value = '';
+        document.getElementById('product-desc').value = '';
+        document.getElementById('product-image-file').value = '';
+        
+        const container = document.getElementById('specs-container');
+        if (container) {
+            container.innerHTML = '';
+            addSpecRow('', '');
+        }
+        
+        alert('✅ Товар "' + name + '" добавлен!');
     }
-    
-    alert('✅ Товар "' + name + '" добавлен!');
 }
 
 function uploadProductImage() {
@@ -348,6 +364,7 @@ async function deleteProduct(index) {
     const products = await getProducts();
     products.splice(index, 1);
     await saveProducts(products);
+    alert('✅ Товар удален!');
 }
 
 async function editProduct(index) {
@@ -372,10 +389,12 @@ async function editProduct(index) {
         }
     }
     
+    // Удаляем старый товар
     products.splice(index, 1);
     await saveProducts(products);
     
     document.getElementById('product-name').scrollIntoView({ behavior: 'smooth' });
+    alert('✏️ Редактирование: ' + p.name);
 }
 
 // === УСЛУГИ ===
@@ -448,21 +467,22 @@ async function addService() {
         isContact: false
     });
     
-    await saveProducts(products);
-    
-    document.getElementById('service-name').value = '';
-    document.getElementById('service-price').value = '';
-    document.getElementById('service-image-url').value = '';
-    document.getElementById('service-desc').value = '';
-    document.getElementById('service-image-file').value = '';
-    
-    const container = document.getElementById('service-specs-container');
-    if (container) {
-        container.innerHTML = '';
-        addServiceSpecRow('', '');
+    const saved = await saveProducts(products);
+    if (saved) {
+        document.getElementById('service-name').value = '';
+        document.getElementById('service-price').value = '';
+        document.getElementById('service-image-url').value = '';
+        document.getElementById('service-desc').value = '';
+        document.getElementById('service-image-file').value = '';
+        
+        const container = document.getElementById('service-specs-container');
+        if (container) {
+            container.innerHTML = '';
+            addServiceSpecRow('', '');
+        }
+        
+        alert('✅ Услуга "' + name + '" добавлена!');
     }
-    
-    alert('✅ Услуга "' + name + '" добавлена!');
 }
 
 function uploadServiceImage() {
@@ -495,6 +515,7 @@ async function deleteService(index) {
     const products = await getProducts();
     products.splice(index, 1);
     await saveProducts(products);
+    alert('✅ Услуга удалена!');
 }
 
 async function editService(index) {
@@ -522,6 +543,7 @@ async function editService(index) {
     await saveProducts(products);
     
     document.getElementById('service-name').scrollIntoView({ behavior: 'smooth' });
+    alert('✏️ Редактирование: ' + p.name);
 }
 
 // === ВХОД ===
@@ -555,12 +577,21 @@ function loginAdmin() {
 }
 
 // === ИНИЦИАЛИЗАЦИЯ ===
-document.addEventListener('DOMContentLoaded', function() {
-    renderProductList();
-    renderServiceList();
-    loadCurrentAnnouncement();
+document.addEventListener('DOMContentLoaded', async function() {
+    await renderProductList();
+    await renderServiceList();
+    await loadCurrentAnnouncement();
 });
 
+// === ОБНОВЛЕНИЕ ПРИ ИЗМЕНЕНИИ В LOCALSTORAGE ===
+window.addEventListener('storage', async function(e) {
+    if (e.key === 'snowboard_products') {
+        await renderProductList();
+        await renderServiceList();
+    }
+});
+
+// Экспортируем функции для глобального использования
 window.getProducts = getProducts;
 window.saveProducts = saveProducts;
 window.addSpecRow = addSpecRow;
@@ -573,3 +604,10 @@ window.clearAnnouncement = clearAnnouncement;
 window.loadCurrentAnnouncement = loadCurrentAnnouncement;
 window.uploadProductImage = uploadProductImage;
 window.uploadServiceImage = uploadServiceImage;
+window.addProduct = addProduct;
+window.addService = addService;
+window.deleteProduct = deleteProduct;
+window.deleteService = deleteService;
+window.editProduct = editProduct;
+window.editService = editService;
+window.loginAdmin = loginAdmin;
