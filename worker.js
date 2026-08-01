@@ -734,11 +734,43 @@ export default {
         const url = new URL(request.url);
         const path = url.pathname;
 
+        // === ТЕСТ KV (для проверки) ===
+        if (path === '/test-kv') {
+            try {
+                // Записываем тестовое значение
+                await env.KV.put('test_key', 'Hello from KV!');
+                // Читаем тестовое значение
+                const testValue = await env.KV.get('test_key');
+                // Получаем все ключи
+                const allKeys = await env.KV.list();
+                
+                return new Response(JSON.stringify({
+                    success: true,
+                    testValue: testValue,
+                    allKeys: allKeys.keys.map(k => k.name)
+                }), {
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': '*'
+                    }
+                });
+            } catch (e) {
+                return new Response(JSON.stringify({ 
+                    success: false, 
+                    error: e.message 
+                }), {
+                    status: 500,
+                    headers: { 'Content-Type': 'application/json' }
+                });
+            }
+        }
+
         // === API: Получить все товары ===
         if (path === '/api/products') {
             try {
                 let products = await env.KV.get('products', 'json');
                 
+                // Если в KV пусто — записываем дефолтные
                 if (!products || products.length === 0) {
                     await env.KV.put('products', JSON.stringify(DEFAULT_PRODUCTS));
                     products = DEFAULT_PRODUCTS;
@@ -752,8 +784,8 @@ export default {
                     }
                 });
             } catch (e) {
-                console.error('Ошибка:', e);
-                return new Response(JSON.stringify({ error: 'Ошибка загрузки' }), {
+                console.error('Ошибка получения товаров:', e);
+                return new Response(JSON.stringify({ error: 'Ошибка загрузки товаров' }), {
                     status: 500,
                     headers: { 'Content-Type': 'application/json' }
                 });
@@ -773,8 +805,8 @@ export default {
                     }
                 });
             } catch (e) {
-                console.error('Ошибка сохранения:', e);
-                return new Response(JSON.stringify({ error: e.message }), {
+                console.error('Ошибка сохранения товаров:', e);
+                return new Response(JSON.stringify({ error: 'Ошибка сохранения товаров' }), {
                     status: 500,
                     headers: { 'Content-Type': 'application/json' }
                 });
@@ -842,7 +874,7 @@ export default {
                     }
                 });
             } catch (e) {
-                return new Response(JSON.stringify({ error: 'Ошибка сохранения' }), {
+                return new Response(JSON.stringify({ error: 'Ошибка сохранения оповещения' }), {
                     status: 500,
                     headers: { 'Content-Type': 'application/json' }
                 });
@@ -861,7 +893,32 @@ export default {
             }
         }
 
-        // === Статические файлы ===
+        // === СТАТИЧЕСКИЕ ФАЙЛЫ ===
+        // Пытаемся получить файл из ассетов
+        try {
+            // Для корня — отдаем index.html
+            let filePath = path === '/' ? '/index.html' : path;
+            
+            // Проверяем, есть ли файл в ассетах
+            const assetResponse = await env.ASSETS.fetch(new Request(new URL(filePath, url), request));
+            
+            // Если файл найден — возвращаем его
+            if (assetResponse.status === 200) {
+                return assetResponse;
+            }
+        } catch (e) {
+            // Если файл не найден, пробуем отдать index.html (для SPA)
+            if (path !== '/' && !path.includes('.')) {
+                try {
+                    const indexResponse = await env.ASSETS.fetch(new Request(new URL('/index.html', url), request));
+                    if (indexResponse.status === 200) {
+                        return indexResponse;
+                    }
+                } catch (e2) {}
+            }
+        }
+
+        // Если ничего не найдено — 404
         return new Response('Not found', { status: 404 });
     }
 };
@@ -909,12 +966,20 @@ async function handleTelegramMessage(message, env) {
             ];
             break;
             
+        case '/services':
+            replyText = `🔧 Услуги и сервис\n\n• Заточка кантов — 2 500 ₽\n• Смазка скользяка — 3 000 ₽\n• Ремонт скользяка — 4 500 ₽\n• Установка креплений — 2 000 ₽\n• Комплексное ТО — 8 000 ₽\n• Диагностика доски — 1 500 ₽\n\n📞 Запись по телефону: +7 (999) 123-45-67`;
+            buttons = [
+                [{ text: '🔧 Подробнее в приложении', web_app: { url: APP_URL } }],
+                [{ text: '🏔️ Назад', callback_data: 'start' }]
+            ];
+            break;
+            
         case '/contacts':
             replyText = `📞 Контакты\n\n📍 Адрес: г. Москва, ул. Сноубордная, д. 15\n📱 Телефон: +7 (999) 123-45-67\n📧 Email: info@snowboard-store.ru\n🕐 Режим работы: Пн-Вс: 9:00 - 19:00`;
             buttons = [
                 [{ text: '📞 Позвонить', url: 'tel:+79991234567' }],
                 [{ text: '📍 Показать на карте', url: 'https://maps.google.com/?q=Москва+ул+Сноубордная+15' }],
-                [{ text: '🏔️ Главное меню', callback_data: 'start' }]
+                [{ text: '🏔️ Назад', callback_data: 'start' }]
             ];
             break;
             
