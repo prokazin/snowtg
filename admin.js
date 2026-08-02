@@ -72,7 +72,7 @@ async function sendAnnouncement() {
         
         await loadCurrentAnnouncement();
         input.value = '';
-        alert('✅ Оповещение отправлено!\nОно будет отображаться 24 часа.');
+        alert('✅ Оповещение отправлено!');
     } catch (e) {
         alert('❌ Ошибка отправки оповещения');
     }
@@ -322,9 +322,7 @@ async function addProduct() {
             addSpecRow('', '');
         }
         
-        // Перезагружаем список
         await renderProductList();
-        
         alert('✅ Товар "' + name + '" добавлен!');
     }
 }
