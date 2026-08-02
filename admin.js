@@ -11,11 +11,6 @@ async function loadProductsFromAPI() {
         return data;
     } catch (e) {
         console.error('Ошибка загрузки из API:', e);
-        // Пробуем загрузить из localStorage
-        const cached = localStorage.getItem('snowboard_products_cache');
-        if (cached) {
-            return JSON.parse(cached);
-        }
         return [];
     }
 }
@@ -232,12 +227,9 @@ async function getProducts() {
 async function saveProducts(products) {
     const success = await saveProductsToAPI(products);
     if (success) {
-        // Сохраняем кеш в localStorage
         localStorage.setItem('snowboard_products_cache', JSON.stringify(products));
         await renderProductList();
         await renderServiceList();
-        
-        // Обновляем основное приложение (если открыто)
         if (window.opener && !window.opener.closed) {
             window.opener.products = products;
             if (window.opener.currentTab) {
@@ -330,6 +322,9 @@ async function addProduct() {
             addSpecRow('', '');
         }
         
+        // Перезагружаем список
+        await renderProductList();
+        
         alert('✅ Товар "' + name + '" добавлен!');
     }
 }
@@ -364,6 +359,7 @@ async function deleteProduct(index) {
     const products = await getProducts();
     products.splice(index, 1);
     await saveProducts(products);
+    await renderProductList();
     alert('✅ Товар удален!');
 }
 
@@ -389,9 +385,9 @@ async function editProduct(index) {
         }
     }
     
-    // Удаляем старый товар
     products.splice(index, 1);
     await saveProducts(products);
+    await renderProductList();
     
     document.getElementById('product-name').scrollIntoView({ behavior: 'smooth' });
     alert('✏️ Редактирование: ' + p.name);
@@ -481,6 +477,7 @@ async function addService() {
             addServiceSpecRow('', '');
         }
         
+        await renderServiceList();
         alert('✅ Услуга "' + name + '" добавлена!');
     }
 }
@@ -515,6 +512,7 @@ async function deleteService(index) {
     const products = await getProducts();
     products.splice(index, 1);
     await saveProducts(products);
+    await renderServiceList();
     alert('✅ Услуга удалена!');
 }
 
@@ -541,6 +539,7 @@ async function editService(index) {
     
     products.splice(index, 1);
     await saveProducts(products);
+    await renderServiceList();
     
     document.getElementById('service-name').scrollIntoView({ behavior: 'smooth' });
     alert('✏️ Редактирование: ' + p.name);
