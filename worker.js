@@ -728,31 +728,43 @@ const DEFAULT_PRODUCTS = [
     }
 ];
 
+// === ФУНКЦИЯ ДЛЯ CORS-ЗАГОЛОВКОВ ===
+function corsHeaders() {
+    return {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type',
+        'Content-Type': 'application/json'
+    };
+}
+
 // === ОСНОВНОЙ ОБРАБОТЧИК ===
 export default {
     async fetch(request, env) {
         const url = new URL(request.url);
         const path = url.pathname;
+        const method = request.method;
 
-        // === ТЕСТ KV (для проверки) ===
+        // === ОБРАБОТКА CORS (OPTIONS) ===
+        if (method === 'OPTIONS') {
+            return new Response(null, {
+                status: 204,
+                headers: corsHeaders()
+            });
+        }
+
+        // === ТЕСТ KV ===
         if (path === '/test-kv') {
             try {
-                // Записываем тестовое значение
                 await env.KV.put('test_key', 'Hello from KV!');
-                // Читаем тестовое значение
                 const testValue = await env.KV.get('test_key');
-                // Получаем все ключи
                 const allKeys = await env.KV.list();
-                
                 return new Response(JSON.stringify({
                     success: true,
                     testValue: testValue,
                     allKeys: allKeys.keys.map(k => k.name)
                 }), {
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'Access-Control-Allow-Origin': '*'
-                    }
+                    headers: corsHeaders()
                 });
             } catch (e) {
                 return new Response(JSON.stringify({ 
@@ -760,101 +772,75 @@ export default {
                     error: e.message 
                 }), {
                     status: 500,
-                    headers: { 'Content-Type': 'application/json' }
+                    headers: corsHeaders()
                 });
             }
         }
 
         // === API: Получить все товары ===
-        if (path === '/api/products') {
+        if (path === '/api/products' && method === 'GET') {
             try {
                 let products = await env.KV.get('products', 'json');
-                
-                // Если в KV пусто — записываем дефолтные
                 if (!products || products.length === 0) {
                     await env.KV.put('products', JSON.stringify(DEFAULT_PRODUCTS));
                     products = DEFAULT_PRODUCTS;
                 }
-                
                 return new Response(JSON.stringify(products), {
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'Access-Control-Allow-Origin': '*',
-                        'Cache-Control': 'no-cache'
-                    }
+                    headers: corsHeaders()
                 });
             } catch (e) {
-                console.error('Ошибка получения товаров:', e);
                 return new Response(JSON.stringify({ error: 'Ошибка загрузки товаров' }), {
                     status: 500,
-                    headers: { 'Content-Type': 'application/json' }
+                    headers: corsHeaders()
                 });
             }
         }
 
         // === API: Сохранить товары ===
-        if (path === '/api/products' && request.method === 'POST') {
+        if (path === '/api/products' && method === 'POST') {
             try {
                 const products = await request.json();
                 await env.KV.put('products', JSON.stringify(products));
-                
                 return new Response(JSON.stringify({ success: true }), {
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'Access-Control-Allow-Origin': '*'
-                    }
+                    headers: corsHeaders()
                 });
             } catch (e) {
-                console.error('Ошибка сохранения товаров:', e);
-                return new Response(JSON.stringify({ error: 'Ошибка сохранения товаров' }), {
+                return new Response(JSON.stringify({ error: e.message }), {
                     status: 500,
-                    headers: { 'Content-Type': 'application/json' }
+                    headers: corsHeaders()
                 });
             }
         }
 
         // === API: Получить оповещение ===
-        if (path === '/api/announcement') {
+        if (path === '/api/announcement' && method === 'GET') {
             try {
                 const announcement = await env.KV.get('announcement', 'json');
                 if (!announcement) {
                     return new Response(JSON.stringify({ text: null }), {
-                        headers: { 
-                            'Content-Type': 'application/json',
-                            'Access-Control-Allow-Origin': '*'
-                        }
+                        headers: corsHeaders()
                     });
                 }
-                
                 const now = new Date().getTime();
                 if (announcement.expires && now < announcement.expires) {
                     return new Response(JSON.stringify({ text: announcement.text }), {
-                        headers: { 
-                            'Content-Type': 'application/json',
-                            'Access-Control-Allow-Origin': '*'
-                        }
+                        headers: corsHeaders()
                     });
                 } else {
                     await env.KV.delete('announcement');
                     return new Response(JSON.stringify({ text: null }), {
-                        headers: { 
-                            'Content-Type': 'application/json',
-                            'Access-Control-Allow-Origin': '*'
-                        }
+                        headers: corsHeaders()
                     });
                 }
             } catch (e) {
                 return new Response(JSON.stringify({ text: null }), {
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'Access-Control-Allow-Origin': '*'
-                    }
+                    headers: corsHeaders()
                 });
             }
         }
 
         // === API: Сохранить оповещение ===
-        if (path === '/api/announcement' && request.method === 'POST') {
+        if (path === '/api/announcement' && method === 'POST') {
             try {
                 const data = await request.json();
                 if (data.text && data.text.trim() !== '') {
@@ -866,17 +852,13 @@ export default {
                 } else {
                     await env.KV.delete('announcement');
                 }
-                
                 return new Response(JSON.stringify({ success: true }), {
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'Access-Control-Allow-Origin': '*'
-                    }
+                    headers: corsHeaders()
                 });
             } catch (e) {
                 return new Response(JSON.stringify({ error: 'Ошибка сохранения оповещения' }), {
                     status: 500,
-                    headers: { 'Content-Type': 'application/json' }
+                    headers: corsHeaders()
                 });
             }
         }
@@ -894,20 +876,13 @@ export default {
         }
 
         // === СТАТИЧЕСКИЕ ФАЙЛЫ ===
-        // Пытаемся получить файл из ассетов
         try {
-            // Для корня — отдаем index.html
             let filePath = path === '/' ? '/index.html' : path;
-            
-            // Проверяем, есть ли файл в ассетах
             const assetResponse = await env.ASSETS.fetch(new Request(new URL(filePath, url), request));
-            
-            // Если файл найден — возвращаем его
             if (assetResponse.status === 200) {
                 return assetResponse;
             }
         } catch (e) {
-            // Если файл не найден, пробуем отдать index.html (для SPA)
             if (path !== '/' && !path.includes('.')) {
                 try {
                     const indexResponse = await env.ASSETS.fetch(new Request(new URL('/index.html', url), request));
@@ -918,7 +893,6 @@ export default {
             }
         }
 
-        // Если ничего не найдено — 404
         return new Response('Not found', { status: 404 });
     }
 };
