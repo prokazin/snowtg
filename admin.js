@@ -18,17 +18,27 @@ async function loadProductsFromAPI() {
 // === СОХРАНЕНИЕ ТОВАРОВ В API ===
 async function saveProductsToAPI(products) {
     try {
+        console.log('📤 Отправка товаров на сервер...');
         const response = await fetch(API_URL + 'api/products', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json'
+            },
             body: JSON.stringify(products)
         });
-        if (!response.ok) throw new Error('Ошибка сохранения');
+        
+        console.log('📥 Статус ответа:', response.status);
         const result = await response.json();
+        console.log('📥 Ответ сервера:', result);
+        
+        if (!response.ok) {
+            throw new Error(result.error || 'Ошибка сохранения');
+        }
+        
         return result.success === true;
     } catch (e) {
-        console.error('Ошибка сохранения в API:', e);
-        alert('❌ Ошибка сохранения на сервере: ' + e.message);
+        console.error('❌ Ошибка сохранения в API:', e);
+        alert('❌ Ошибка сохранения: ' + e.message);
         return false;
     }
 }
