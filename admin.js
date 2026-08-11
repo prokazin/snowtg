@@ -18,7 +18,6 @@ async function loadProductsFromAPI() {
 // === СОХРАНЕНИЕ ТОВАРОВ В API ===
 async function saveProductsToAPI(products) {
     try {
-        console.log('📤 Отправка товаров на сервер...');
         const response = await fetch(API_URL + 'api/products', {
             method: 'POST',
             headers: { 
@@ -27,14 +26,8 @@ async function saveProductsToAPI(products) {
             body: JSON.stringify(products)
         });
         
-        console.log('📥 Статус ответа:', response.status);
+        if (!response.ok) throw new Error('Ошибка сохранения');
         const result = await response.json();
-        console.log('📥 Ответ сервера:', result);
-        
-        if (!response.ok) {
-            throw new Error(result.error || 'Ошибка сохранения');
-        }
-        
         return result.success === true;
     } catch (e) {
         console.error('❌ Ошибка сохранения в API:', e);
@@ -74,16 +67,22 @@ async function sendAnnouncement() {
     }
     
     try {
-        await fetch(API_URL + 'api/announcement', {
+        const response = await fetch(API_URL + 'api/announcement', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ text: text })
         });
         
-        await loadCurrentAnnouncement();
-        input.value = '';
-        alert('✅ Оповещение отправлено!');
+        const result = await response.json();
+        if (result.success) {
+            await loadCurrentAnnouncement();
+            input.value = '';
+            alert('✅ Оповещение отправлено!');
+        } else {
+            alert('❌ Ошибка отправки оповещения');
+        }
     } catch (e) {
+        console.error('❌ Ошибка:', e);
         alert('❌ Ошибка отправки оповещения');
     }
 }
@@ -92,16 +91,22 @@ async function clearAnnouncement() {
     if (!confirm('Удалить оповещение?')) return;
     
     try {
-        await fetch(API_URL + 'api/announcement', {
+        const response = await fetch(API_URL + 'api/announcement', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ text: '' })
         });
         
-        const container = document.getElementById('current-announcement');
-        if (container) container.style.display = 'none';
-        alert('✅ Оповещение удалено!');
+        const result = await response.json();
+        if (result.success) {
+            const container = document.getElementById('current-announcement');
+            if (container) container.style.display = 'none';
+            alert('✅ Оповещение удалено!');
+        } else {
+            alert('❌ Ошибка удаления оповещения');
+        }
     } catch (e) {
+        console.error('❌ Ошибка:', e);
         alert('❌ Ошибка удаления оповещения');
     }
 }
