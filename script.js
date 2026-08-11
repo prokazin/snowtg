@@ -12,7 +12,7 @@ const categories = [
 
 localStorage.setItem('snowboard_categories', JSON.stringify(categories));
 
-let currentTab = categories[0].name;
+let currentTab = categories[0]?.name || 'Доски';
 let currentImageIndex = 0;
 let products = [];
 
@@ -25,14 +25,10 @@ async function loadProductsFromAPI() {
         if (!response.ok) throw new Error('Ошибка загрузки');
         const data = await response.json();
         products = data;
-        
-        // Сохраняем копию в localStorage для офлайн-режима
         localStorage.setItem('snowboard_products_cache', JSON.stringify(products));
-        
         return products;
     } catch (e) {
         console.error('Ошибка загрузки из API:', e);
-        // Загружаем из кеша
         const cached = localStorage.getItem('snowboard_products_cache');
         if (cached) {
             products = JSON.parse(cached);
@@ -42,22 +38,21 @@ async function loadProductsFromAPI() {
     }
 }
 
-// === ОПОВЕЩЕНИЯ ===
+// === ЗАГРУЗКА ОПОВЕЩЕНИЯ ИЗ API ===
 async function loadAnnouncementFromAPI() {
     try {
         const response = await fetch(APP_URL + 'api/announcement');
         const data = await response.json();
-        if (data.text) {
-            const banner = document.getElementById('announcement-banner');
-            const text = document.getElementById('announcement-text');
-            if (banner && text) {
-                text.textContent = data.text;
-                banner.style.display = 'block';
-            }
+        
+        const banner = document.getElementById('announcement-banner');
+        const text = document.getElementById('announcement-text');
+        
+        if (banner && text && data.text && data.text !== '') {
+            text.textContent = data.text;
+            banner.style.display = 'block';
             return data.text;
-        } else {
-            const banner = document.getElementById('announcement-banner');
-            if (banner) banner.style.display = 'none';
+        } else if (banner) {
+            banner.style.display = 'none';
             return null;
         }
     } catch (e) {
@@ -67,40 +62,58 @@ async function loadAnnouncementFromAPI() {
 }
 
 function closeAnnouncement() {
-    document.getElementById('announcement-banner').style.display = 'none';
+    const banner = document.getElementById('announcement-banner');
+    if (banner) banner.style.display = 'none';
 }
 
 // === РЕНДЕР КАТАЛОГА ===
 function renderCatalog(category) {
     const container = document.getElementById('catalog');
-    if (!container) return;
+    if (!container) {
+        console.error('Элемент #catalog не найден');
+        return;
+    }
     
     if (category === 'Контакты') {
         renderContacts(container);
         return;
     }
     
-    const filtered = products.filter(p => p.category === category && !p.isContact);
-    if (filtered.length === 0) {
-        container.innerHTML = `<div class="empty-message">Нет товаров в этой категории</div>`;
+    if (!products || products.length === 0) {
+        container.innerHTML = '<div class="empty-message">Загрузка товаров...</div>';
         return;
     }
     
-    container.innerHTML = filtered.map(p => `
-        <div class="product-card" data-id="${p.id}" onclick="openModal(${p.id})">
-            <img src="${p.images && p.images.length > 0 ? p.images[0] : 'https://placehold.co/600x400/ffffff/cccccc?text=No+Image'}" alt="${p.name}" loading="lazy" onerror="this.src='https://placehold.co/600x400/ffffff/cccccc?text=No+Image'" />
-            <h3>${p.name}</h3>
-            <div class="price">${p.price}</div>
-            <div class="desc-preview">${p.desc}</div>
-            <div class="specs">
-                ${p.specs.slice(0, 2).map(s => `<span>${s.name}: ${s.value}</span>`).join('')}
+    const filtered = products.filter(p => p.category === category && !p.isContact);
+    
+    if (filtered.length === 0) {
+        container.innerHTML = '<div class="empty-message">Нет товаров в этой категории</div>';
+        return;
+    }
+    
+    container.innerHTML = filtered.map(p => {
+        const imageUrl = p.images && p.images.length > 0 && p.images[0] ? p.images[0] : 'https://placehold.co/600x400/ffffff/cccccc?text=No+Image';
+        return `
+            <div class="product-card" data-id="${p.id}" onclick="openModal(${p.id})">
+                <img src="${imageUrl}" alt="${p.name}" loading="lazy" onerror="this.src='https://placehold.co/600x400/ffffff/cccccc?text=No+Image'" />
+                <h3>${p.name}</h3>
+                <div class="price">${p.price}</div>
+                <div class="desc-preview">${p.desc}</div>
+                <div class="specs">
+                    ${p.specs && p.specs.length > 0 ? p.specs.slice(0, 2).map(s => `<span>${s.name}: ${s.value}</span>`).join('') : ''}
+                </div>
+                <div class="read-more">Читать полностью →</div>
             </div>
-            <div class="read-more">Читать полностью →</div>
-        </div>
-    `).join('');
+        `;
+    }).join('');
 }
 
 function renderContacts(container) {
+    if (!products || products.length === 0) {
+        container.innerHTML = '<div class="empty-message">Контакты не найдены</div>';
+        return;
+    }
+    
     const contact = products.find(p => p.isContact);
     if (!contact) {
         container.innerHTML = '<div class="empty-message">Контакты не найдены</div>';
@@ -127,7 +140,11 @@ function renderContacts(container) {
 
 function renderNav() {
     const nav = document.getElementById('bottom-nav');
-    if (!nav) return;
+    if (!nav) {
+        console.error('Элемент #bottom-nav не найден');
+        return;
+    }
+    
     if (!categories || categories.length === 0) {
         nav.innerHTML = '<span style="color:#8e8e93; padding:8px; font-size:14px;">Нет категорий</span>';
         return;
@@ -139,24 +156,42 @@ function renderNav() {
         </button>
     `).join('');
 
-    document.querySelectorAll('.nav-btn').forEach(btn => {
+    nav.querySelectorAll('.nav-btn').forEach(btn => {
         btn.addEventListener('click', function(e) {
             e.preventDefault();
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            e.stopPropagation();
+            
+            nav.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
             this.classList.add('active');
-            currentTab = this.dataset.tab;
-            renderCatalog(currentTab);
+            
+            const tab = this.getAttribute('data-tab');
+            if (tab) {
+                currentTab = tab;
+                renderCatalog(currentTab);
+            }
         });
     });
 }
 
+// === МОДАЛЬНОЕ ОКНО ===
 function openModal(productId) {
+    if (!products || products.length === 0) {
+        console.error('Товары не загружены');
+        return;
+    }
+    
     const product = products.find(p => p.id === productId);
-    if (!product) return;
+    if (!product) {
+        console.error('Товар с id', productId, 'не найден');
+        return;
+    }
 
     const modal = document.getElementById('product-modal');
     const body = document.getElementById('modal-body');
-    if (!modal || !body) return;
+    if (!modal || !body) {
+        console.error('Модальное окно не найдено');
+        return;
+    }
     
     currentImageIndex = 0;
     
@@ -178,7 +213,7 @@ function openModal(productId) {
         <div class="modal-price">${product.price}</div>
         <div class="modal-desc">${product.desc}</div>
         <div class="modal-specs">
-            ${product.specs.map(s => `<div class="spec-item"><span class="spec-name">${s.name}</span><span class="spec-value">${s.value}</span></div>`).join('')}
+            ${product.specs && product.specs.length > 0 ? product.specs.map(s => `<div class="spec-item"><span class="spec-name">${s.name}</span><span class="spec-value">${s.value}</span></div>`).join('') : ''}
         </div>
     `;
 
@@ -264,11 +299,10 @@ function shouldHideSplash() {
     return now.getMonth() === 11 && now.getDate() === 1;
 }
 
-// === ЗАГРУЗКА ДАННЫХ ПРИ СТАРТЕ ===
+// === ИНИЦИАЛИЗАЦИЯ ===
 document.addEventListener('DOMContentLoaded', async function() {
     const splash = document.getElementById('splash-screen');
     const app = document.getElementById('app');
-    const closeBtn = document.getElementById('close-splash');
 
     // Загружаем товары из API
     await loadProductsFromAPI();
@@ -310,6 +344,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         clearInterval(countdownInterval);
     }, 5000);
 
+    const closeBtn = document.getElementById('close-splash');
     if (closeBtn) {
         closeBtn.addEventListener('click', function() {
             clearTimeout(splashTimer);
@@ -331,13 +366,16 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
     }
 
-    // Обработчики для модалки
     const modal = document.getElementById('product-modal');
     const modalClose = document.getElementById('modal-close');
-    if (modalClose) modalClose.addEventListener('click', closeModal);
-    if (modal) modal.addEventListener('click', function(e) {
-        if (e.target === this) closeModal();
-    });
+    if (modalClose) {
+        modalClose.addEventListener('click', closeModal);
+    }
+    if (modal) {
+        modal.addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+    }
 });
 
 window.refreshCatalog = function() {
