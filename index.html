@@ -30,17 +30,23 @@
 <body>
     <div id="background-layer"></div>
 
+    <!-- НОВЫЙ ЗАГРУЗОЧНЫЙ ЭКРАН С ВИДЕО -->
     <div id="splash-screen">
-        <div class="splash-content">
-            <h1>❄️ Сноуборд-сезон</h1>
-            <div id="countdown">
-                <span id="days">00</span>:
-                <span id="hours">00</span>:
-                <span id="minutes">00</span>:
-                <span id="seconds">00</span>
+        <video id="splash-video" autoplay muted playsinline loop>
+            <source src="Snow.MP4" type="video/mp4" />
+        </video>
+        <div class="splash-overlay">
+            <div class="splash-content">
+                <h1>❄️ Сноуборд-сезон</h1>
+                <div id="countdown">
+                    <span id="days">00</span>:
+                    <span id="hours">00</span>:
+                    <span id="minutes">00</span>:
+                    <span id="seconds">00</span>
+                </div>
+                <p id="splash-message">До первого снега осталось...</p>
+                <button id="close-splash" class="splash-close-btn">Пропустить</button>
             </div>
-            <p id="splash-message">До первого снега осталось...</p>
-            <button id="close-splash" class="splash-close-btn">Пропустить</button>
         </div>
     </div>
 
@@ -49,7 +55,6 @@
             <h1>🏔️ Snowboard Store</h1>
         </header>
 
-        <!-- Баннер оповещения -->
         <div id="announcement-banner" style="display: none; background: rgba(255, 215, 0, 0.2); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-radius: 12px; padding: 10px 14px; margin: 0 0 10px 0; border: 1px solid rgba(255, 215, 0, 0.3);">
             <div style="display: flex; align-items: center; gap: 10px;">
                 <span style="font-size: 20px;">📢</span>
@@ -83,8 +88,6 @@
             tg.close();
         };
         tg.ready();
-        
-        console.log('Telegram Mini App initialized');
         
         function closeAnnouncement() {
             document.getElementById('announcement-banner').style.display = 'none';
