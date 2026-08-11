@@ -264,7 +264,7 @@ function goToImage(productId, index) {
     });
 }
 
-// === ЗАГРУЗОЧНЫЙ ЭКРАН ===
+// === ЗАГРУЗОЧНЫЙ ЭКРАН С ВИДЕО ===
 function updateCountdown() {
     const now = new Date();
     const target = new Date(now.getFullYear(), 11, 1);
@@ -310,6 +310,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Загружаем оповещение
     await loadAnnouncementFromAPI();
 
+    // Проверяем, нужно ли скрыть сплеш (1 декабря)
     if (shouldHideSplash()) {
         if (splash) splash.style.display = 'none';
         if (app) {
@@ -323,14 +324,18 @@ document.addEventListener('DOMContentLoaded', async function() {
         return;
     }
 
+    // Запускаем таймер обратного отсчета
     updateCountdown();
     const countdownInterval = setInterval(updateCountdown, 1000);
 
+    // Автоматическое закрытие через 5 секунд
     let splashTimer = setTimeout(() => {
         if (splash) {
             splash.style.opacity = '0';
             setTimeout(() => {
                 splash.style.display = 'none';
+                const video = document.getElementById('splash-video');
+                if (video) video.pause();
                 if (app) {
                     app.style.display = 'flex';
                     setTimeout(() => {
@@ -344,6 +349,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         clearInterval(countdownInterval);
     }, 5000);
 
+    // Закрытие по кнопке
     const closeBtn = document.getElementById('close-splash');
     if (closeBtn) {
         closeBtn.addEventListener('click', function() {
@@ -353,6 +359,8 @@ document.addEventListener('DOMContentLoaded', async function() {
                 splash.style.opacity = '0';
                 setTimeout(() => {
                     splash.style.display = 'none';
+                    const video = document.getElementById('splash-video');
+                    if (video) video.pause();
                     if (app) {
                         app.style.display = 'flex';
                         setTimeout(() => {
@@ -366,6 +374,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
     }
 
+    // Обработчики для модалки
     const modal = document.getElementById('product-modal');
     const modalClose = document.getElementById('modal-close');
     if (modalClose) {
