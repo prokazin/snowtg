@@ -62,9 +62,9 @@ html, body {
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.45);
-    backdrop-filter: blur(3px);
-    -webkit-backdrop-filter: blur(3px);
+    background: rgba(0, 0, 0, 0.35);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
     z-index: 2;
     display: flex;
     align-items: center;
@@ -78,53 +78,7 @@ html, body {
     z-index: 3;
 }
 
-.splash-content h1 {
-    font-size: clamp(32px, 7vw, 52px);
-    font-weight: 700;
-    margin-bottom: 20px;
-    background: linear-gradient(135deg, #ffffff, #4fc3ff);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    text-shadow: 0 4px 40px rgba(79, 195, 255, 0.2);
-    letter-spacing: 2px;
-    font-family: 'Helvetica Neue', 'Arial', sans-serif;
-}
-
-#countdown {
-    font-size: clamp(44px, 10vw, 72px);
-    font-weight: 300;
-    letter-spacing: 6px;
-    background: rgba(255, 255, 255, 0.08);
-    padding: 16px 28px;
-    border-radius: 50px;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    margin: 16px 0;
-    font-variant-numeric: tabular-nums;
-    font-family: 'Helvetica Neue', monospace;
-    color: #ffffff;
-    text-shadow: 0 2px 30px rgba(0, 0, 0, 0.5);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-#countdown span {
-    display: inline-block;
-    min-width: 48px;
-    font-weight: 500;
-}
-
-#splash-message {
-    font-size: clamp(18px, 3.5vw, 24px);
-    opacity: 0.9;
-    margin-top: 14px;
-    color: rgba(255, 255, 255, 0.9);
-    font-weight: 400;
-    letter-spacing: 1px;
-    text-shadow: 0 2px 20px rgba(0, 0, 0, 0.3);
-}
-
 .splash-close-btn {
-    margin-top: 28px;
     background: rgba(255, 255, 255, 0.12);
     border: 1px solid rgba(255, 255, 255, 0.25);
     color: white;
