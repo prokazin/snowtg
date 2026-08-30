@@ -18,6 +18,16 @@ let products = [];
 
 const APP_URL = 'https://snowtg.nazar-bronnikov22.workers.dev/';
 
+// === ЗУМ ПЕРЕМЕННЫЕ ===
+let currentZoom = 1;
+let zoomPanX = 0;
+let zoomPanY = 0;
+let isDragging = false;
+let dragStartX = 0;
+let dragStartY = 0;
+let dragStartPanX = 0;
+let dragStartPanY = 0;
+
 // === ЗАГРУЗКА ТОВАРОВ ИЗ API ===
 async function loadProductsFromAPI() {
     try {
@@ -69,10 +79,8 @@ function closeAnnouncement() {
 // === ФОРМАТИРОВАНИЕ ЦЕНЫ ===
 function formatPrice(price) {
     if (!price) return '';
-    // Убираем лишние пробелы и символы
     let clean = price.replace(/[^\d]/g, '');
     if (!clean) return price;
-    // Добавляем пробел между тысячами
     let formatted = clean.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
     return formatted + ' ₽';
 }
@@ -187,7 +195,7 @@ function renderNav() {
     });
 }
 
-// === МОДАЛЬНОЕ ОКНО С ПРИБЛИЖЕНИЕМ ===
+// === МОДАЛЬНОЕ ОКНО ===
 function openModal(productId) {
     if (!products || products.length === 0) {
         console.error('Товары не загружены');
@@ -281,16 +289,26 @@ function goToImage(productId, index) {
     });
 }
 
-// === ПРИБЛИЖЕНИЕ ФОТО ===
+// === ПРИБЛИЖЕНИЕ ФОТО С ЗУМОМ ===
 function openZoom(imageSrc) {
     if (!imageSrc || imageSrc.includes('placehold.co')) return;
     
     const zoomModal = document.getElementById('image-zoom-modal');
     const zoomImage = document.getElementById('zoom-image');
+    const zoomLevel = document.getElementById('zoom-level');
     
     if (!zoomModal || !zoomImage) return;
     
+    // Сбрасываем зум
+    currentZoom = 1;
+    zoomPanX = 0;
+    zoomPanY = 0;
+    if (zoomLevel) zoomLevel.textContent = '100%';
+    
     zoomImage.src = imageSrc;
+    zoomImage.style.transform = `scale(${currentZoom}) translate(${zoomPanX}px, ${zoomPanY}px)`;
+    zoomImage.style.cursor = 'grab';
+    
     zoomModal.style.display = 'flex';
     document.body.style.overflow = 'hidden';
 }
@@ -299,6 +317,117 @@ function closeZoom() {
     const zoomModal = document.getElementById('image-zoom-modal');
     if (zoomModal) zoomModal.style.display = 'none';
     document.body.style.overflow = 'hidden';
+    // Сбрасываем зум
+    currentZoom = 1;
+    zoomPanX = 0;
+    zoomPanY = 0;
+    const zoomImage = document.getElementById('zoom-image');
+    const zoomLevel = document.getElementById('zoom-level');
+    if (zoomImage) {
+        zoomImage.style.transform = `scale(1) translate(0px, 0px)`;
+        zoomImage.style.cursor = 'grab';
+    }
+    if (zoomLevel) zoomLevel.textContent = '100%';
+}
+
+function zoomIn() {
+    const zoomImage = document.getElementById('zoom-image');
+    const zoomLevel = document.getElementById('zoom-level');
+    if (!zoomImage) return;
+    currentZoom = Math.min(currentZoom + 0.25, 5);
+    zoomImage.style.transform = `scale(${currentZoom}) translate(${zoomPanX}px, ${zoomPanY}px)`;
+    if (zoomLevel) zoomLevel.textContent = Math.round(currentZoom * 100) + '%';
+}
+
+function zoomOut() {
+    const zoomImage = document.getElementById('zoom-image');
+    const zoomLevel = document.getElementById('zoom-level');
+    if (!zoomImage) return;
+    currentZoom = Math.max(currentZoom - 0.25, 0.5);
+    if (currentZoom === 1) {
+        zoomPanX = 0;
+        zoomPanY = 0;
+    }
+    zoomImage.style.transform = `scale(${currentZoom}) translate(${zoomPanX}px, ${zoomPanY}px)`;
+    if (zoomLevel) zoomLevel.textContent = Math.round(currentZoom * 100) + '%';
+}
+
+function resetZoom() {
+    const zoomImage = document.getElementById('zoom-image');
+    const zoomLevel = document.getElementById('zoom-level');
+    if (!zoomImage) return;
+    currentZoom = 1;
+    zoomPanX = 0;
+    zoomPanY = 0;
+    zoomImage.style.transform = `scale(1) translate(0px, 0px)`;
+    zoomImage.style.cursor = 'grab';
+    if (zoomLevel) zoomLevel.textContent = '100%';
+}
+
+// === ДРАГ ДЛЯ ПАНА ===
+function initZoomDrag() {
+    const zoomImage = document.getElementById('zoom-image');
+    const wrapper = document.getElementById('zoom-wrapper');
+    if (!zoomImage || !wrapper) return;
+    
+    // Mouse events
+    zoomImage.addEventListener('mousedown', function(e) {
+        e.preventDefault();
+        if (currentZoom <= 1) return;
+        isDragging = true;
+        dragStartX = e.clientX;
+        dragStartY = e.clientY;
+        dragStartPanX = zoomPanX;
+        dragStartPanY = zoomPanY;
+        zoomImage.style.cursor = 'grabbing';
+    });
+    
+    window.addEventListener('mousemove', function(e) {
+        if (!isDragging) return;
+        const dx = e.clientX - dragStartX;
+        const dy = e.clientY - dragStartY;
+        zoomPanX = dragStartPanX + (dx / currentZoom);
+        zoomPanY = dragStartPanY + (dy / currentZoom);
+        zoomImage.style.transform = `scale(${currentZoom}) translate(${zoomPanX}px, ${zoomPanY}px)`;
+    });
+    
+    window.addEventListener('mouseup', function() {
+        if (isDragging) {
+            isDragging = false;
+            const zoomImageEl = document.getElementById('zoom-image');
+            if (zoomImageEl) zoomImageEl.style.cursor = currentZoom > 1 ? 'grab' : 'default';
+        }
+    });
+    
+    // Touch events
+    let touchStartX = 0, touchStartY = 0;
+    let touchStartPanX = 0, touchStartPanY = 0;
+    let isTouching = false;
+    
+    zoomImage.addEventListener('touchstart', function(e) {
+        if (currentZoom <= 1) return;
+        const touch = e.touches[0];
+        touchStartX = touch.clientX;
+        touchStartY = touch.clientY;
+        touchStartPanX = zoomPanX;
+        touchStartPanY = zoomPanY;
+        isTouching = true;
+    }, { passive: true });
+    
+    zoomImage.addEventListener('touchmove', function(e) {
+        if (!isTouching || currentZoom <= 1) return;
+        e.preventDefault();
+        const touch = e.touches[0];
+        const dx = touch.clientX - touchStartX;
+        const dy = touch.clientY - touchStartY;
+        zoomPanX = touchStartPanX + (dx / currentZoom);
+        zoomPanY = touchStartPanY + (dy / currentZoom);
+        zoomImage.style.transform = `scale(${currentZoom}) translate(${zoomPanX}px, ${zoomPanY}px)`;
+    }, { passive: false });
+    
+    zoomImage.addEventListener('touchend', function() {
+        isTouching = false;
+    }, { passive: true });
 }
 
 // === ИНИЦИАЛИЗАЦИЯ ===
@@ -347,6 +476,10 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Обработчики для модалки увеличения
     const zoomModal = document.getElementById('image-zoom-modal');
     const zoomClose = document.getElementById('zoom-close');
+    const zoomInBtn = document.getElementById('zoom-in-btn');
+    const zoomOutBtn = document.getElementById('zoom-out-btn');
+    const zoomResetBtn = document.getElementById('zoom-reset-btn');
+    
     if (zoomClose) {
         zoomClose.addEventListener('click', closeZoom);
     }
@@ -355,6 +488,18 @@ document.addEventListener('DOMContentLoaded', async function() {
             if (e.target === this) closeZoom();
         });
     }
+    if (zoomInBtn) {
+        zoomInBtn.addEventListener('click', zoomIn);
+    }
+    if (zoomOutBtn) {
+        zoomOutBtn.addEventListener('click', zoomOut);
+    }
+    if (zoomResetBtn) {
+        zoomResetBtn.addEventListener('click', resetZoom);
+    }
+    
+    // Инициализируем drag
+    initZoomDrag();
 });
 
 window.refreshCatalog = function() {
@@ -373,3 +518,10 @@ document.addEventListener('touchend', function(e) {
     }
     lastTouchEnd = now;
 }, { passive: false });
+
+// === ЭКСПОРТ ДЛЯ ГЛОБАЛЬНОГО ИСПОЛЬЗОВАНИЯ ===
+window.openZoom = openZoom;
+window.closeZoom = closeZoom;
+window.zoomIn = zoomIn;
+window.zoomOut = zoomOut;
+window.resetZoom = resetZoom;
