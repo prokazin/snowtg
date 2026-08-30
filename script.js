@@ -264,41 +264,6 @@ function goToImage(productId, index) {
     });
 }
 
-// === ЗАГРУЗОЧНЫЙ ЭКРАН С ВИДЕО ===
-function updateCountdown() {
-    const now = new Date();
-    const target = new Date(now.getFullYear(), 11, 1);
-    if (now > target) target.setFullYear(target.getFullYear() + 1);
-    const diff = Math.max(0, target - now);
-
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
-    const minutes = Math.floor((diff / (1000 * 60)) % 60);
-    const seconds = Math.floor((diff / 1000) % 60);
-
-    const daysEl = document.getElementById('days');
-    const hoursEl = document.getElementById('hours');
-    const minutesEl = document.getElementById('minutes');
-    const secondsEl = document.getElementById('seconds');
-    
-    if (daysEl) daysEl.textContent = String(days).padStart(2, '0');
-    if (hoursEl) hoursEl.textContent = String(hours).padStart(2, '0');
-    if (minutesEl) minutesEl.textContent = String(minutes).padStart(2, '0');
-    if (secondsEl) secondsEl.textContent = String(seconds).padStart(2, '0');
-
-    const msg = document.getElementById('splash-message');
-    if (msg) {
-        if (days < 30) msg.textContent = '❄️ Сезон уже близко!';
-        else if (days < 60) msg.textContent = '⛷️ Готовь снаряжение!';
-        else msg.textContent = '🏔️ До первого снега осталось...';
-    }
-}
-
-function shouldHideSplash() {
-    const now = new Date();
-    return now.getMonth() === 11 && now.getDate() === 1;
-}
-
 // === ИНИЦИАЛИЗАЦИЯ ===
 document.addEventListener('DOMContentLoaded', async function() {
     const splash = document.getElementById('splash-screen');
@@ -309,24 +274,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     
     // Загружаем оповещение
     await loadAnnouncementFromAPI();
-
-    // Проверяем, нужно ли скрыть сплеш (1 декабря)
-    if (shouldHideSplash()) {
-        if (splash) splash.style.display = 'none';
-        if (app) {
-            app.style.display = 'flex';
-            setTimeout(() => {
-                app.classList.add('visible');
-            }, 50);
-            renderNav();
-            if (currentTab) renderCatalog(currentTab);
-        }
-        return;
-    }
-
-    // Запускаем таймер обратного отсчета
-    updateCountdown();
-    const countdownInterval = setInterval(updateCountdown, 1000);
 
     // Автоматическое закрытие через 5 секунд
     let splashTimer = setTimeout(() => {
@@ -346,7 +293,6 @@ document.addEventListener('DOMContentLoaded', async function() {
                 }
             }, 400);
         }
-        clearInterval(countdownInterval);
     }, 5000);
 
     // Закрытие по кнопке
@@ -354,7 +300,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     if (closeBtn) {
         closeBtn.addEventListener('click', function() {
             clearTimeout(splashTimer);
-            clearInterval(countdownInterval);
             if (splash) {
                 splash.style.opacity = '0';
                 setTimeout(() => {
