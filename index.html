@@ -30,14 +30,14 @@
 <body>
     <div id="background-layer"></div>
 
-    <!-- ЗАГРУЗОЧНЫЙ ЭКРАН С ВИДЕО (без таймера) -->
+    <!-- ЗАГРУЗОЧНЫЙ ЭКРАН С ВИДЕО (3 секунды) -->
     <div id="splash-screen">
         <video id="splash-video" autoplay muted playsinline loop>
             <source src="Snow.MP4" type="video/mp4" />
         </video>
         <div class="splash-overlay">
             <div class="splash-content">
-                <button id="close-splash" class="splash-close-btn">Пропустить</button>
+                <!-- Кнопка удалена -->
             </div>
         </div>
     </div>
@@ -64,6 +64,16 @@
         <div class="modal-content">
             <span class="modal-close" id="modal-close">&times;</span>
             <div id="modal-body"></div>
+        </div>
+    </div>
+
+    <!-- Модалка для приближения фото -->
+    <div id="image-zoom-modal" class="modal" style="display: none;">
+        <div class="modal-content zoom-content">
+            <span class="modal-close" id="zoom-close">&times;</span>
+            <div style="display: flex; justify-content: center; align-items: center; height: 100%; min-height: 300px;">
+                <img id="zoom-image" src="" alt="Увеличенное фото" style="max-width: 100%; max-height: 70vh; object-fit: contain; border-radius: 12px;" />
+            </div>
         </div>
     </div>
 
