@@ -161,8 +161,8 @@ function getCategories() {
     }
 }
 
-// === ХАРАКТЕРИСТИКИ ===
-function addSpecRow(nameValue, valueValue) {
+// === ХАРАКТЕРИСТИКИ С ТИПАМИ ===
+function addSpecRow(nameValue, valueValue, typeValue) {
     const container = document.getElementById('specs-container');
     if (!container) return;
     const row = document.createElement('div');
@@ -170,6 +170,10 @@ function addSpecRow(nameValue, valueValue) {
     row.innerHTML = `
         <input type="text" class="spec-name" placeholder="Название (например: Длина)" value="${nameValue || ''}" />
         <input type="text" class="spec-value" placeholder="Значение (например: 156 см)" value="${valueValue || ''}" />
+        <select class="spec-type">
+            <option value="value" ${typeValue === 'value' ? 'selected' : ''}>Значение</option>
+            <option value="text" ${typeValue === 'text' ? 'selected' : ''}>Текст</option>
+        </select>
         <button class="remove-spec" onclick="removeSpec(this)">✕</button>
     `;
     container.appendChild(row);
@@ -191,14 +195,15 @@ function getSpecs() {
     rows.forEach(row => {
         const name = row.querySelector('.spec-name').value.trim();
         const value = row.querySelector('.spec-value').value.trim();
+        const type = row.querySelector('.spec-type').value;
         if (name && value) {
-            specs.push({ name, value });
+            specs.push({ name, value, type });
         }
     });
     return specs;
 }
 
-function addServiceSpecRow(nameValue, valueValue) {
+function addServiceSpecRow(nameValue, valueValue, typeValue) {
     const container = document.getElementById('service-specs-container');
     if (!container) return;
     const row = document.createElement('div');
@@ -206,6 +211,10 @@ function addServiceSpecRow(nameValue, valueValue) {
     row.innerHTML = `
         <input type="text" class="spec-name" placeholder="Название (например: Время)" value="${nameValue || ''}" />
         <input type="text" class="spec-value" placeholder="Значение (например: 30 мин)" value="${valueValue || ''}" />
+        <select class="spec-type">
+            <option value="value" ${typeValue === 'value' ? 'selected' : ''}>Значение</option>
+            <option value="text" ${typeValue === 'text' ? 'selected' : ''}>Текст</option>
+        </select>
         <button class="remove-spec" onclick="removeServiceSpec(this)">✕</button>
     `;
     container.appendChild(row);
@@ -227,8 +236,9 @@ function getServiceSpecs() {
     rows.forEach(row => {
         const name = row.querySelector('.spec-name').value.trim();
         const value = row.querySelector('.spec-value').value.trim();
+        const type = row.querySelector('.spec-type').value;
         if (name && value) {
-            specs.push({ name, value });
+            specs.push({ name, value, type });
         }
     });
     return specs;
@@ -391,7 +401,7 @@ async function editProduct(index) {
         container.innerHTML = '';
         if (p.specs && p.specs.length > 0) {
             p.specs.forEach(spec => {
-                addSpecRow(spec.name, spec.value);
+                addSpecRow(spec.name, spec.value, spec.type || 'value');
             });
         } else {
             addSpecRow('', '');
@@ -543,7 +553,7 @@ async function editService(index) {
         container.innerHTML = '';
         if (p.specs && p.specs.length > 0) {
             p.specs.forEach(spec => {
-                addServiceSpecRow(spec.name, spec.value);
+                addServiceSpecRow(spec.name, spec.value, spec.type || 'value');
             });
         } else {
             addServiceSpecRow('', '');
