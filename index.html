@@ -30,21 +30,13 @@
 <body>
     <div id="background-layer"></div>
 
-    <!-- ЗАГРУЗОЧНЫЙ ЭКРАН С ВИДЕО -->
+    <!-- ЗАГРУЗОЧНЫЙ ЭКРАН С ВИДЕО (без таймера) -->
     <div id="splash-screen">
         <video id="splash-video" autoplay muted playsinline loop>
             <source src="Snow.MP4" type="video/mp4" />
         </video>
         <div class="splash-overlay">
             <div class="splash-content">
-                <h1>❄️ Сноуборд-сезон</h1>
-                <div id="countdown">
-                    <span id="days">00</span>:
-                    <span id="hours">00</span>:
-                    <span id="minutes">00</span>:
-                    <span id="seconds">00</span>
-                </div>
-                <p id="splash-message">До первого снега осталось...</p>
                 <button id="close-splash" class="splash-close-btn">Пропустить</button>
             </div>
         </div>
