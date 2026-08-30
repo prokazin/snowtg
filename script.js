@@ -66,6 +66,17 @@ function closeAnnouncement() {
     if (banner) banner.style.display = 'none';
 }
 
+// === ФОРМАТИРОВАНИЕ ЦЕНЫ ===
+function formatPrice(price) {
+    if (!price) return '';
+    // Убираем лишние пробелы и символы
+    let clean = price.replace(/[^\d]/g, '');
+    if (!clean) return price;
+    // Добавляем пробел между тысячами
+    let formatted = clean.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+    return formatted + ' ₽';
+}
+
 // === РЕНДЕР КАТАЛОГА ===
 function renderCatalog(category) {
     const container = document.getElementById('catalog');
@@ -92,12 +103,15 @@ function renderCatalog(category) {
     }
     
     container.innerHTML = filtered.map(p => {
-        const imageUrl = p.images && p.images.length > 0 && p.images[0] ? p.images[0] : 'https://placehold.co/600x400/ffffff/cccccc?text=No+Image';
+        const imageUrl = p.images && p.images.length > 0 && p.images[0] ? p.images[0] : 'https://placehold.co/600x400/1a2a3a/ffffff?text=Нет+фото';
+        const formattedPrice = formatPrice(p.price);
         return `
             <div class="product-card" data-id="${p.id}" onclick="openModal(${p.id})">
-                <img src="${imageUrl}" alt="${p.name}" loading="lazy" onerror="this.src='https://placehold.co/600x400/ffffff/cccccc?text=No+Image'" />
+                <div class="product-image-wrapper">
+                    <img src="${imageUrl}" alt="${p.name}" loading="lazy" onerror="this.src='https://placehold.co/600x400/1a2a3a/ffffff?text=Нет+фото'" />
+                </div>
                 <h3>${p.name}</h3>
-                <div class="price">${p.price}</div>
+                <div class="price">${formattedPrice}</div>
                 <div class="desc-preview">${p.desc}</div>
                 <div class="specs">
                     ${p.specs && p.specs.length > 0 ? p.specs.slice(0, 2).map(s => `<span>${s.name}: ${s.value}</span>`).join('') : ''}
@@ -173,7 +187,7 @@ function renderNav() {
     });
 }
 
-// === МОДАЛЬНОЕ ОКНО ===
+// === МОДАЛЬНОЕ ОКНО С ПРИБЛИЖЕНИЕМ ===
 function openModal(productId) {
     if (!products || products.length === 0) {
         console.error('Товары не загружены');
@@ -196,11 +210,11 @@ function openModal(productId) {
     currentImageIndex = 0;
     
     const hasMultipleImages = product.images && product.images.length > 1;
-    const images = product.images || ['https://placehold.co/600x400/ffffff/cccccc?text=No+Image'];
+    const images = product.images || ['https://placehold.co/600x400/1a2a3a/ffffff?text=Нет+фото'];
 
     body.innerHTML = `
         <div class="modal-image-container">
-            <img id="modal-main-image" src="${images[0]}" alt="${product.name}" onerror="this.src='https://placehold.co/600x400/ffffff/cccccc?text=No+Image'" />
+            <img id="modal-main-image" src="${images[0]}" alt="${product.name}" onerror="this.src='https://placehold.co/600x400/1a2a3a/ffffff?text=Нет+фото'" onclick="openZoom(this.src)" />
             ${hasMultipleImages ? `
                 <button class="carousel-btn carousel-left" onclick="changeImage(${product.id}, -1)">‹</button>
                 <button class="carousel-btn carousel-right" onclick="changeImage(${product.id}, 1)">›</button>
@@ -208,9 +222,10 @@ function openModal(productId) {
                     ${images.map((_, idx) => `<span class="carousel-dot ${idx === 0 ? 'active' : ''}" onclick="goToImage(${product.id}, ${idx})"></span>`).join('')}
                 </div>
             ` : ''}
+            <div class="zoom-hint">🔍 Нажми на фото для увеличения</div>
         </div>
         <h2>${product.name}</h2>
-        <div class="modal-price">${product.price}</div>
+        <div class="modal-price">${formatPrice(product.price)}</div>
         <div class="modal-desc">${product.desc}</div>
         <div class="modal-specs">
             ${product.specs && product.specs.length > 0 ? product.specs.map(s => `<div class="spec-item"><span class="spec-name">${s.name}</span><span class="spec-value">${s.value}</span></div>`).join('') : ''}
@@ -239,6 +254,7 @@ function changeImage(productId, direction) {
     if (mainImg) {
         mainImg.src = images[currentImageIndex];
         mainImg.alt = product.name;
+        mainImg.onclick = function() { openZoom(this.src); };
     }
     
     const dots = document.querySelectorAll('.carousel-dot');
@@ -256,12 +272,33 @@ function goToImage(productId, index) {
     if (mainImg) {
         mainImg.src = product.images[index];
         mainImg.alt = product.name;
+        mainImg.onclick = function() { openZoom(this.src); };
     }
     
     const dots = document.querySelectorAll('.carousel-dot');
     dots.forEach((dot, idx) => {
         dot.classList.toggle('active', idx === index);
     });
+}
+
+// === ПРИБЛИЖЕНИЕ ФОТО ===
+function openZoom(imageSrc) {
+    if (!imageSrc || imageSrc.includes('placehold.co')) return;
+    
+    const zoomModal = document.getElementById('image-zoom-modal');
+    const zoomImage = document.getElementById('zoom-image');
+    
+    if (!zoomModal || !zoomImage) return;
+    
+    zoomImage.src = imageSrc;
+    zoomModal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
+function closeZoom() {
+    const zoomModal = document.getElementById('image-zoom-modal');
+    if (zoomModal) zoomModal.style.display = 'none';
+    document.body.style.overflow = 'hidden';
 }
 
 // === ИНИЦИАЛИЗАЦИЯ ===
@@ -275,7 +312,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Загружаем оповещение
     await loadAnnouncementFromAPI();
 
-    // Автоматическое закрытие через 5 секунд
+    // Автоматическое закрытие через 3 секунды
     let splashTimer = setTimeout(() => {
         if (splash) {
             splash.style.opacity = '0';
@@ -293,33 +330,9 @@ document.addEventListener('DOMContentLoaded', async function() {
                 }
             }, 400);
         }
-    }, 5000);
+    }, 3000);
 
-    // Закрытие по кнопке
-    const closeBtn = document.getElementById('close-splash');
-    if (closeBtn) {
-        closeBtn.addEventListener('click', function() {
-            clearTimeout(splashTimer);
-            if (splash) {
-                splash.style.opacity = '0';
-                setTimeout(() => {
-                    splash.style.display = 'none';
-                    const video = document.getElementById('splash-video');
-                    if (video) video.pause();
-                    if (app) {
-                        app.style.display = 'flex';
-                        setTimeout(() => {
-                            app.classList.add('visible');
-                        }, 50);
-                        renderNav();
-                        if (currentTab) renderCatalog(currentTab);
-                    }
-                }, 400);
-            }
-        });
-    }
-
-    // Обработчики для модалки
+    // Обработчики для модалки товара
     const modal = document.getElementById('product-modal');
     const modalClose = document.getElementById('modal-close');
     if (modalClose) {
@@ -328,6 +341,18 @@ document.addEventListener('DOMContentLoaded', async function() {
     if (modal) {
         modal.addEventListener('click', function(e) {
             if (e.target === this) closeModal();
+        });
+    }
+    
+    // Обработчики для модалки увеличения
+    const zoomModal = document.getElementById('image-zoom-modal');
+    const zoomClose = document.getElementById('zoom-close');
+    if (zoomClose) {
+        zoomClose.addEventListener('click', closeZoom);
+    }
+    if (zoomModal) {
+        zoomModal.addEventListener('click', function(e) {
+            if (e.target === this) closeZoom();
         });
     }
 });
