@@ -36,6 +36,15 @@ async function saveProductsToAPI(products) {
     }
 }
 
+// === ФОРМАТИРОВАНИЕ ЦЕНЫ ===
+function formatPrice(price) {
+    if (!price) return '';
+    let clean = price.replace(/[^\d]/g, '');
+    if (!clean) return price;
+    let formatted = clean.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+    return formatted + ' ₽';
+}
+
 // === ЗАГРУЗКА ОПОВЕЩЕНИЯ ===
 async function loadCurrentAnnouncement() {
     try {
@@ -280,11 +289,12 @@ async function renderProductList() {
     
     list.innerHTML = filtered.map((p, i) => {
         const originalIndex = products.indexOf(p);
+        const displayPrice = p.price ? formatPrice(p.price) : '';
         return `
             <div class="item">
                 <div class="info">
                     <strong>${p.name}</strong><br />
-                    <span style="color:#007aff;">${p.price}</span>
+                    <span style="color:#007aff;">${displayPrice}</span>
                     <span style="color:#8e8e93; font-size:13px; margin-left:8px;">${p.category}</span>
                     <br /><small style="color:#8e8e93;">${p.specs ? p.specs.length : 0} характеристик</small>
                 </div>
@@ -299,7 +309,7 @@ async function renderProductList() {
 
 async function addProduct() {
     const name = document.getElementById('product-name').value.trim();
-    const price = document.getElementById('product-price').value.trim();
+    let price = document.getElementById('product-price').value.trim();
     const imageUrl = document.getElementById('product-image-url').value.trim();
     const desc = document.getElementById('product-desc').value.trim();
     const category = document.getElementById('product-category').value;
@@ -315,7 +325,14 @@ async function addProduct() {
         return;
     }
 
-    const image = imageUrl || 'https://placehold.co/600x400/ffffff/cccccc?text=No+Image';
+    // Очищаем цену от символов и форматируем
+    price = price.replace(/[^\d]/g, '');
+    if (!price) {
+        alert('Введите корректную цену (только цифры)');
+        return;
+    }
+
+    const image = imageUrl || 'https://placehold.co/600x400/1a2a3a/ffffff?text=Нет+фото';
     
     const products = await getProducts();
     const newId = products.length ? Math.max(...products.map(p => p.id)) + 1 : 1;
@@ -323,7 +340,7 @@ async function addProduct() {
     const newProduct = { 
         id: newId, 
         name, 
-        price, 
+        price: price + ' ₽',
         images: [image],
         desc, 
         specs, 
@@ -348,7 +365,7 @@ async function addProduct() {
         }
         
         await renderProductList();
-        alert('✅ Товар "' + name + '" добавлен!');
+        alert('✅ Товар "' + name + '" добавлен! Цена: ' + formatPrice(price));
     }
 }
 
@@ -390,8 +407,11 @@ async function editProduct(index) {
     const products = await getProducts();
     const p = products[index];
     
+    // Извлекаем только цифры из цены
+    const priceClean = p.price ? p.price.replace(/[^\d]/g, '') : '';
+    
     document.getElementById('product-name').value = p.name;
-    document.getElementById('product-price').value = p.price;
+    document.getElementById('product-price').value = priceClean;
     document.getElementById('product-image-url').value = p.images ? p.images[0] : '';
     document.getElementById('product-desc').value = p.desc;
     document.getElementById('product-category').value = p.category;
@@ -436,11 +456,12 @@ async function renderServiceList() {
     
     list.innerHTML = services.map((p, i) => {
         const originalIndex = products.indexOf(p);
+        const displayPrice = p.price ? formatPrice(p.price) : '';
         return `
             <div class="item">
                 <div class="info">
                     <strong>${p.name}</strong><br />
-                    <span style="color:#007aff;">${p.price}</span>
+                    <span style="color:#007aff;">${displayPrice}</span>
                     <span style="color:#8e8e93; font-size:13px; margin-left:8px;">${p.category}</span>
                     <br /><small style="color:#8e8e93;">${p.specs ? p.specs.length : 0} характеристик</small>
                 </div>
@@ -455,7 +476,7 @@ async function renderServiceList() {
 
 async function addService() {
     const name = document.getElementById('service-name').value.trim();
-    const price = document.getElementById('service-price').value.trim();
+    let price = document.getElementById('service-price').value.trim();
     const imageUrl = document.getElementById('service-image-url').value.trim();
     const desc = document.getElementById('service-desc').value.trim();
     const specs = getServiceSpecs();
@@ -470,7 +491,13 @@ async function addService() {
         return;
     }
 
-    const image = imageUrl || 'https://placehold.co/600x400/ffffff/cccccc?text=No+Image';
+    price = price.replace(/[^\d]/g, '');
+    if (!price) {
+        alert('Введите корректную цену (только цифры)');
+        return;
+    }
+
+    const image = imageUrl || 'https://placehold.co/600x400/1a2a3a/ffffff?text=Нет+фото';
     
     const products = await getProducts();
     const newId = products.length ? Math.max(...products.map(p => p.id)) + 1 : 1;
@@ -478,7 +505,7 @@ async function addService() {
     products.push({ 
         id: newId, 
         name, 
-        price, 
+        price: price + ' ₽',
         images: [image],
         desc, 
         specs, 
@@ -501,7 +528,7 @@ async function addService() {
         }
         
         await renderServiceList();
-        alert('✅ Услуга "' + name + '" добавлена!');
+        alert('✅ Услуга "' + name + '" добавлена! Цена: ' + formatPrice(price));
     }
 }
 
@@ -543,8 +570,10 @@ async function editService(index) {
     const products = await getProducts();
     const p = products[index];
     
+    const priceClean = p.price ? p.price.replace(/[^\d]/g, '') : '';
+    
     document.getElementById('service-name').value = p.name;
-    document.getElementById('service-price').value = p.price;
+    document.getElementById('service-price').value = priceClean;
     document.getElementById('service-image-url').value = p.images ? p.images[0] : '';
     document.getElementById('service-desc').value = p.desc;
     
@@ -633,3 +662,4 @@ window.deleteService = deleteService;
 window.editProduct = editProduct;
 window.editService = editService;
 window.loginAdmin = loginAdmin;
+window.formatPrice = formatPrice;
