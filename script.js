@@ -124,12 +124,10 @@ function findComplexes(userData) {
         const boardPrice = parseFloat(board.price.replace(/[^\d]/g, '')) || 0;
         const boardParams = getProductParams(board);
         
-        // Проверяем доску по параметрам пользователя
         let boardMatch = true;
         if (boardParams.height) {
             const userHeight = userData.height || 0;
             if (userHeight > 0) {
-                // Если есть диапазон или просто значение
                 if (boardParams.height < userHeight - 10 || boardParams.height > userHeight + 10) {
                     boardMatch = false;
                 }
@@ -151,14 +149,12 @@ function findComplexes(userData) {
         
         if (!boardMatch) return;
         
-        // Проверяем бюджет
         const budget = userData.budget || 200000;
         
         bindings.forEach(binding => {
             const bindingPrice = parseFloat(binding.price.replace(/[^\d]/g, '')) || 0;
             const bindingParams = getProductParams(binding);
             
-            // Проверяем крепления по размеру ноги
             let bindingMatch = true;
             if (bindingParams.footSize) {
                 const userFoot = userData.footSize || 0;
@@ -175,7 +171,6 @@ function findComplexes(userData) {
                 const bootPrice = parseFloat(boot.price.replace(/[^\d]/g, '')) || 0;
                 const bootParams = getProductParams(boot);
                 
-                // Проверяем ботинки по размеру ноги
                 let bootMatch = true;
                 if (bootParams.footSize) {
                     const userFoot = userData.footSize || 0;
@@ -190,10 +185,8 @@ function findComplexes(userData) {
                 
                 const totalPrice = boardPrice + bindingPrice + bootPrice;
                 
-                // Проверяем бюджет
                 if (totalPrice > budget) return;
                 
-                // Считаем рейтинг совместимости
                 let matchScore = 100;
                 if (boardParams.height && userData.height) {
                     const diff = Math.abs(boardParams.height - userData.height);
@@ -223,7 +216,6 @@ function findComplexes(userData) {
         });
     });
     
-    // Сортируем по рейтингу и цене
     complexes.sort((a, b) => {
         if (a.matchScore !== b.matchScore) return b.matchScore - a.matchScore;
         return a.totalPrice - b.totalPrice;
@@ -243,15 +235,24 @@ function renderConfigurator() {
                 🔧 Подбор комплекта
             </h2>
             
-            <label>📏 Ваш рост (см)</label>
+            <div class="icon-label">
+                <img src="Рост.png" alt="Рост" />
+                <label>Ваш рост (см)</label>
+            </div>
             <input type="range" id="config-height" min="140" max="210" value="175" step="1" />
             <div class="range-value" id="config-height-value">175 см</div>
             
-            <label>⚖️ Ваш вес (кг)</label>
+            <div class="icon-label">
+                <img src="Вес.png" alt="Вес" />
+                <label>Ваш вес (кг)</label>
+            </div>
             <input type="range" id="config-weight" min="40" max="130" value="75" step="1" />
             <div class="range-value" id="config-weight-value">75 кг</div>
             
-            <label>👟 Размер ноги (EU)</label>
+            <div class="icon-label">
+                <img src="Ноги.png" alt="Ноги" />
+                <label>Размер ноги (EU)</label>
+            </div>
             <select id="config-foot">
                 <option value="36">36</option>
                 <option value="37">37</option>
@@ -268,11 +269,17 @@ function renderConfigurator() {
                 <option value="48">48</option>
             </select>
             
-            <label>💰 Бюджет (₽)</label>
+            <div class="icon-label">
+                <img src="Деньги.png" alt="Деньги" />
+                <label>Бюджет (₽)</label>
+            </div>
             <input type="range" id="config-budget" min="50000" max="250000" value="150000" step="5000" />
             <div class="range-value" id="config-budget-value">150 000 ₽</div>
             
-            <label>⛷️ Стиль катания</label>
+            <div class="icon-label">
+                <img src="Стиль.png" alt="Стиль" />
+                <label>Стиль катания</label>
+            </div>
             <select id="config-style">
                 <option value="">Любой</option>
                 <option value="фрирайд">Фрирайд</option>
@@ -288,15 +295,25 @@ function renderConfigurator() {
     `;
     
     // Обновляем значения слайдеров
-    document.getElementById('config-height').addEventListener('input', function() {
-        document.getElementById('config-height-value').textContent = this.value + ' см';
-    });
-    document.getElementById('config-weight').addEventListener('input', function() {
-        document.getElementById('config-weight-value').textContent = this.value + ' кг';
-    });
-    document.getElementById('config-budget').addEventListener('input', function() {
-        document.getElementById('config-budget-value').textContent = formatPrice(this.value);
-    });
+    const heightSlider = document.getElementById('config-height');
+    const weightSlider = document.getElementById('config-weight');
+    const budgetSlider = document.getElementById('config-budget');
+    
+    if (heightSlider) {
+        heightSlider.addEventListener('input', function() {
+            document.getElementById('config-height-value').textContent = this.value + ' см';
+        });
+    }
+    if (weightSlider) {
+        weightSlider.addEventListener('input', function() {
+            document.getElementById('config-weight-value').textContent = this.value + ' кг';
+        });
+    }
+    if (budgetSlider) {
+        budgetSlider.addEventListener('input', function() {
+            document.getElementById('config-budget-value').textContent = formatPrice(this.value);
+        });
+    }
 }
 
 // === ЗАПУСК КОНФИГУРАТОРА ===
@@ -377,7 +394,6 @@ function runConfigurator() {
         resultsContainer.appendChild(card);
     });
     
-    // Сохраняем комплекты для модалки
     window._complexes = complexes;
 }
 
