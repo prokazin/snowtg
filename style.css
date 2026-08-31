@@ -154,7 +154,6 @@ header h1 {
     box-shadow: 0 2px 15px rgba(0,0,0,0.2);
 }
 
-/* === КАРТОЧКА ФОТО === */
 .product-image-wrapper {
     width: 100%;
     height: clamp(140px, 30vw, 180px);
@@ -352,6 +351,27 @@ header h1 {
     background: rgba(255, 255, 255, 0.15);
 }
 
+.configurator-form .icon-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.configurator-form .icon-label img {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+    filter: brightness(0) invert(1);
+}
+
+.configurator-form .icon-label label {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 14px;
+    font-weight: 500;
+    margin: 0;
+}
+
 /* === КАРТОЧКА КОМПЛЕКТА === */
 .complex-card {
     background: rgba(255, 255, 255, 0.12);
@@ -505,7 +525,6 @@ header h1 {
     filter: brightness(0) saturate(100%) invert(27%) sepia(87%) saturate(1000%) hue-rotate(200deg);
 }
 
-/* === КОНФИГУРАТОР — ЦВЕТНАЯ КНОПКА ПО ЦЕНТРУ === */
 .nav-btn.configurator-btn {
     min-width: 56px;
     min-height: 56px;
@@ -900,6 +919,10 @@ header h1 {
     }
     .configurator-form {
         padding: 14px;
+    }
+    .configurator-form .icon-label img {
+        width: 22px;
+        height: 22px;
     }
 }
 
