@@ -231,9 +231,10 @@ function renderConfigurator() {
     
     container.innerHTML = `
         <div class="configurator-form">
-            <h2 style="color: #ffffff; font-size: 22px; margin-bottom: 16px; text-shadow: 0 2px 8px rgba(0,0,0,0.3); text-align: center;">
-                🔧 Подбор комплекта
-            </h2>
+            <div class="config-title">
+                <img src="Конфигуратор.png" alt="Конфигуратор" />
+                <h2>Подбор комплекта</h2>
+            </div>
             
             <div class="icon-label">
                 <img src="Рост.png" alt="Рост" />
