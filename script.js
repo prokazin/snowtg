@@ -232,7 +232,7 @@ function renderConfigurator() {
     container.innerHTML = `
         <div class="configurator-form">
             <div class="config-title">
-                <img src="Конфигуратор.png" alt="Конфигуратор" />
+                <video src="Конфигуратор.mp4" autoplay loop muted playsinline style="width: 40px; height: 40px; object-fit: contain; border-radius: 8px;"></video>
                 <h2>Подбор комплекта</h2>
             </div>
             
@@ -289,8 +289,13 @@ function renderConfigurator() {
                 <option value="универсал">Универсал</option>
             </select>
             
-            <button class="submit-btn" onclick="runConfigurator()">🔍 Подобрать комплекты</button>
-            <button class="reset-btn" onclick="resetConfigurator()">🔄 Сбросить параметры</button>
+            <div class="btn-row">
+                <button class="submit-btn" onclick="runConfigurator()">
+                    <video src="Поиск.mp4" autoplay loop muted playsinline style="width: 20px; height: 20px; object-fit: contain; border-radius: 4px;"></video>
+                    Подобрать комплекты
+                </button>
+                <button class="reset-btn" onclick="resetConfigurator()">🔄 Сбросить</button>
+            </div>
         </div>
         <div id="config-results"></div>
     `;
@@ -555,6 +560,7 @@ function renderContacts(container) {
     `;
 }
 
+// === РЕНДЕР НАВИГАЦИИ ===
 function renderNav() {
     const nav = document.getElementById('bottom-nav');
     if (!nav) return;
@@ -568,7 +574,10 @@ function renderNav() {
         const isConfigurator = cat.name === 'Конфигуратор';
         return `
             <button class="nav-btn ${currentTab === cat.name ? 'active' : ''} ${isConfigurator ? 'configurator-btn' : ''}" data-tab="${cat.name}">
-                <img src="${cat.icon}" alt="${cat.name}" onerror="this.src='https://placehold.co/32/cccccc/aaaaaa?text=?'" />
+                ${isConfigurator 
+                    ? `<video src="Конфигуратор.mp4" autoplay loop muted playsinline style="width: clamp(30px, 6vw, 38px); height: clamp(30px, 6vw, 38px); object-fit: contain; border-radius: 4px;"></video>`
+                    : `<img src="${cat.icon}" alt="${cat.name}" onerror="this.src='https://placehold.co/32/cccccc/aaaaaa?text=?'" />`
+                }
             </button>
         `;
     }).join('');
