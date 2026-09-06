@@ -732,7 +732,7 @@ const DEFAULT_PRODUCTS = [
 function corsHeaders() {
     return {
         'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS, PUT, DELETE',
         'Access-Control-Allow-Headers': 'Content-Type',
         'Content-Type': 'application/json'
     };
@@ -789,6 +789,7 @@ export default {
                     headers: corsHeaders()
                 });
             } catch (e) {
+                console.error('Ошибка загрузки:', e);
                 return new Response(JSON.stringify({ error: 'Ошибка загрузки товаров' }), {
                     status: 500,
                     headers: corsHeaders()
@@ -800,12 +801,30 @@ export default {
         if (path === '/api/products' && method === 'POST') {
             try {
                 const products = await request.json();
+                
+                // Проверяем размер данных
+                const size = JSON.stringify(products).length;
+                console.log('📦 Размер данных:', size, 'байт', (size / 1024 / 1024).toFixed(2), 'MB');
+                
+                // Лимит 9MB (оставляем запас)
+                if (size > 9 * 1024 * 1024) {
+                    return new Response(JSON.stringify({ 
+                        error: 'Слишком большой размер. Максимум 9MB. Уменьшите количество фото.' 
+                    }), {
+                        status: 413,
+                        headers: corsHeaders()
+                    });
+                }
+                
                 await env.KV.put('products', JSON.stringify(products));
+                console.log('✅ Товары сохранены в KV');
+                
                 return new Response(JSON.stringify({ success: true }), {
                     headers: corsHeaders()
                 });
             } catch (e) {
-                return new Response(JSON.stringify({ error: e.message }), {
+                console.error('❌ Ошибка сохранения:', e);
+                return new Response(JSON.stringify({ error: e.message || 'Ошибка сохранения' }), {
                     status: 500,
                     headers: corsHeaders()
                 });
