@@ -2,6 +2,9 @@ const ADMIN_PASSWORD = 'admin123';
 let currentTab = 'products';
 const API_URL = 'https://snowtg.nazar-bronnikov22.workers.dev/';
 
+// === ПЕРЕМЕННЫЕ ДЛЯ ЗАГРУЗКИ НЕСКОЛЬКИХ ФОТО ===
+let uploadedImages = [];
+
 // === ЗАГРУЗКА ТОВАРОВ ИЗ API ===
 async function loadProductsFromAPI() {
     try {
@@ -133,13 +136,16 @@ function switchTab(tab) {
     if (tab === 'products') {
         document.querySelector('.tabs button:nth-child(1)').classList.add('active');
         document.getElementById('tab-products').classList.add('active');
+    } else if (tab === 'list') {
+        document.querySelector('.tabs button:nth-child(2)').classList.add('active');
+        document.getElementById('tab-list').classList.add('active');
         renderProductList();
     } else if (tab === 'services') {
-        document.querySelector('.tabs button:nth-child(2)').classList.add('active');
+        document.querySelector('.tabs button:nth-child(3)').classList.add('active');
         document.getElementById('tab-services').classList.add('active');
         renderServiceList();
     } else if (tab === 'announcements') {
-        document.querySelector('.tabs button:nth-child(3)').classList.add('active');
+        document.querySelector('.tabs button:nth-child(4)').classList.add('active');
         document.getElementById('tab-announcements').classList.add('active');
         loadCurrentAnnouncement();
     }
@@ -170,7 +176,7 @@ function getCategories() {
     }
 }
 
-// === ХАРАКТЕРИСТИКИ С ТИПАМИ ===
+// === ХАРАКТЕРИСТИКИ ===
 function addSpecRow(nameValue, valueValue, typeValue) {
     const container = document.getElementById('specs-container');
     if (!container) return;
@@ -253,6 +259,71 @@ function getServiceSpecs() {
     return specs;
 }
 
+// === ЗАГРУЗКА НЕСКОЛЬКИХ ФОТО ===
+function uploadProductImages() {
+    const fileInput = document.getElementById('product-images-file');
+    if (!fileInput) return;
+    const files = fileInput.files;
+    if (!files || files.length === 0) {
+        alert('Выберите файлы с изображениями');
+        return;
+    }
+    
+    let loaded = 0;
+    const total = files.length;
+    
+    Array.from(files).forEach(file => {
+        if (file.size > 5 * 1024 * 1024) {
+            alert('Файл ' + file.name + ' слишком большой. Максимум 5MB');
+            return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            uploadedImages.push(e.target.result);
+            loaded++;
+            updateImagePreview();
+            if (loaded === total) {
+                alert('✅ Загружено ' + total + ' изображений!');
+                fileInput.value = '';
+            }
+        };
+        reader.onerror = function() {
+            alert('Ошибка загрузки файла: ' + file.name);
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+function updateImagePreview() {
+    const container = document.getElementById('product-images-preview');
+    if (!container) return;
+    
+    if (uploadedImages.length === 0) {
+        container.innerHTML = '';
+        return;
+    }
+    
+    container.innerHTML = uploadedImages.map((img, index) => `
+        <div class="preview-item">
+            <img src="${img}" alt="Фото ${index + 1}" />
+            <button class="remove-img" onclick="removeImage(${index})">✕</button>
+            <span class="img-index">${index + 1}</span>
+        </div>
+    `).join('');
+}
+
+function removeImage(index) {
+    uploadedImages.splice(index, 1);
+    updateImagePreview();
+}
+
+function clearImages() {
+    uploadedImages = [];
+    updateImagePreview();
+    document.getElementById('product-images-file').value = '';
+}
+
 // === ТОВАРЫ ===
 async function getProducts() {
     return await loadProductsFromAPI();
@@ -262,8 +333,7 @@ async function saveProducts(products) {
     const success = await saveProductsToAPI(products);
     if (success) {
         localStorage.setItem('snowboard_products_cache', JSON.stringify(products));
-        await renderProductList();
-        await renderServiceList();
+        renderProductList();
         if (window.opener && !window.opener.closed) {
             window.opener.products = products;
             if (window.opener.currentTab) {
@@ -290,13 +360,14 @@ async function renderProductList() {
     list.innerHTML = filtered.map((p, i) => {
         const originalIndex = products.indexOf(p);
         const displayPrice = p.price ? formatPrice(p.price) : '';
+        const imageCount = p.images ? p.images.length : 0;
         return `
             <div class="item">
                 <div class="info">
                     <strong>${p.name}</strong><br />
                     <span style="color:#007aff;">${displayPrice}</span>
                     <span style="color:#8e8e93; font-size:13px; margin-left:8px;">${p.category}</span>
-                    <br /><small style="color:#8e8e93;">${p.specs ? p.specs.length : 0} характеристик</small>
+                    <br /><small style="color:#8e8e93;">${p.specs ? p.specs.length : 0} характеристик${imageCount > 0 ? ' • 📷 ' + imageCount + ' фото' : ''}</small>
                 </div>
                 <div class="actions">
                     <button class="edit-btn" onclick="editProduct(${originalIndex})">✏️</button>
@@ -310,10 +381,10 @@ async function renderProductList() {
 async function addProduct() {
     const name = document.getElementById('product-name').value.trim();
     let price = document.getElementById('product-price').value.trim();
-    const imageUrl = document.getElementById('product-image-url').value.trim();
     const desc = document.getElementById('product-desc').value.trim();
     const category = document.getElementById('product-category').value;
     const specs = getSpecs();
+    const imageUrl = document.getElementById('product-image-url').value.trim();
 
     if (!name || !price || !desc) {
         alert('Заполните название, цену и описание');
@@ -325,14 +396,21 @@ async function addProduct() {
         return;
     }
 
-    // Очищаем цену от символов и форматируем
     price = price.replace(/[^\d]/g, '');
     if (!price) {
         alert('Введите корректную цену (только цифры)');
         return;
     }
 
-    const image = imageUrl || 'https://placehold.co/600x400/1a2a3a/ffffff?text=Нет+фото';
+    // Собираем все изображения
+    let images = [];
+    if (uploadedImages.length > 0) {
+        images = uploadedImages;
+    } else if (imageUrl) {
+        images = [imageUrl];
+    } else {
+        images = ['https://placehold.co/600x400/1a2a3a/ffffff?text=Нет+фото'];
+    }
     
     const products = await getProducts();
     const newId = products.length ? Math.max(...products.map(p => p.id)) + 1 : 1;
@@ -341,7 +419,7 @@ async function addProduct() {
         id: newId, 
         name, 
         price: price + ' ₽',
-        images: [image],
+        images: images,
         desc, 
         specs, 
         category,
@@ -356,7 +434,8 @@ async function addProduct() {
         document.getElementById('product-price').value = '';
         document.getElementById('product-image-url').value = '';
         document.getElementById('product-desc').value = '';
-        document.getElementById('product-image-file').value = '';
+        document.getElementById('product-images-file').value = '';
+        clearImages();
         
         const container = document.getElementById('specs-container');
         if (container) {
@@ -365,7 +444,7 @@ async function addProduct() {
         }
         
         await renderProductList();
-        alert('✅ Товар "' + name + '" добавлен! Цена: ' + formatPrice(price));
+        alert('✅ Товар "' + name + '" добавлен! Фото: ' + images.length);
     }
 }
 
@@ -407,14 +486,20 @@ async function editProduct(index) {
     const products = await getProducts();
     const p = products[index];
     
-    // Извлекаем только цифры из цены
     const priceClean = p.price ? p.price.replace(/[^\d]/g, '') : '';
     
     document.getElementById('product-name').value = p.name;
     document.getElementById('product-price').value = priceClean;
-    document.getElementById('product-image-url').value = p.images ? p.images[0] : '';
+    document.getElementById('product-image-url').value = '';
     document.getElementById('product-desc').value = p.desc;
     document.getElementById('product-category').value = p.category;
+    
+    // Загружаем существующие фото в превью
+    uploadedImages = [];
+    if (p.images && p.images.length > 0) {
+        uploadedImages = p.images;
+        updateImagePreview();
+    }
     
     const container = document.getElementById('specs-container');
     if (container) {
@@ -428,12 +513,15 @@ async function editProduct(index) {
         }
     }
     
+    // Переключаемся на вкладку "Добавить"
+    switchTab('products');
+    
+    // Удаляем старый товар
     products.splice(index, 1);
     await saveProducts(products);
-    await renderProductList();
     
     document.getElementById('product-name').scrollIntoView({ behavior: 'smooth' });
-    alert('✏️ Редактирование: ' + p.name);
+    alert('✏️ Редактирование: ' + p.name + ' (добавьте фото заново при необходимости)');
 }
 
 // === УСЛУГИ ===
@@ -457,13 +545,14 @@ async function renderServiceList() {
     list.innerHTML = services.map((p, i) => {
         const originalIndex = products.indexOf(p);
         const displayPrice = p.price ? formatPrice(p.price) : '';
+        const imageCount = p.images ? p.images.length : 0;
         return `
             <div class="item">
                 <div class="info">
                     <strong>${p.name}</strong><br />
                     <span style="color:#007aff;">${displayPrice}</span>
                     <span style="color:#8e8e93; font-size:13px; margin-left:8px;">${p.category}</span>
-                    <br /><small style="color:#8e8e93;">${p.specs ? p.specs.length : 0} характеристик</small>
+                    <br /><small style="color:#8e8e93;">${p.specs ? p.specs.length : 0} характеристик${imageCount > 0 ? ' • 📷 ' + imageCount + ' фото' : ''}</small>
                 </div>
                 <div class="actions">
                     <button class="edit-btn" onclick="editService(${originalIndex})">✏️</button>
@@ -528,7 +617,7 @@ async function addService() {
         }
         
         await renderServiceList();
-        alert('✅ Услуга "' + name + '" добавлена! Цена: ' + formatPrice(price));
+        alert('✅ Услуга "' + name + '" добавлена!');
     }
 }
 
@@ -629,16 +718,16 @@ function loginAdmin() {
 
 // === ИНИЦИАЛИЗАЦИЯ ===
 document.addEventListener('DOMContentLoaded', async function() {
-    await renderProductList();
-    await renderServiceList();
-    await loadCurrentAnnouncement();
+    renderProductList();
+    renderServiceList();
+    loadCurrentAnnouncement();
 });
 
 // === ОБНОВЛЕНИЕ ПРИ ИЗМЕНЕНИИ В LOCALSTORAGE ===
 window.addEventListener('storage', async function(e) {
     if (e.key === 'snowboard_products') {
-        await renderProductList();
-        await renderServiceList();
+        renderProductList();
+        renderServiceList();
     }
 });
 
@@ -655,6 +744,9 @@ window.clearAnnouncement = clearAnnouncement;
 window.loadCurrentAnnouncement = loadCurrentAnnouncement;
 window.uploadProductImage = uploadProductImage;
 window.uploadServiceImage = uploadServiceImage;
+window.uploadProductImages = uploadProductImages;
+window.removeImage = removeImage;
+window.clearImages = clearImages;
 window.addProduct = addProduct;
 window.addService = addService;
 window.deleteProduct = deleteProduct;
