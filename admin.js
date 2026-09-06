@@ -5,6 +5,34 @@ const API_URL = 'https://snowtg.nazar-bronnikov22.workers.dev/';
 // === ПЕРЕМЕННЫЕ ДЛЯ ЗАГРУЗКИ НЕСКОЛЬКИХ ФОТО ===
 let uploadedImages = [];
 
+// === СЖАТИЕ ИЗОБРАЖЕНИЙ ===
+function compressImage(dataUrl, maxWidth = 800, maxHeight = 800, quality = 0.7) {
+    return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = function() {
+            let width = img.width;
+            let height = img.height;
+            
+            if (width > maxWidth) {
+                height = height * (maxWidth / width);
+                width = maxWidth;
+            }
+            if (height > maxHeight) {
+                width = width * (maxHeight / height);
+                height = maxHeight;
+            }
+            
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            resolve(canvas.toDataURL('image/jpeg', quality));
+        };
+        img.src = dataUrl;
+    });
+}
+
 // === ЗАГРУЗКА ТОВАРОВ ИЗ API ===
 async function loadProductsFromAPI() {
     try {
@@ -21,20 +49,46 @@ async function loadProductsFromAPI() {
 // === СОХРАНЕНИЕ ТОВАРОВ В API ===
 async function saveProductsToAPI(products) {
     try {
+        console.log('📤 Отправка данных на сервер...');
+        console.log('📦 Количество товаров:', products.length);
+        
+        // Проверяем размер данных
+        const jsonStr = JSON.stringify(products);
+        const sizeInMB = jsonStr.length / (1024 * 1024);
+        console.log('📊 Размер данных:', sizeInMB.toFixed(2), 'MB');
+        
+        if (sizeInMB > 8) {
+            alert('❌ Слишком много данных! Уменьшите количество фото или их размер.');
+            return false;
+        }
+        
         const response = await fetch(API_URL + 'api/products', {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(products)
+            body: jsonStr
         });
         
-        if (!response.ok) throw new Error('Ошибка сохранения');
+        console.log('📥 Статус ответа:', response.status);
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('❌ Ошибка сервера:', errorText);
+            throw new Error('Ошибка сервера: ' + response.status);
+        }
+        
         const result = await response.json();
-        return result.success === true;
+        console.log('📥 Ответ сервера:', result);
+        
+        if (result.success) {
+            return true;
+        } else {
+            throw new Error(result.error || 'Неизвестная ошибка');
+        }
     } catch (e) {
         console.error('❌ Ошибка сохранения в API:', e);
-        alert('❌ Ошибка сохранения: ' + e.message);
+        alert('❌ Ошибка сохранения: ' + e.message + '\nПопробуйте загрузить меньше фото или сжать изображения.');
         return false;
     }
 }
@@ -259,8 +313,8 @@ function getServiceSpecs() {
     return specs;
 }
 
-// === ЗАГРУЗКА НЕСКОЛЬКИХ ФОТО ===
-function uploadProductImages() {
+// === ЗАГРУЗКА НЕСКОЛЬКИХ ФОТО С СЖАТИЕМ ===
+async function uploadProductImages() {
     const fileInput = document.getElementById('product-images-file');
     if (!fileInput) return;
     const files = fileInput.files;
@@ -269,30 +323,43 @@ function uploadProductImages() {
         return;
     }
     
+    if (uploadedImages.length + files.length > 10) {
+        alert('Максимум 10 фото на товар');
+        return;
+    }
+    
     let loaded = 0;
     const total = files.length;
     
-    Array.from(files).forEach(file => {
+    for (const file of files) {
         if (file.size > 5 * 1024 * 1024) {
             alert('Файл ' + file.name + ' слишком большой. Максимум 5MB');
-            return;
+            continue;
         }
         
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            uploadedImages.push(e.target.result);
+        try {
+            const dataUrl = await new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = function(e) { resolve(e.target.result); };
+                reader.readAsDataURL(file);
+            });
+            
+            // Сжимаем изображение
+            const compressed = await compressImage(dataUrl, 800, 800, 0.7);
+            uploadedImages.push(compressed);
             loaded++;
             updateImagePreview();
-            if (loaded === total) {
-                alert('✅ Загружено ' + total + ' изображений!');
-                fileInput.value = '';
-            }
-        };
-        reader.onerror = function() {
-            alert('Ошибка загрузки файла: ' + file.name);
-        };
-        reader.readAsDataURL(file);
-    });
+        } catch (e) {
+            console.error('Ошибка загрузки файла:', e);
+        }
+    }
+    
+    if (loaded > 0) {
+        alert('✅ Загружено ' + loaded + ' изображений!');
+        fileInput.value = '';
+    } else {
+        alert('❌ Не удалось загрузить ни одного изображения');
+    }
 }
 
 function updateImagePreview() {
@@ -405,7 +472,7 @@ async function addProduct() {
     // Собираем все изображения
     let images = [];
     if (uploadedImages.length > 0) {
-        images = uploadedImages;
+        images = uploadedImages.slice(0, 10); // максимум 10 фото
     } else if (imageUrl) {
         images = [imageUrl];
     } else {
@@ -521,7 +588,7 @@ async function editProduct(index) {
     await saveProducts(products);
     
     document.getElementById('product-name').scrollIntoView({ behavior: 'smooth' });
-    alert('✏️ Редактирование: ' + p.name + ' (добавьте фото заново при необходимости)');
+    alert('✏️ Редактирование: ' + p.name);
 }
 
 // === УСЛУГИ ===
@@ -755,3 +822,4 @@ window.editProduct = editProduct;
 window.editService = editService;
 window.loginAdmin = loginAdmin;
 window.formatPrice = formatPrice;
+window.compressImage = compressImage;
