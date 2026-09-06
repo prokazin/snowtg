@@ -18,9 +18,13 @@
             font-family: -apple-system, 'Helvetica Neue', sans-serif;
             background: #f2f2f7;
             padding: 16px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
         }
         
         .admin-container {
+            width: 100%;
             max-width: 600px;
             margin: 0 auto;
             background: rgba(255,255,255,0.95);
@@ -74,6 +78,16 @@
             padding: 8px;
             border: 1px dashed #d1d1d6;
             background: #f8f9fc;
+        }
+        
+        .admin-container input[type="file"]::file-selector-button {
+            background: #007aff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
         }
         
         .admin-container button {
@@ -221,14 +235,14 @@
         
         .tabs button {
             flex: 1;
-            min-width: 80px;
-            max-width: 180px;
-            padding: 12px;
+            min-width: 70px;
+            max-width: 140px;
+            padding: 10px 8px;
             background: #e5e5ea;
             color: #1c1c1e;
             border: none;
             border-radius: 12px;
-            font-size: 16px;
+            font-size: 14px;
             font-weight: 600;
             cursor: pointer;
             transition: 0.2s;
@@ -310,6 +324,81 @@
             min-width: 100px;
         }
         
+        .image-preview-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 8px 0;
+        }
+        
+        .image-preview-container .preview-item {
+            position: relative;
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #d1d1d6;
+        }
+        
+        .image-preview-container .preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .image-preview-container .preview-item .remove-img {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            width: 20px;
+            height: 20px;
+            background: #ff3b30;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            font-size: 12px;
+            cursor: pointer;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .image-preview-container .preview-item .remove-img:active {
+            transform: scale(0.9);
+        }
+        
+        .image-preview-container .preview-item .img-index {
+            position: absolute;
+            bottom: 2px;
+            right: 4px;
+            background: rgba(0,0,0,0.6);
+            color: white;
+            font-size: 10px;
+            padding: 1px 6px;
+            border-radius: 10px;
+        }
+        
+        .multi-upload-row {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .multi-upload-row input[type="file"] {
+            flex: 1;
+            min-width: 150px;
+        }
+        
+        .multi-upload-row button {
+            width: auto;
+            padding: 10px 20px;
+            margin: 0;
+            font-size: 14px;
+        }
+        
         @media (max-width: 430px) {
             body {
                 padding: 8px;
@@ -346,13 +435,23 @@
                 width: 100%;
             }
             .tabs button {
-                min-width: 60px;
-                max-width: 100px;
-                font-size: 13px;
-                padding: 8px;
+                min-width: 50px;
+                max-width: 80px;
+                font-size: 11px;
+                padding: 8px 4px;
             }
             .flex-row {
                 flex-direction: column;
+            }
+            .multi-upload-row {
+                flex-direction: column;
+            }
+            .multi-upload-row button {
+                width: 100%;
+            }
+            .image-preview-container .preview-item {
+                width: 60px;
+                height: 60px;
             }
         }
         
@@ -361,8 +460,8 @@
                 max-width: 500px;
             }
             .tabs button {
-                min-width: 80px;
-                max-width: 140px;
+                min-width: 70px;
+                max-width: 110px;
             }
         }
         
@@ -372,8 +471,8 @@
                 padding: 30px;
             }
             .tabs button {
-                min-width: 100px;
-                max-width: 180px;
+                min-width: 90px;
+                max-width: 150px;
             }
         }
     </style>
@@ -390,22 +489,25 @@
         <div id="admin-panel" style="display: none;">
             
             <div class="tabs">
-                <button class="active" onclick="switchTab('products')">🛒 Товары</button>
+                <button class="active" onclick="switchTab('products')">🛒 Добавить</button>
+                <button onclick="switchTab('list')">📋 Список</button>
                 <button onclick="switchTab('services')">🔧 Услуги</button>
                 <button onclick="switchTab('announcements')">📢 Оповещения</button>
             </div>
             
-            <!-- Вкладка Товары -->
+            <!-- Вкладка Добавить товар -->
             <div id="tab-products" class="tab-content active">
                 <div class="section-title">📦 Добавить товар</div>
                 <input type="text" id="product-name" placeholder="Название" />
-                <input type="text" id="product-price" placeholder="Цена (например, 45000 ₽)" />
+                <input type="text" id="product-price" placeholder="Цена (только цифры, например 45000)" />
                 
-                <div class="file-upload-row">
-                    <input type="text" id="product-image-url" placeholder="URL картинки" />
-                    <input type="file" id="product-image-file" accept="image/*" />
-                    <button onclick="uploadProductImage()">Загрузить</button>
+                <div class="section-title" style="font-size:14px; margin-top:8px;">🖼️ Фото товара (можно несколько)</div>
+                <div class="multi-upload-row">
+                    <input type="file" id="product-images-file" accept="image/*" multiple />
+                    <button onclick="uploadProductImages()">📤 Загрузить фото</button>
                 </div>
+                <div id="product-images-preview" class="image-preview-container"></div>
+                <input type="text" id="product-image-url" placeholder="Или вставьте URL картинки" style="margin-top:4px;" />
                 
                 <textarea id="product-desc" placeholder="Полное описание" rows="3"></textarea>
                 
@@ -433,9 +535,10 @@
                 <button class="add-spec-btn" onclick="addSpecRow()">➕ Добавить характеристику</button>
                 
                 <button onclick="addProduct()" style="margin-top:12px;">➕ Добавить товар</button>
-                
-                <hr />
-                
+            </div>
+            
+            <!-- Вкладка Список товаров -->
+            <div id="tab-list" class="tab-content">
                 <div class="section-title">📋 Список товаров</div>
                 <div id="product-list"></div>
             </div>
@@ -444,7 +547,7 @@
             <div id="tab-services" class="tab-content">
                 <div class="section-title">🔧 Добавить услугу</div>
                 <input type="text" id="service-name" placeholder="Название услуги" />
-                <input type="text" id="service-price" placeholder="Цена (например, 2500 ₽)" />
+                <input type="text" id="service-price" placeholder="Цена (только цифры)" />
                 
                 <div class="file-upload-row">
                     <input type="text" id="service-image-url" placeholder="URL картинки" />
