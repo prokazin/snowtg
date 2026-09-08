@@ -25,29 +25,18 @@
         
         .admin-container {
             width: 100%;
-            max-width: 600px;
+            max-width: 800px;
             margin: 0 auto;
             background: rgba(255,255,255,0.95);
             border-radius: 24px;
-            padding: 20px;
+            padding: 24px;
             box-shadow: 0 4px 30px rgba(0,0,0,0.08);
-            min-height: 90vh;
-            max-height: 90vh;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-        
-        .admin-container::-webkit-scrollbar {
-            width: 4px;
-        }
-        .admin-container::-webkit-scrollbar-thumb {
-            background: rgba(0,122,255,0.3);
-            border-radius: 10px;
+            min-height: 100vh;
         }
         
         .admin-container h2 {
             color: #1c1c1e;
-            font-size: clamp(24px, 5vw, 32px);
+            font-size: clamp(28px, 5vw, 36px);
             margin-bottom: 16px;
             text-align: center;
         }
@@ -177,54 +166,6 @@
             font-size: 14px;
         }
         
-        .specs-container {
-            background: #f8f9fc;
-            border-radius: 12px;
-            padding: 12px;
-            margin: 6px 0;
-        }
-        
-        .spec-row {
-            display: flex;
-            gap: 8px;
-            margin: 4px 0;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-        
-        .spec-row input {
-            flex: 1;
-            margin: 2px 0;
-            min-width: 100px;
-        }
-        
-        .spec-row select {
-            width: auto;
-            min-width: 80px;
-            padding: 8px;
-            margin: 2px 0;
-            border: 1px solid #d1d1d6;
-            border-radius: 8px;
-            font-size: 14px;
-            background: white;
-        }
-        
-        .spec-row .remove-spec {
-            width: auto;
-            padding: 8px 12px;
-            margin: 0;
-            background: #ff3b30;
-            font-size: 14px;
-        }
-        
-        .add-spec-btn {
-            width: auto !important;
-            padding: 8px 16px !important;
-            margin: 4px 0 !important;
-            background: #34c759 !important;
-            font-size: 14px !important;
-        }
-        
         .tabs {
             display: flex;
             gap: 8px;
@@ -236,8 +177,8 @@
         .tabs button {
             flex: 1;
             min-width: 70px;
-            max-width: 140px;
-            padding: 10px 8px;
+            max-width: 160px;
+            padding: 12px 10px;
             background: #e5e5ea;
             color: #1c1c1e;
             border: none;
@@ -399,14 +340,80 @@
             font-size: 14px;
         }
         
+        /* СТАТИСТИКА */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+            margin: 12px 0 20px 0;
+        }
+        
+        .stats-card {
+            background: white;
+            border-radius: 16px;
+            padding: 16px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border: 1px solid #e5e5ea;
+        }
+        
+        .stats-card .stats-number {
+            font-size: 32px;
+            font-weight: 700;
+            color: #007aff;
+        }
+        
+        .stats-card .stats-label {
+            font-size: 14px;
+            color: #8e8e93;
+            margin-top: 4px;
+        }
+        
+        /* ХАРАКТЕРИСТИКИ - ПОСТОЯННЫЕ ПОЛЯ */
+        .spec-fixed-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 6px 0;
+        }
+        
+        .spec-fixed-grid .spec-field {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .spec-fixed-grid .spec-field label {
+            font-size: 13px;
+            font-weight: 500;
+            color: #3a3a3c;
+            margin-bottom: 2px;
+        }
+        
+        .spec-fixed-grid .spec-field input,
+        .spec-fixed-grid .spec-field select {
+            margin: 0;
+            padding: 10px;
+            font-size: 15px;
+        }
+        
+        .spec-fixed-grid .spec-field .hint {
+            font-size: 11px;
+            color: #8e8e93;
+            margin-top: 2px;
+        }
+        
+        @media (max-width: 500px) {
+            .spec-fixed-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
         @media (max-width: 430px) {
             body {
                 padding: 8px;
             }
             .admin-container {
                 padding: 16px;
-                min-height: 95vh;
-                max-height: 95vh;
             }
             .item {
                 flex-direction: column;
@@ -420,18 +427,6 @@
                 flex-direction: column;
             }
             .file-upload-row button {
-                width: 100%;
-            }
-            .spec-row {
-                flex-direction: column;
-            }
-            .spec-row input {
-                width: 100%;
-            }
-            .spec-row select {
-                width: 100%;
-            }
-            .spec-row .remove-spec {
                 width: 100%;
             }
             .tabs button {
@@ -453,26 +448,35 @@
                 width: 60px;
                 height: 60px;
             }
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .spec-fixed-grid {
+                grid-template-columns: 1fr;
+            }
         }
         
         @media (min-width: 431px) and (max-width: 768px) {
             .admin-container {
-                max-width: 500px;
+                max-width: 700px;
             }
             .tabs button {
                 min-width: 70px;
-                max-width: 110px;
+                max-width: 120px;
             }
         }
         
         @media (min-width: 769px) {
             .admin-container {
-                max-width: 600px;
+                max-width: 800px;
                 padding: 30px;
             }
             .tabs button {
                 min-width: 90px;
-                max-width: 150px;
+                max-width: 160px;
+            }
+            .spec-fixed-grid {
+                grid-template-columns: 1fr 1fr;
             }
         }
     </style>
@@ -488,8 +492,28 @@
         
         <div id="admin-panel" style="display: none;">
             
+            <!-- СТАТИСТИКА -->
+            <div class="stats-grid" id="stats-grid">
+                <div class="stats-card">
+                    <div class="stats-number" id="stats-products">0</div>
+                    <div class="stats-label">Товаров</div>
+                </div>
+                <div class="stats-card">
+                    <div class="stats-number" id="stats-services">0</div>
+                    <div class="stats-label">Услуг</div>
+                </div>
+                <div class="stats-card">
+                    <div class="stats-number" id="stats-categories">0</div>
+                    <div class="stats-label">Категорий</div>
+                </div>
+                <div class="stats-card">
+                    <div class="stats-number" id="stats-images">0</div>
+                    <div class="stats-label">Всего фото</div>
+                </div>
+            </div>
+            
             <div class="tabs">
-                <button class="active" onclick="switchTab('products')">🛒 Добавить</button>
+                <button class="active" onclick="switchTab('products')">📦 Добавить</button>
                 <button onclick="switchTab('list')">📋 Список</button>
                 <button onclick="switchTab('services')">🔧 Услуги</button>
                 <button onclick="switchTab('announcements')">📢 Оповещения</button>
@@ -520,19 +544,8 @@
                     <option value="Крепления">Крепления</option>
                 </select>
                 
-                <div class="section-title" style="font-size:16px; margin-top:12px;">📊 Характеристики</div>
-                <div id="specs-container" class="specs-container">
-                    <div class="spec-row">
-                        <input type="text" class="spec-name" placeholder="Название (например: Длина)" />
-                        <input type="text" class="spec-value" placeholder="Значение (например: 156 см)" />
-                        <select class="spec-type">
-                            <option value="value">Значение</option>
-                            <option value="text">Текст</option>
-                        </select>
-                        <button class="remove-spec" onclick="removeSpec(this)">✕</button>
-                    </div>
-                </div>
-                <button class="add-spec-btn" onclick="addSpecRow()">➕ Добавить характеристику</button>
+                <!-- ПОСТОЯННЫЕ ХАРАКТЕРИСТИКИ -->
+                <div id="product-specs-container"></div>
                 
                 <button onclick="addProduct()" style="margin-top:12px;">➕ Добавить товар</button>
             </div>
