@@ -5,6 +5,37 @@ const API_URL = 'https://snowtg.nazar-bronnikov22.workers.dev/';
 // === ПЕРЕМЕННЫЕ ДЛЯ ЗАГРУЗКИ НЕСКОЛЬКИХ ФОТО ===
 let uploadedImages = [];
 
+// === КОНФИГУРАЦИЯ ХАРАКТЕРИСТИК ДЛЯ КАЖДОЙ КАТЕГОРИИ ===
+const categorySpecs = {
+    'Доски': [
+        { name: 'Размер', type: 'text', placeholder: 'Несколько размеров через запятую (например: 151, 154, 156)' },
+        { name: 'Прогиб', type: 'text', placeholder: 'Например: Camber, Flat, Rocker' },
+        { name: 'Уровень', type: 'text', placeholder: 'Например: Начинающий, Средний, Профессиональный' },
+        { name: 'Жесткость', type: 'text', placeholder: 'Например: 6/10, Мягкая, Жесткая' },
+        { name: 'Назначение', type: 'text', placeholder: 'Например: Фрирайд, Парк, Трасса' }
+    ],
+    'Ботинки': [
+        { name: 'Размер', type: 'text', placeholder: 'Несколько размеров через запятую (например: 40, 41, 42, 43)' },
+        { name: 'Жесткость', type: 'text', placeholder: 'Например: 6/10, Мягкая, Жесткая' },
+        { name: 'Назначение', type: 'text', placeholder: 'Например: Фрирайд, Парк, Трасса' },
+        { name: 'Уровень', type: 'text', placeholder: 'Например: Начинающий, Средний, Профессиональный' },
+        { name: 'Шнуровка', type: 'text', placeholder: 'Например: Быстрая, Классическая, BOA' }
+    ],
+    'Крепления': [
+        { name: 'Размер', type: 'text', placeholder: 'Несколько размеров через запятую (например: S, M, L, XL)' },
+        { name: 'Жесткость', type: 'text', placeholder: 'Например: 6/10, Мягкая, Жесткая' },
+        { name: 'Назначение', type: 'text', placeholder: 'Например: Фрирайд, Парк, Трасса' },
+        { name: 'Уровень', type: 'text', placeholder: 'Например: Начинающий, Средний, Профессиональный' },
+        { name: 'Вид', type: 'text', placeholder: 'Например: Классические, Скользящие' }
+    ]
+};
+
+// === ДЕФОЛТНЫЕ ХАРАКТЕРИСТИКИ ДЛЯ ДРУГИХ КАТЕГОРИЙ ===
+const defaultSpecs = [
+    { name: 'Характеристика 1', type: 'text', placeholder: 'Значение' },
+    { name: 'Характеристика 2', type: 'text', placeholder: 'Значение' }
+];
+
 // === СЖАТИЕ ИЗОБРАЖЕНИЙ ===
 function compressImage(dataUrl, maxWidth = 800, maxHeight = 800, quality = 0.7) {
     return new Promise((resolve) => {
@@ -52,7 +83,6 @@ async function saveProductsToAPI(products) {
         console.log('📤 Отправка данных на сервер...');
         console.log('📦 Количество товаров:', products.length);
         
-        // Проверяем размер данных
         const jsonStr = JSON.stringify(products);
         const sizeInMB = jsonStr.length / (1024 * 1024);
         console.log('📊 Размер данных:', sizeInMB.toFixed(2), 'MB');
@@ -100,6 +130,26 @@ function formatPrice(price) {
     if (!clean) return price;
     let formatted = clean.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
     return formatted + ' ₽';
+}
+
+// === ОБНОВЛЕНИЕ СТАТИСТИКИ ===
+async function updateStats() {
+    const products = await getProducts();
+    const allProducts = products || [];
+    const services = allProducts.filter(p => p.category === 'Сервис');
+    const goods = allProducts.filter(p => p.category !== 'Сервис' && !p.isContact);
+    
+    document.getElementById('stats-products').textContent = goods.length;
+    document.getElementById('stats-services').textContent = services.length;
+    
+    const categories = new Set(goods.map(p => p.category));
+    document.getElementById('stats-categories').textContent = categories.size;
+    
+    let totalImages = 0;
+    goods.forEach(p => {
+        if (p.images) totalImages += p.images.length;
+    });
+    document.getElementById('stats-images').textContent = totalImages;
 }
 
 // === ЗАГРУЗКА ОПОВЕЩЕНИЯ ===
@@ -190,6 +240,7 @@ function switchTab(tab) {
     if (tab === 'products') {
         document.querySelector('.tabs button:nth-child(1)').classList.add('active');
         document.getElementById('tab-products').classList.add('active');
+        updateSpecsForm();
     } else if (tab === 'list') {
         document.querySelector('.tabs button:nth-child(2)').classList.add('active');
         document.getElementById('tab-list').classList.add('active');
@@ -232,47 +283,6 @@ function getCategories() {
 
 // === ХАРАКТЕРИСТИКИ ===
 function addSpecRow(nameValue, valueValue, typeValue) {
-    const container = document.getElementById('specs-container');
-    if (!container) return;
-    const row = document.createElement('div');
-    row.className = 'spec-row';
-    row.innerHTML = `
-        <input type="text" class="spec-name" placeholder="Название (например: Длина)" value="${nameValue || ''}" />
-        <input type="text" class="spec-value" placeholder="Значение (например: 156 см)" value="${valueValue || ''}" />
-        <select class="spec-type">
-            <option value="value" ${typeValue === 'value' ? 'selected' : ''}>Значение</option>
-            <option value="text" ${typeValue === 'text' ? 'selected' : ''}>Текст</option>
-        </select>
-        <button class="remove-spec" onclick="removeSpec(this)">✕</button>
-    `;
-    container.appendChild(row);
-}
-
-function removeSpec(button) {
-    const container = document.getElementById('specs-container');
-    if (!container) return;
-    if (container.children.length > 1) {
-        button.parentElement.remove();
-    } else {
-        alert('Должна быть хотя бы одна характеристика');
-    }
-}
-
-function getSpecs() {
-    const rows = document.querySelectorAll('#specs-container .spec-row');
-    const specs = [];
-    rows.forEach(row => {
-        const name = row.querySelector('.spec-name').value.trim();
-        const value = row.querySelector('.spec-value').value.trim();
-        const type = row.querySelector('.spec-type').value;
-        if (name && value) {
-            specs.push({ name, value, type });
-        }
-    });
-    return specs;
-}
-
-function addServiceSpecRow(nameValue, valueValue, typeValue) {
     const container = document.getElementById('service-specs-container');
     if (!container) return;
     const row = document.createElement('div');
@@ -313,7 +323,42 @@ function getServiceSpecs() {
     return specs;
 }
 
-// === ЗАГРУЗКА НЕСКОЛЬКИХ ФОТО С СЖАТИЕМ ===
+// === ОБНОВЛЕНИЕ ФОРМЫ ХАРАКТЕРИСТИК ===
+function updateSpecsForm() {
+    const container = document.getElementById('product-specs-container');
+    if (!container) return;
+    
+    const category = document.getElementById('product-category').value;
+    const specs = categorySpecs[category] || defaultSpecs;
+    
+    container.innerHTML = `
+        <div class="section-title" style="font-size:16px; margin-top:12px;">📊 Характеристики</div>
+        <div class="spec-fixed-grid">
+            ${specs.map(spec => `
+                <div class="spec-field">
+                    <label>${spec.name}</label>
+                    <input type="text" class="spec-fixed-input" data-name="${spec.name}" placeholder="${spec.placeholder || 'Введите значение'}" />
+                    <span class="hint">${spec.type === 'text' ? 'Введите текст или несколько значений через запятую' : ''}</span>
+                </div>
+            `).join('')}
+        </div>
+    `;
+}
+
+function getFixedSpecs() {
+    const inputs = document.querySelectorAll('#product-specs-container .spec-fixed-input');
+    const specs = [];
+    inputs.forEach(input => {
+        const name = input.getAttribute('data-name');
+        const value = input.value.trim();
+        if (name && value) {
+            specs.push({ name, value, type: 'text' });
+        }
+    });
+    return specs;
+}
+
+// === ЗАГРУЗКА НЕСКОЛЬКИХ ФОТО ===
 async function uploadProductImages() {
     const fileInput = document.getElementById('product-images-file');
     if (!fileInput) return;
@@ -344,7 +389,6 @@ async function uploadProductImages() {
                 reader.readAsDataURL(file);
             });
             
-            // Сжимаем изображение
             const compressed = await compressImage(dataUrl, 800, 800, 0.7);
             uploadedImages.push(compressed);
             loaded++;
@@ -401,6 +445,7 @@ async function saveProducts(products) {
     if (success) {
         localStorage.setItem('snowboard_products_cache', JSON.stringify(products));
         renderProductList();
+        updateStats();
         if (window.opener && !window.opener.closed) {
             window.opener.products = products;
             if (window.opener.currentTab) {
@@ -450,16 +495,11 @@ async function addProduct() {
     let price = document.getElementById('product-price').value.trim();
     const desc = document.getElementById('product-desc').value.trim();
     const category = document.getElementById('product-category').value;
-    const specs = getSpecs();
+    const specs = getFixedSpecs();
     const imageUrl = document.getElementById('product-image-url').value.trim();
 
     if (!name || !price || !desc) {
         alert('Заполните название, цену и описание');
-        return;
-    }
-
-    if (specs.length === 0) {
-        alert('Добавьте хотя бы одну характеристику');
         return;
     }
 
@@ -469,10 +509,9 @@ async function addProduct() {
         return;
     }
 
-    // Собираем все изображения
     let images = [];
     if (uploadedImages.length > 0) {
-        images = uploadedImages.slice(0, 10); // максимум 10 фото
+        images = uploadedImages.slice(0, 10);
     } else if (imageUrl) {
         images = [imageUrl];
     } else {
@@ -488,7 +527,7 @@ async function addProduct() {
         price: price + ' ₽',
         images: images,
         desc, 
-        specs, 
+        specs: specs,
         category,
         isContact: false
     };
@@ -503,12 +542,7 @@ async function addProduct() {
         document.getElementById('product-desc').value = '';
         document.getElementById('product-images-file').value = '';
         clearImages();
-        
-        const container = document.getElementById('specs-container');
-        if (container) {
-            container.innerHTML = '';
-            addSpecRow('', '');
-        }
+        updateSpecsForm();
         
         await renderProductList();
         alert('✅ Товар "' + name + '" добавлен! Фото: ' + images.length);
@@ -568,17 +602,20 @@ async function editProduct(index) {
         updateImagePreview();
     }
     
-    const container = document.getElementById('specs-container');
-    if (container) {
-        container.innerHTML = '';
+    // Загружаем характеристики в форму
+    setTimeout(() => {
+        updateSpecsForm();
         if (p.specs && p.specs.length > 0) {
-            p.specs.forEach(spec => {
-                addSpecRow(spec.name, spec.value, spec.type || 'value');
+            const inputs = document.querySelectorAll('#product-specs-container .spec-fixed-input');
+            inputs.forEach(input => {
+                const name = input.getAttribute('data-name');
+                const spec = p.specs.find(s => s.name === name);
+                if (spec) {
+                    input.value = spec.value;
+                }
             });
-        } else {
-            addSpecRow('', '');
         }
-    }
+    }, 50);
     
     // Переключаемся на вкладку "Добавить"
     switchTab('products');
@@ -680,7 +717,7 @@ async function addService() {
         const container = document.getElementById('service-specs-container');
         if (container) {
             container.innerHTML = '';
-            addServiceSpecRow('', '');
+            addSpecRow('', '');
         }
         
         await renderServiceList();
@@ -738,10 +775,10 @@ async function editService(index) {
         container.innerHTML = '';
         if (p.specs && p.specs.length > 0) {
             p.specs.forEach(spec => {
-                addServiceSpecRow(spec.name, spec.value, spec.type || 'value');
+                addSpecRow(spec.name, spec.value, spec.type || 'value');
             });
         } else {
-            addServiceSpecRow('', '');
+            addSpecRow('', '');
         }
     }
     
@@ -763,18 +800,8 @@ function loginAdmin() {
         renderProductList();
         renderServiceList();
         loadCurrentAnnouncement();
-        
-        const container = document.getElementById('specs-container');
-        if (container) {
-            container.innerHTML = '';
-            addSpecRow('', '');
-        }
-        
-        const serviceContainer = document.getElementById('service-specs-container');
-        if (serviceContainer) {
-            serviceContainer.innerHTML = '';
-            addServiceSpecRow('', '');
-        }
+        updateStats();
+        updateSpecsForm();
         
     } else {
         alert('❌ Неверный пароль');
@@ -788,6 +815,11 @@ document.addEventListener('DOMContentLoaded', async function() {
     renderProductList();
     renderServiceList();
     loadCurrentAnnouncement();
+    updateStats();
+    updateSpecsForm();
+    
+    // Обновляем форму при смене категории
+    document.getElementById('product-category').addEventListener('change', updateSpecsForm);
 });
 
 // === ОБНОВЛЕНИЕ ПРИ ИЗМЕНЕНИИ В LOCALSTORAGE ===
@@ -795,15 +827,14 @@ window.addEventListener('storage', async function(e) {
     if (e.key === 'snowboard_products') {
         renderProductList();
         renderServiceList();
+        updateStats();
     }
 });
 
 // Экспортируем функции для глобального использования
 window.getProducts = getProducts;
 window.saveProducts = saveProducts;
-window.addSpecRow = addSpecRow;
-window.removeSpec = removeSpec;
-window.addServiceSpecRow = addServiceSpecRow;
+window.addServiceSpecRow = addSpecRow;
 window.removeServiceSpec = removeServiceSpec;
 window.switchTab = switchTab;
 window.sendAnnouncement = sendAnnouncement;
@@ -823,3 +854,6 @@ window.editService = editService;
 window.loginAdmin = loginAdmin;
 window.formatPrice = formatPrice;
 window.compressImage = compressImage;
+window.updateStats = updateStats;
+window.updateSpecsForm = updateSpecsForm;
+window.getFixedSpecs = getFixedSpecs;
